@@ -161,6 +161,12 @@
   }
 }
 @layer utilities {
+  .static {
+    position: static;
+  }
+  .contents {
+    display: contents;
+  }
   .p-10 {
     padding: calc(var(--spacing) * 10);
   }
