@@ -1,0 +1,18 @@
+{
+  "name": "portfolio",
+  "version": "1.0.0",
+  "description": "",
+  "main": "magixx.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "magixx": "node magixx.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.33.0",
+  "dependencies": {
+    "@tailwindcss/cli": "^4.2.4",
+    "tailwindcss": "^4.2.4"
+  }
+}
