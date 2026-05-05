@@ -5,7 +5,8 @@
   "main": "magixx.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "magixx": "node magixx.js"
+    "magixx": "node magixx.js",
+    "dev": "pnpm dlx @tailwindcss/cli -i ./magixx.css -o ./output.css --watch && nodemon magixx.js"
   },
   "keywords": [],
   "author": "",
