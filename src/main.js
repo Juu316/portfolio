@@ -173,18 +173,25 @@
     function tick() {
       var word = words[index];
 
+      // Paint BEFORE the completion check. Returning early to start the hold
+      // without painting first would drop the final character, so the word
+      // would never actually finish ("performance wor").
       if (!deleting) {
-        charIndex++;
+        // Clamp: charIndex starts at the server-rendered word's length, so
+        // the very first increment can overshoot.
+        charIndex = Math.min(charIndex + 1, word.length);
+        el.textContent = word.slice(0, charIndex);
+
         if (charIndex >= word.length) {
-          charIndex = word.length;
           deleting = true;
           timer = setTimeout(tick, 2000); // hold the finished word
           return;
         }
       } else {
-        charIndex--;
+        charIndex = Math.max(charIndex - 1, 0);
+        el.textContent = word.slice(0, charIndex);
+
         if (charIndex <= 0) {
-          charIndex = 0;
           deleting = false;
           index = (index + 1) % words.length;
           timer = setTimeout(tick, 260); // pause before typing the next
@@ -192,7 +199,6 @@
         }
       }
 
-      el.textContent = word.slice(0, charIndex);
       timer = setTimeout(tick, deleting ? 32 : 62);
     }
 

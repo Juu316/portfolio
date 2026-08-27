@@ -301,7 +301,7 @@ export const contact = {
   // it is safe to commit. Until you replace this, the form shows a friendly
   // "not configured yet" notice instead of failing silently.
   // -----------------------------------------------------------------
-  web3formsKey: "TODO-PASTE-YOUR-WEB3FORMS-ACCESS-KEY",
+  web3formsKey: "f8527481-2143-4fbe-9dda-5ed1a6215e47",
 
   // Subject line you'll see in your inbox.
   subject: {
