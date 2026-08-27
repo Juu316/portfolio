@@ -3,10 +3,19 @@
  *  EDIT THIS FILE — everything on the site comes from here.
  * ============================================================================
  *
- *  Search for "TODO" to find every placeholder you need to replace.
- *  Run `npm run build` (or `npm run dev`) to see changes.
+ *  The site is bilingual. Any field written as a pair:
  *
- *  Blog posts are NOT here — they live as markdown files in ./posts/
+ *      headline: { mn: "Монголоор", en: "In English" }
+ *
+ *  is swapped automatically per language. Fields that are NOT translatable —
+ *  URLs, tech names, dates, anchor links — stay plain values.
+ *
+ *  Mongolian is the site's root language (/), English lives at /en/.
+ *
+ *  Search for "TODO" to find every placeholder. The build prints how many are
+ *  left, and separately warns about any missing translation.
+ *
+ *  Blog posts are NOT here — they live in ./posts/ as <name>.mn.md / <name>.en.md
  * ============================================================================
  */
 
@@ -14,30 +23,45 @@ export const site = {
   // ---------------------------------------------------------------------
   // DEPLOYMENT PATHS
   // ---------------------------------------------------------------------
-  // Your repo is Juu316/portfolio, so GitHub Pages serves it from a
-  // subfolder: https://juu316.github.io/portfolio/
+  // Do NOT put the language in basePath — the build adds /en/ itself.
   //
-  // If you later add a custom domain (e.g. usukherdene.dev), change to:
+  // With a custom domain later, change to:
   //     url:      "https://usukherdene.dev"
   //     basePath: ""
   url: "https://juu316.github.io/portfolio",
   basePath: "/portfolio",
 
   // ---------------------------------------------------------------------
-  // IDENTITY  (used in <title>, SEO tags, schema.org, footer)
+  // IDENTITY
   // ---------------------------------------------------------------------
-  name: "Usukh-Erdene Choijamts", // TODO: confirm the name you want recruiters to see
-  shortName: "magixx", // shown in the navbar / logo
-  role: "Full-stack Developer", // TODO: your headline role
-  location: "Ulaanbaatar, Mongolia", // TODO
+  name: {
+    mn: "Үсүх-Эрдэнэ Чойжамц", // TODO: check this spelling is how you write it
+    en: "Usukh-Erdene Choijamts",
+  },
+
+  // Brand / logo text. Stays Latin in both — it's a handle, not a word.
+  shortName: "magixx",
+
+  role: {
+    mn: "Full-stack хөгжүүлэгч", // TODO
+    en: "Full-stack Developer",
+  },
+
+  location: {
+    mn: "Улаанбаатар, Монгол",
+    en: "Ulaanbaatar, Mongolia",
+  },
+
   email: "uujuu316@gmail.com", // TODO: the address recruiters should use
 
-  // One-sentence pitch. Shows up in Google results and link previews.
-  // Aim for 140–160 characters.
-  description:
-    "TODO: Full-stack developer building fast, reliable web products. I care about performance, clean data models, and shipping things people actually use.",
+  // One sentence. Shows in Google results and link previews. 140–160 chars.
+  description: {
+    mn: "TODO: Хурдан, найдвартай вэб бүтээгдэхүүн хөгжүүлдэг full-stack хөгжүүлэгч. Гүйцэтгэл, цэвэр өгөгдлийн загвар, хэрэглэгчдэд үнэхээр хэрэгтэй бүтээгдэхүүнд анхаардаг.",
+    en: "TODO: Full-stack developer building fast, reliable web products. I care about performance, clean data models, and shipping things people actually use.",
+  },
 
-  // Comma-free keyword list for SEO. Keep it honest — 6–12 real skills.
+  // Technical terms are searched in English even in Mongolia, so this stays
+  // one list rather than a translated pair.
   keywords: [
     "Full-stack Developer",
     "TypeScript",
@@ -46,111 +70,140 @@ export const site = {
     "PostgreSQL",
     "Web Performance",
   ],
-
-  // Language of the site content
-  lang: "en",
 };
 
 // -------------------------------------------------------------------------
-// HERO — the first thing anyone sees
+// HERO
 // -------------------------------------------------------------------------
 export const hero = {
-  // Small label above the headline
-  eyebrow: "Available for new opportunities", // TODO or set to "" to hide
+  eyebrow: {
+    mn: "Шинэ боломжид нээлттэй", // TODO — or set both to "" to hide
+    en: "Available for new opportunities",
+  },
 
-  // The headline. Keep it short and human.
-  headline: "I build fast, useful things for the web.", // TODO
+  headline: {
+    mn: "Би вэбд хурдан, хэрэгтэй зүйлс бүтээдэг.", // TODO
+    en: "I build fast, useful things for the web.",
+  },
 
-  // Words that cycle in the animated line under the headline.
-  // Keep them a similar length so the layout doesn't jump.
-  // (Falls back to the first word for users who prefer reduced motion.)
-  rotatingPrefix: "Currently focused on",
-  rotatingWords: [
-    "product engineering", // TODO: swap these for your real focus areas
-    "performance work",
-    "developer tooling",
-    "clean APIs",
-  ],
+  rotatingPrefix: {
+    mn: "Одоо голчлон",
+    en: "Currently focused on",
+  },
 
-  // Two short paragraphs max. This is your elevator pitch.
-  intro:
-    "TODO: I'm a full-stack developer who likes the unglamorous parts — the query that got 10x faster, the deploy that stopped waking people up, the interface that finally made sense. Below is a sample of what I've shipped.",
+  // Words that cycle under the headline. Keep them a similar length within
+  // each language so the line doesn't jump.
+  rotatingWords: {
+    mn: [
+      "бүтээгдэхүүний инженерчлэл", // TODO: your real focus areas
+      "гүйцэтгэл сайжруулах",
+      "хөгжүүлэгчийн хэрэгсэл",
+      "цэвэр API",
+    ],
+    en: ["product engineering", "performance work", "developer tooling", "clean APIs"],
+  },
 
-  // Buttons
-  primaryCta: { label: "See my work", href: "#work" },
-  secondaryCta: { label: "Get in touch", href: "#contact" },
+  intro: {
+    mn: "TODO: Би ажлын гоёмсог биш талыг нь илүү дуртай — 10 дахин хурдассан query, шөнө дунд сэрээхээ больсон deploy, эцэст нь ойлгомжтой болсон интерфейс. Доор миний хийсэн зарим ажил байна.",
+    en: "TODO: I'm a full-stack developer who likes the unglamorous parts — the query that got 10x faster, the deploy that stopped waking people up, the interface that finally made sense. Below is a sample of what I've shipped.",
+  },
 
-  // Optional resume/CV. Drop the file in ./public/ and reference it here.
-  // Set to null to hide the link entirely.
-  resume: { label: "Resume", file: "resume.pdf" }, // TODO: add public/resume.pdf, or set to null
+  primaryCta: {
+    label: { mn: "Бүтээлүүдийг үзэх", en: "See my work" },
+    href: "#work",
+  },
+  secondaryCta: {
+    label: { mn: "Холбоо барих", en: "Get in touch" },
+    href: "#contact",
+  },
+
+  // Drop the file in ./public/ and it appears. Set `resume: null` to hide.
+  resume: {
+    label: { mn: "Товч намтар", en: "Resume" },
+    file: "resume.pdf", // TODO: add public/resume.pdf
+  },
 };
 
 // -------------------------------------------------------------------------
 // PROJECTS
 // -------------------------------------------------------------------------
-// `featured: true` projects get a larger card at the top of the section.
+// METRICS are what separate a portfolio from a list of links. Recruiters skim
+// for numbers. Use real ones — even small honest numbers beat vague claims.
 //
-// METRICS are what separate a portfolio from a list of links. Recruiters
-// skim for numbers. Use real ones — even small, honest numbers ("cut build
-// time from 4m to 40s") beat vague claims ("improved performance").
+// `stack` stays untranslated: tech names are the same in both languages.
 // -------------------------------------------------------------------------
 export const projects = [
   {
     featured: true,
-    title: "TODO: Flagship Project", // the one you're proudest of
-    tagline: "TODO: One line on what it does and who it's for.",
-    description:
-      "TODO: Two or three sentences. What problem did it solve? What was hard about it? What decision are you proud of? Write like you're explaining it to a smart engineer who has 20 seconds.",
-    stack: ["TypeScript", "React", "Node.js", "PostgreSQL"], // TODO
+    title: {
+      mn: "TODO: Гол төсөл",
+      en: "TODO: Flagship Project",
+    },
+    tagline: {
+      mn: "TODO: Юу хийдэг, хэнд зориулагдсаныг нэг өгүүлбэрээр.",
+      en: "TODO: One line on what it does and who it's for.",
+    },
+    description: {
+      mn: "TODO: Хоёр гурван өгүүлбэр. Ямар асуудлыг шийдсэн бэ? Юу нь хэцүү байсан бэ? Ямар шийдвэрээрээ бахархдаг вэ? 20 секундын зав-тай инженерт тайлбарлаж байгаа мэт бич.",
+      en: "TODO: Two or three sentences. What problem did it solve? What was hard about it? What decision are you proud of? Write like you're explaining it to a smart engineer who has 20 seconds.",
+    },
+    stack: ["TypeScript", "React", "Node.js", "PostgreSQL"],
     metrics: [
-      { value: "TODO", label: "monthly active users" },
-      { value: "TODO", label: "p95 response time" },
-      { value: "TODO", label: "uptime" },
+      { value: "TODO", label: { mn: "сарын идэвхтэй хэрэглэгч", en: "monthly active users" } },
+      { value: "TODO", label: { mn: "p95 хариу өгөх хугацаа", en: "p95 response time" } },
+      { value: "TODO", label: { mn: "тасралтгүй ажиллагаа", en: "uptime" } },
     ],
-    demo: "", // TODO: https://... (leave "" to hide the button)
-    repo: "", // TODO: https://github.com/... (leave "" to hide)
+    demo: "", // TODO: https://…  (leave "" to hide the button)
+    repo: "", // TODO: https://github.com/…
     year: "2026",
-    status: "Live", // e.g. "Live", "In progress", "Archived" — or "" to hide
+    status: { mn: "Ажиллаж байгаа", en: "Live" }, // "" in both to hide
   },
   {
     featured: true,
-    title: "TODO: Second Project",
-    tagline: "TODO: One line on what it does.",
-    description:
-      "TODO: What it does, what you built, and one interesting technical detail.",
-    stack: ["Next.js", "Tailwind", "Supabase"], // TODO
+    title: { mn: "TODO: Хоёр дахь төсөл", en: "TODO: Second Project" },
+    tagline: {
+      mn: "TODO: Юу хийдгийг нэг өгүүлбэрээр.",
+      en: "TODO: One line on what it does.",
+    },
+    description: {
+      mn: "TODO: Юу хийдэг, чи юуг нь бүтээсэн, нэг сонирхолтой техникийн нарийн ширийн зүйл.",
+      en: "TODO: What it does, what you built, and one interesting technical detail.",
+    },
+    stack: ["Next.js", "Tailwind", "Supabase"],
     metrics: [
-      { value: "TODO", label: "users onboarded" },
-      { value: "TODO", label: "faster page loads" },
+      { value: "TODO", label: { mn: "бүртгүүлсэн хэрэглэгч", en: "users onboarded" } },
+      { value: "TODO", label: { mn: "хуудас хурдассан", en: "faster page loads" } },
     ],
     demo: "",
     repo: "",
     year: "2025",
-    status: "Live",
+    status: { mn: "Ажиллаж байгаа", en: "Live" },
   },
   {
     featured: false,
-    title: "TODO: Third Project",
-    tagline: "TODO: One line.",
-    description: "TODO: Short description.",
-    stack: ["Python", "FastAPI", "Docker"], // TODO
-    metrics: [{ value: "TODO", label: "records processed/day" }],
+    title: { mn: "TODO: Гурав дахь төсөл", en: "TODO: Third Project" },
+    tagline: { mn: "TODO: Нэг өгүүлбэр.", en: "TODO: One line." },
+    description: { mn: "TODO: Товч тайлбар.", en: "TODO: Short description." },
+    stack: ["Python", "FastAPI", "Docker"],
+    metrics: [
+      { value: "TODO", label: { mn: "өдөрт боловсруулсан бичлэг", en: "records processed/day" } },
+    ],
     demo: "",
     repo: "",
     year: "2025",
-    status: "",
+    status: { mn: "", en: "" },
   },
   {
     featured: false,
-    title: "TODO: Fourth Project",
-    tagline: "TODO: One line.",
-    description: "TODO: Short description.",
-    stack: ["Go", "Redis"], // TODO
-    metrics: [{ value: "TODO", label: "req/s sustained" }],
+    title: { mn: "TODO: Дөрөв дэх төсөл", en: "TODO: Fourth Project" },
+    tagline: { mn: "TODO: Нэг өгүүлбэр.", en: "TODO: One line." },
+    description: { mn: "TODO: Товч тайлбар.", en: "TODO: Short description." },
+    stack: ["Go", "Redis"],
+    metrics: [{ value: "TODO", label: { mn: "секундэд хүсэлт", en: "req/s sustained" } }],
     demo: "",
     repo: "",
     year: "2024",
-    status: "",
+    status: { mn: "", en: "" },
   },
 ];
 
@@ -158,39 +211,59 @@ export const projects = [
 // ABOUT — your story
 // -------------------------------------------------------------------------
 export const about = {
-  heading: "About",
+  heading: { mn: "Миний тухай", en: "About" },
 
-  // Each string is a paragraph. 2–4 paragraphs is the sweet spot.
-  // Tell a story with a shape: where you started → what changed → where
-  // you're going. Specifics beat adjectives every single time.
-  paragraphs: [
-    "TODO: Open with how you got into this. A concrete first moment works better than a summary — the thing you built that shouldn't have worked, the problem that annoyed you enough to fix.",
-    "TODO: What you've done since, and what you got good at. Name real technologies and real outcomes. This is the paragraph a hiring manager reads most carefully, so make it load-bearing.",
-    "TODO: What you're looking for now, and what you do when you're not coding. One or two human details make you memorable — most portfolios forget this part.",
-  ],
+  // Each string is a paragraph. 2–4 is the sweet spot. Tell a story with a
+  // shape: where you started → what changed → where you're going.
+  paragraphs: {
+    mn: [
+      "TODO: Энэ ажилд хэрхэн орсноороо эхэл. Ерөнхий тайлбараас илүү тодорхой нэг мөч илүү үнэмшилтэй — ажиллах ёсгүй байсан мөртөө ажилласан анхны програм, эсвэл засахаас өөр аргагүй болтол чинь ядаргаатай байсан асуудал.",
+      "TODO: Түүнээс хойш юу хийсэн, юунд сайн болсноо бич. Бодит технологи, бодит үр дүнг нэрлэ. Ажил олгогч энэ догол мөрийг хамгийн анхааралтай уншина.",
+      "TODO: Одоо юу хайж байгаа, код бичихгүй үедээ юу хийдгээ бич. Нэг хоёр хүн чанарын нарийн ширийн зүйл чамайг санагдахуйц болгоно — ихэнх портфолио үүнийг мартдаг.",
+    ],
+    en: [
+      "TODO: Open with how you got into this. A concrete first moment works better than a summary — the thing you built that shouldn't have worked, the problem that annoyed you enough to fix.",
+      "TODO: What you've done since, and what you got good at. Name real technologies and real outcomes. This is the paragraph a hiring manager reads most carefully, so make it load-bearing.",
+      "TODO: What you're looking for now, and what you do when you're not coding. One or two human details make you memorable — most portfolios forget this part.",
+    ],
+  },
 
-  // Skill groups shown as a tidy list. Keep these honest; you may be asked
-  // about anything listed here in an interview.
+  // Group names translate; the tech names inside them don't.
   skills: [
-    { group: "Languages", items: ["TypeScript", "JavaScript", "Python", "SQL"] },
-    { group: "Frontend", items: ["React", "Next.js", "Tailwind CSS", "Vite"] },
-    { group: "Backend", items: ["Node.js", "PostgreSQL", "REST", "Redis"] },
-    { group: "Tooling", items: ["Git", "Docker", "GitHub Actions", "Linux"] },
-  ], // TODO: adjust all of the above
-
-  // Optional short timeline. Set to [] to hide the whole block.
-  timeline: [
     {
-      period: "2025 — Present",
-      title: "TODO: Role or focus",
-      org: "TODO: Company / freelance / self-directed",
-      detail: "TODO: One line on what you're responsible for and one result.",
+      group: { mn: "Хэл", en: "Languages" },
+      items: ["TypeScript", "JavaScript", "Python", "SQL"],
     },
     {
-      period: "2023 — 2025",
-      title: "TODO: Earlier role",
-      org: "TODO: Where",
-      detail: "TODO: One line.",
+      group: { mn: "Frontend", en: "Frontend" },
+      items: ["React", "Next.js", "Tailwind CSS", "Vite"],
+    },
+    {
+      group: { mn: "Backend", en: "Backend" },
+      items: ["Node.js", "PostgreSQL", "REST", "Redis"],
+    },
+    {
+      group: { mn: "Хэрэгсэл", en: "Tooling" },
+      items: ["Git", "Docker", "GitHub Actions", "Linux"],
+    },
+  ],
+
+  // Set to [] to hide the whole block.
+  timeline: [
+    {
+      period: { mn: "2025 — одоог хүртэл", en: "2025 — Present" },
+      title: { mn: "TODO: Албан тушаал", en: "TODO: Role or focus" },
+      org: { mn: "TODO: Байгууллага / бие даасан", en: "TODO: Company / freelance" },
+      detail: {
+        mn: "TODO: Юуг хариуцдаг, ямар үр дүнд хүрснээ нэг мөрөөр.",
+        en: "TODO: One line on what you're responsible for and one result.",
+      },
+    },
+    {
+      period: { mn: "2023 — 2025", en: "2023 — 2025" },
+      title: { mn: "TODO: Өмнөх ажил", en: "TODO: Earlier role" },
+      org: { mn: "TODO: Хаана", en: "TODO: Where" },
+      detail: { mn: "TODO: Нэг мөр.", en: "TODO: One line." },
     },
   ],
 };
@@ -199,10 +272,11 @@ export const about = {
 // WRITING
 // -------------------------------------------------------------------------
 export const writing = {
-  heading: "Writing",
-  blurb:
-    "Notes on things I've built and broken. Writing about your work is the cheapest way to show how you think — recruiters read these.",
-  // How many recent posts to show on the homepage
+  heading: { mn: "Нийтлэл", en: "Writing" },
+  blurb: {
+    mn: "Миний бүтээж, эвдэж үзсэн зүйлсийн тухай тэмдэглэл. Ажлынхаа тухай бичих нь сэтгэлгээгээ харуулах хамгийн хямд арга — ажил олгогчид үүнийг уншдаг.",
+    en: "Notes on things I've built and broken. Writing about your work is the cheapest way to show how you think — recruiters read these.",
+  },
   homepageCount: 3,
 };
 
@@ -210,45 +284,50 @@ export const writing = {
 // CONTACT
 // -------------------------------------------------------------------------
 export const contact = {
-  heading: "Get in touch",
-  blurb:
-    "TODO: Open to full-time roles and interesting freelance work. The fastest way to reach me is the form below or a direct email — I reply within a day or two.",
+  heading: { mn: "Холбоо барих", en: "Get in touch" },
+  blurb: {
+    mn: "TODO: Бүтэн цагийн ажил болон сонирхолтой чөлөөт ажилд нээлттэй. Доорх маягт эсвэл шууд и-мэйлээр хамгийн хурдан холбогдоно — нэг хоёр хоногт хариу бичдэг.",
+    en: "TODO: Open to full-time roles and interesting freelance work. The fastest way to reach me is the form below or a direct email — I reply within a day or two.",
+  },
 
   // -----------------------------------------------------------------
-  // EMAIL DELIVERY — Web3Forms (free, no backend needed)
+  // EMAIL DELIVERY — Web3Forms (free, no backend)
   // -----------------------------------------------------------------
   // 1. Go to https://web3forms.com
-  // 2. Enter the email address where you want messages delivered
-  // 3. They email you an Access Key — paste it below
+  // 2. Enter the address where you want messages delivered
+  // 3. Paste the Access Key they email you below
   //
-  // The key is PUBLIC by design (it only allows sending to YOUR verified
-  // address), so it is safe to commit. Until you replace this placeholder,
-  // the form shows a friendly "not configured yet" notice instead of
-  // silently failing.
+  // The key is PUBLIC by design (it only sends to YOUR verified address), so
+  // it is safe to commit. Until you replace this, the form shows a friendly
+  // "not configured yet" notice instead of failing silently.
   // -----------------------------------------------------------------
   web3formsKey: "TODO-PASTE-YOUR-WEB3FORMS-ACCESS-KEY",
 
-  // Subject line you'll see in your inbox
-  subject: "New message from your portfolio site",
+  // Subject line you'll see in your inbox.
+  subject: {
+    mn: "Портфолио сайтаас шинэ зурвас",
+    en: "New message from your portfolio site",
+  },
 };
 
 // -------------------------------------------------------------------------
 // SOCIAL LINKS
 // -------------------------------------------------------------------------
-// Set any href to "" to hide that link. Order here = order on the page.
+// Set any href to "" to hide that link. Brand names stay untranslated.
 export const social = [
   { name: "GitHub", href: "https://github.com/Juu316", icon: "github" },
   { name: "LinkedIn", href: "", icon: "linkedin" }, // TODO
   { name: "X", href: "", icon: "x" }, // TODO
-  { name: "Email", href: "mailto:uujuu316@gmail.com", icon: "mail" }, // TODO
+  { name: { mn: "И-мэйл", en: "Email" }, href: "mailto:uujuu316@gmail.com", icon: "mail" }, // TODO
 ];
 
 // -------------------------------------------------------------------------
 // NAVIGATION
 // -------------------------------------------------------------------------
+// `href` values are section ids — they must NOT be translated.
 export const nav = [
-  { label: "Work", href: "#work" },
-  { label: "About", href: "#about" },
-  { label: "Writing", href: "#writing" },
-  { label: "Contact", href: "#contact" },
+  { label: { mn: "Ажил", en: "Work" }, href: "#work" },
+  { label: { mn: "Миний тухай", en: "About" }, href: "#about" },
+  { label: { mn: "Нийтлэл", en: "Writing" }, href: "#writing" },
+  { label: { mn: "Холбоо барих", en: "Contact" }, href: "#contact" },
 ];

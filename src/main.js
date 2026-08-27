@@ -24,6 +24,21 @@
     "(prefers-reduced-motion: reduce)"
   );
 
+  /* Localised strings, supplied by the build in the site-config blob. Every
+     call passes the English text as a fallback, so a stale cached page or a
+     failed JSON parse degrades to English rather than to empty labels. */
+  var STRINGS = CONFIG.strings || {};
+
+  function s(key, fallback) {
+    return STRINGS[key] || fallback;
+  }
+
+  function fill(template, values) {
+    return String(template).replace(/\{(\w+)\}/g, function (match, key) {
+      return Object.prototype.hasOwnProperty.call(values, key) ? values[key] : match;
+    });
+  }
+
   /* ---------------------------------------------------------------------
    * Theme toggle
    *
@@ -44,9 +59,14 @@
 
     function syncLabel() {
       if (!toggle) return;
-      var next = effectiveTheme() === "dark" ? "light" : "dark";
-      toggle.setAttribute("aria-label", "Switch to " + next + " theme");
-      toggle.setAttribute("title", "Switch to " + next + " theme");
+      // A whole string per target theme. "Switch to " + word only composes in
+      // English — Mongolian puts the words in a different order.
+      var label =
+        effectiveTheme() === "dark"
+          ? s("themeToLight", "Switch to light theme")
+          : s("themeToDark", "Switch to dark theme");
+      toggle.setAttribute("aria-label", label);
+      toggle.setAttribute("title", label);
     }
 
     if (toggle) {
@@ -102,7 +122,10 @@
     function setMenu(open) {
       navList.setAttribute("data-open", open ? "true" : "false");
       menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
-      menuBtn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+      menuBtn.setAttribute(
+        "aria-label",
+        open ? s("closeMenu", "Close menu") : s("openMenu", "Open menu")
+      );
     }
 
     menuBtn.addEventListener("click", function () {
@@ -302,11 +325,11 @@
         var message = "";
 
         if (!value) {
-          message = "This field is required.";
+          message = s("required", "This field is required.");
         } else if (field.type === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value)) {
-          message = "Enter a valid email address.";
+          message = s("invalidEmail", "Enter a valid email address.");
         } else if (field.name === "message" && value.length < 10) {
-          message = "A little more detail, please (10 characters minimum).";
+          message = s("tooShort", "A little more detail, please (10 characters minimum).");
         }
 
         setFieldError(field, message);
@@ -333,14 +356,14 @@
       var firstBad = validate();
       if (firstBad) {
         firstBad.focus();
-        setStatus("error", "Please fix the highlighted fields.");
+        setStatus("error", s("fixFields", "Please fix the highlighted fields."));
         return;
       }
 
       // Honeypot: bots fill every field they find, humans can't see this one.
       var honeypot = form.querySelector("input[name='botcheck']");
       if (honeypot && honeypot.value) {
-        setStatus("success", "Thanks — your message is on its way.");
+        setStatus("success", s("queued", "Thanks — your message is on its way."));
         form.reset();
         return;
       }
@@ -348,7 +371,10 @@
       if (!configured) {
         setStatus(
           "notice",
-          "This form isn't connected yet. Add your Web3Forms access key to content.js (contact.web3formsKey) and rebuild. In the meantime, email works fine."
+          s(
+            "notConfigured",
+            "This form isn't connected yet. Add your Web3Forms access key to content.js (contact.web3formsKey) and rebuild. In the meantime, email works fine."
+          )
         );
         return;
       }
@@ -370,22 +396,29 @@
           if (result.ok && result.data && result.data.success) {
             setStatus(
               "success",
-              "Thanks — your message came through. I'll get back to you shortly."
+              s("sent", "Thanks — your message came through. I'll get back to you shortly.")
             );
             form.reset();
           } else {
+            // result.data.message comes from Web3Forms and is always English;
+            // keeping it in the parenthetical is still more useful than hiding it.
             var detail =
-              (result.data && result.data.message) || "the request was rejected";
+              (result.data && result.data.message) || s("rejected", "the request was rejected");
             setStatus(
               "error",
-              "Something went wrong (" + detail + "). Please email me directly instead."
+              fill(s("failed", "Something went wrong ({detail}). Please email me directly instead."), {
+                detail: detail,
+              })
             );
           }
         })
         .catch(function () {
           setStatus(
             "error",
-            "Couldn't reach the mail service — check your connection, or email me directly."
+            s(
+              "offline",
+              "Couldn't reach the mail service — check your connection, or email me directly."
+            )
           );
         })
         .then(function () {

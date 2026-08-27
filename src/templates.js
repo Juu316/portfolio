@@ -2,10 +2,15 @@
  * HTML templates.
  *
  * Every page is rendered to static HTML at build time — nothing here runs in
- * the browser. That's what keeps the SEO honest (crawlers get real markup,
- * not an empty div) and the Lighthouse performance score high.
+ * the browser. That's what keeps the SEO honest (crawlers get real markup in
+ * the right language, not an empty div) and the Lighthouse score high.
+ *
+ * Content arriving in `ctx` has already been flattened to a single language by
+ * localize() in i18n.js, so nothing in this file needs to know about
+ * translation pairs. Only the site's own chrome is looked up per locale.
  */
 import { escapeHtml } from "./markdown.js";
+import { UI, fmt, formatDate, LOCALES, TOGGLE_ORDER, getLocale } from "./i18n.js";
 
 /* --------------------------------------------------------------------------
  * Icons — inlined so there are no extra requests and no icon-font flash.
@@ -24,21 +29,24 @@ export const icons = {
   arrowRight: `<svg viewBox="0 0 24 24" ${STROKE} aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>`,
   arrowLeft: `<svg viewBox="0 0 24 24" ${STROKE} aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>`,
   download: `<svg viewBox="0 0 24 24" ${STROKE} aria-hidden="true"><path d="M12 3v12M7 11l5 5 5-5M4 21h16"/></svg>`,
-  clock: `<svg viewBox="0 0 24 24" ${STROKE} aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`,
 };
 
 /* --------------------------------------------------------------------------
- * Small helpers
+ * URL helpers
+ *
+ * The language lives in the PATH, never in basePath. Putting it in basePath
+ * defeats the de-duplication in absoluteUrl() below and yields a doubled
+ * origin (…/portfolio/portfolio/en/).
  * ------------------------------------------------------------------------ */
 
-/** Prefix an internal path with the deployment base path. */
+/** Prefix a path with the deployment base path. Not locale-aware. */
 export function url(ctx, path = "/") {
   const base = ctx.site.basePath.replace(/\/$/, "");
   const clean = path.startsWith("/") ? path : `/${path}`;
   return `${base}${clean}` || "/";
 }
 
-/** Absolute URL, for canonical tags, OG tags, sitemap and feed. */
+/** Absolute URL, for canonical tags, hreflang, sitemap and feed. */
 export function absoluteUrl(ctx, path = "/") {
   const origin = ctx.site.url.replace(/\/$/, "");
   const base = ctx.site.basePath.replace(/\/$/, "");
@@ -48,15 +56,19 @@ export function absoluteUrl(ctx, path = "/") {
   return `${withoutBase}${base}${clean}`;
 }
 
-export function formatDate(iso, lang = "en") {
-  const date = new Date(iso + (iso.length === 10 ? "T00:00:00Z" : ""));
-  if (Number.isNaN(date.getTime())) return iso;
-  return date.toLocaleDateString(lang === "en" ? "en-GB" : lang, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  });
+/** Path in the locale currently being built. */
+export function lurl(ctx, path = "/") {
+  return url(ctx, (ctx.localePrefix || "") + path);
+}
+
+/** Path in a specific locale. */
+export function urlIn(ctx, code, path = "/") {
+  return url(ctx, getLocale(code).prefix + path);
+}
+
+/** Absolute URL in a specific locale. */
+export function absoluteUrlIn(ctx, code, path = "/") {
+  return absoluteUrl(ctx, getLocale(code).prefix + path);
 }
 
 /** True when a content field is still an unfilled placeholder. */
@@ -64,38 +76,84 @@ function isPlaceholder(value) {
   return typeof value === "string" && /^TODO/i.test(value.trim());
 }
 
+/** Strip the TODO marker so placeholder copy still reads as a sentence. */
+function clean(value) {
+  return String(value == null ? "" : value).replace(/^TODO:?\s*/i, "");
+}
+
 /* --------------------------------------------------------------------------
  * Document shell
  * ------------------------------------------------------------------------ */
 function head(ctx, page) {
   const { site } = ctx;
+  const locale = getLocale(ctx.locale);
   const title = page.title;
   const description = page.description || site.description;
-  const canonical = absoluteUrl(ctx, page.path);
-  const ogImage = absoluteUrl(ctx, "/og.png");
+  const ogImage = absoluteUrlIn(ctx, ctx.locale, "/og.png");
+
+  // hreflang MUST be reciprocal. If a post exists only in Mongolian, emitting
+  // an "en" alternate pointing at a page that doesn't point back makes Google
+  // discard the entire annotation cluster — not just the bad edge. So this
+  // list drives the alternates, and the visible toggle (which always needs
+  // somewhere to go) is computed separately below.
+  const availableIn = page.availableIn || LOCALES.map((l) => l.code);
+
+  const alternates = availableIn
+    .map(
+      (code) =>
+        `<link rel="alternate" hreflang="${getLocale(code).htmlLang}" href="${absoluteUrlIn(
+          ctx,
+          code,
+          page.path
+        )}">`
+    )
+    .join("\n");
+
+  // x-default serves visitors whose language matches neither, so it points at
+  // English — but only when an English version actually exists.
+  const xDefault = availableIn.includes("en")
+    ? `\n<link rel="alternate" hreflang="x-default" href="${absoluteUrlIn(ctx, "en", page.path)}">`
+    : "";
+
+  const localeAlternates = availableIn
+    .filter((code) => code !== ctx.locale)
+    .map((code) => `<meta property="og:locale:alternate" content="${getLocale(code).ogLocale}">`)
+    .join("\n");
+
+  // The 404 is served by GitHub Pages at arbitrary URLs, so a canonical
+  // pointing at /404.html would be actively misleading, and indexing it would
+  // create a soft-404.
+  const self = absoluteUrlIn(ctx, ctx.locale, page.path);
+  const canonical = page.noCanonical ? "" : `\n<link rel="canonical" href="${self}">`;
+  const ogUrl = page.noCanonical ? "" : `\n<meta property="og:url" content="${self}">`;
+
+  const robots = page.noindex
+    ? "noindex, follow"
+    : "index, follow, max-image-preview:large, max-snippet:-1";
 
   return `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>${escapeHtml(title)}</title>
-<meta name="description" content="${escapeHtml(description)}">
-<link rel="canonical" href="${canonical}">
+<meta name="description" content="${escapeHtml(description)}">${canonical}
 <meta name="author" content="${escapeHtml(site.name)}">
 <meta name="keywords" content="${escapeHtml(site.keywords.join(", "))}">
-<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<meta name="robots" content="${robots}">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#fcfcfd" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0c0d11" media="(prefers-color-scheme: dark)">
 
+${alternates}${xDefault}
+
 <meta property="og:type" content="${page.ogType || "website"}">
 <meta property="og:site_name" content="${escapeHtml(site.name)}">
 <meta property="og:title" content="${escapeHtml(title)}">
-<meta property="og:description" content="${escapeHtml(description)}">
-<meta property="og:url" content="${canonical}">
+<meta property="og:description" content="${escapeHtml(description)}">${ogUrl}
 <meta property="og:image" content="${ogImage}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="${escapeHtml(site.name)} — ${escapeHtml(site.role)}">
-<meta property="og:locale" content="en_US">
+<meta property="og:locale" content="${locale.ogLocale}">
+${localeAlternates}
 ${page.publishedTime ? `<meta property="article:published_time" content="${page.publishedTime}">` : ""}
 
 <meta name="twitter:card" content="summary_large_image">
@@ -106,41 +164,82 @@ ${page.publishedTime ? `<meta property="article:published_time" content="${page.
 <link rel="icon" href="${url(ctx, "/favicon.svg")}" type="image/svg+xml">
 <link rel="apple-touch-icon" href="${url(ctx, "/apple-touch-icon.png")}">
 <link rel="manifest" href="${url(ctx, "/site.webmanifest")}">
-<link rel="alternate" type="application/rss+xml" title="${escapeHtml(site.name)} — Writing" href="${absoluteUrl(ctx, "/feed.xml")}">
+<link rel="alternate" type="application/rss+xml" title="${escapeHtml(site.name)} — ${escapeHtml(
+    ctx.ui.writing
+  )}" href="${absoluteUrlIn(ctx, ctx.locale, "/feed.xml")}">
 
 <style>${ctx.css}</style>
 
 <script>
-/* Two jobs, both of which must happen before first paint:
-   1. Apply the saved theme, so there is no flash of the wrong colours.
-   2. Add the "js" class, which is what lets the scroll-reveal CSS hide
-      elements. The watchdog removes it again if main.js has not booted
-      within 2.5s, so a failed script can never leave the page blank. */
+/* Applies the saved theme before first paint so there's no flash of the wrong
+   colours, and adds the "js" class that lets the scroll-reveal CSS hide
+   things. The watchdog removes that class again if main.js hasn't booted in
+   2.5s, so a failed script can never leave the page blank. */
 (function(){var d=document.documentElement;try{var t=localStorage.getItem("theme");if(t==="dark"||t==="light"){d.setAttribute("data-theme",t)}}catch(e){}d.className+=" js";setTimeout(function(){if(!window.__booted){d.className=d.className.replace(/\\bjs\\b/," ")}},2500)})();
 </script>
 
 <script type="application/ld+json">${JSON.stringify(page.schema)}</script>`;
 }
 
-function header(ctx, { activeHref } = {}) {
-  const { site, nav } = ctx;
+/** The segmented language pill. Plain links — no JavaScript involved. */
+function languageToggle(ctx, page) {
+  const targets = page.toggleTargets || {};
+
+  const options = TOGGLE_ORDER.map((code) => {
+    const loc = getLocale(code);
+    const path = targets[code] !== undefined ? targets[code] : page.path;
+    const isCurrent = !page.neutralLang && code === ctx.locale;
+    const label = code === "mn" ? ctx.ui.switchToMongolian : ctx.ui.switchToEnglish;
+
+    // The descriptive text is a visually-hidden SUFFIX rather than an
+    // aria-label. An aria-label would REPLACE the visible "EN"/"МН", and WCAG
+    // 2.5.3 (Label in Name) requires the accessible name to contain the
+    // visible label — Lighthouse flags the mismatch.
+    return `<a class="lang-opt" href="${urlIn(ctx, code, path)}" hreflang="${loc.htmlLang}"${
+      isCurrent ? ' aria-current="page"' : ""
+    }><span lang="${loc.htmlLang}">${escapeHtml(loc.label)}</span><span class="sr-only"> — ${escapeHtml(
+      label
+    )}</span></a>`;
+  }).join("");
+
+  return `<div class="lang" role="group" aria-label="${escapeHtml(
+    ctx.ui.languageLabel
+  )}">${options}</div>`;
+}
+
+function header(ctx, page) {
+  const { site, nav, ui } = ctx;
 
   const links = nav
     .map((item) => {
-      // On sub-pages, in-page anchors need to point back at the homepage.
-      const href = item.href.startsWith("#") && !ctx.isHome ? url(ctx, "/") + item.href : item.href;
-      const current = activeHref === item.href ? ' aria-current="true"' : "";
+      // On sub-pages, in-page anchors need to point back at that language's
+      // homepage rather than at the current document.
+      const href =
+        item.href.startsWith("#") && !page.isHome ? lurl(ctx, "/") + item.href : item.href;
+      const current = page.activeHref === item.href ? ' aria-current="page"' : "";
       return `<li><a class="nav-link" href="${href}"${current}>${escapeHtml(item.label)}</a></li>`;
     })
     .join("");
 
+  // With no nav (the 404) there is nothing behind the menu button, so drop it.
+  const menuButton = nav.length
+    ? `<button class="icon-btn menu-btn" type="button" data-menu-toggle aria-expanded="false" aria-controls="nav-list" aria-label="${escapeHtml(
+        ui.openMenu
+      )}">${icons.menu}</button>`
+    : "";
+
   return `<header class="header" data-header>
   <div class="wrap header-inner">
-    <a class="brand" href="${url(ctx, "/")}"><span class="brand-dot"></span>${escapeHtml(site.shortName)}</a>
-    <nav class="nav" aria-label="Main">
+    <a class="brand" href="${lurl(ctx, "/")}"><span class="brand-dot"></span>${escapeHtml(
+    site.shortName
+  )}</a>
+    <nav class="nav" aria-label="${escapeHtml(ui.navLabel)}">
       <ul class="nav-list" data-nav-list id="nav-list">${links}</ul>
-      <button class="icon-btn" type="button" data-theme-toggle aria-label="Switch theme">${icons.sun}${icons.moon}</button>
-      <button class="icon-btn menu-btn" type="button" data-menu-toggle aria-expanded="false" aria-controls="nav-list" aria-label="Open menu">${icons.menu}</button>
+      ${languageToggle(ctx, page)}
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="${escapeHtml(
+        ui.themeSwitch
+      )}">${icons.sun}${icons.moon}</button>
+      ${menuButton}
     </nav>
   </div>
 </header>`;
@@ -148,7 +247,6 @@ function header(ctx, { activeHref } = {}) {
 
 function footer(ctx) {
   const { site, social } = ctx;
-  const year = ctx.buildYear;
 
   const links = social
     .filter((item) => item.href)
@@ -164,7 +262,7 @@ function footer(ctx) {
 
   return `<footer class="footer">
   <div class="wrap footer-inner">
-    <p>&copy; ${year} ${escapeHtml(site.name)}</p>
+    <p>&copy; ${ctx.buildYear} ${escapeHtml(site.name)}</p>
     <ul class="footer-links">${links}</ul>
   </div>
 </footer>`;
@@ -172,19 +270,23 @@ function footer(ctx) {
 
 /** Wrap page content in the full HTML document. */
 export function layout(ctx, page, body) {
+  // Translated copy flows into this blob, so escape "<" to make a stray
+  // </script> inside content impossible.
+  const config = JSON.stringify(ctx.clientConfig).replace(/</g, "\\u003c");
+
   return `<!doctype html>
-<html lang="${ctx.site.lang}">
+<html lang="${getLocale(ctx.locale).htmlLang}">
 <head>
 ${head(ctx, page)}
 </head>
 <body>
-<a class="skip-link" href="#main">Skip to content</a>
-${header(ctx, { activeHref: page.activeHref })}
+<a class="skip-link" href="#main">${escapeHtml(ctx.ui.skipToContent)}</a>
+${header(ctx, page)}
 <main id="main">
 ${body}
 </main>
 ${footer(ctx)}
-<script type="application/json" id="site-config">${JSON.stringify(ctx.clientConfig)}</script>
+<script type="application/json" id="site-config">${config}</script>
 <script src="${url(ctx, "/main.js")}" defer></script>
 </body>
 </html>`;
@@ -194,11 +296,11 @@ ${footer(ctx)}
  * Homepage sections
  * ------------------------------------------------------------------------ */
 function heroSection(ctx) {
-  const { hero, site, social } = ctx;
+  const { hero, social } = ctx;
 
   const badge = hero.eyebrow
     ? `<p class="hero-badge"><span class="hero-badge-dot"></span>${escapeHtml(
-        hero.eyebrow.replace(/^TODO:?\s*/i, "")
+        clean(hero.eyebrow)
       )}</p>`
     : "";
 
@@ -221,18 +323,23 @@ function heroSection(ctx) {
     )
     .join("");
 
-  // The first rotating word is server-rendered, so it's visible with JS off
-  // and for anyone who prefers reduced motion.
-  const firstWord = hero.rotatingWords[0] || "";
+  // The first rotating word is server-rendered so it's visible with JS off and
+  // under prefers-reduced-motion. The min-width reserves room for the longest
+  // word — that, not a min-height, is what stops the line reflowing, because
+  // the word collapses to zero width during the delete phase.
+  const words = hero.rotatingWords || [];
+  const longest = words.reduce((max, word) => Math.max(max, word.length), 0);
 
   return `<section class="hero wrap" aria-labelledby="hero-title">
   ${badge}
-  <h1 class="hero-title" id="hero-title">${escapeHtml(hero.headline.replace(/^TODO:?\s*/i, ""))}</h1>
+  <h1 class="hero-title" id="hero-title">${escapeHtml(clean(hero.headline))}</h1>
   <p class="hero-rotator">
     <span>${escapeHtml(hero.rotatingPrefix)}</span>
-    <span class="rotator-word" data-rotator>${escapeHtml(firstWord)}</span>
+    <span class="rotator-word" data-rotator style="min-width:${longest}ch">${escapeHtml(
+    words[0] || ""
+  )}</span>
   </p>
-  <p class="hero-intro">${escapeHtml(hero.intro.replace(/^TODO:?\s*/i, ""))}</p>
+  <p class="hero-intro">${escapeHtml(clean(hero.intro))}</p>
   <div class="hero-actions">
     <a class="btn btn-primary" href="${hero.primaryCta.href}">${escapeHtml(
     hero.primaryCta.label
@@ -247,14 +354,17 @@ function heroSection(ctx) {
 }
 
 function projectCard(ctx, project) {
+  const { ui } = ctx;
+  const title = clean(project.title);
+
   const stack = project.stack.length
-    ? `<ul class="stack" aria-label="Tech stack">${project.stack
+    ? `<ul class="stack" aria-label="${escapeHtml(ui.techStack)}">${project.stack
         .map((tech) => `<li>${escapeHtml(tech)}</li>`)
         .join("")}</ul>`
     : "";
 
   const metrics = project.metrics.length
-    ? `<ul class="metrics" aria-label="Impact metrics">${project.metrics
+    ? `<ul class="metrics" aria-label="${escapeHtml(ui.impactMetrics)}">${project.metrics
         .map(
           (metric) =>
             `<li><span class="metric-value" data-placeholder="${isPlaceholder(
@@ -266,23 +376,25 @@ function projectCard(ctx, project) {
         .join("")}</ul>`
     : "";
 
+  // The accessible name is a whole phrase per language — an English-shaped
+  // "Live demo" plus a " for X" suffix does not survive translation.
   const links = [];
   if (project.demo) {
     links.push(
       `<a class="project-link" href="${escapeHtml(
         project.demo
-      )}" target="_blank" rel="noopener noreferrer">${icons.external}Live demo<span class="hp"> for ${escapeHtml(
-        project.title
-      )}</span></a>`
+      )}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml(
+        fmt(ui.liveDemoFor, { title })
+      )}">${icons.external}${escapeHtml(ui.liveDemo)}</a>`
     );
   }
   if (project.repo) {
     links.push(
       `<a class="project-link" href="${escapeHtml(
         project.repo
-      )}" target="_blank" rel="noopener noreferrer">${icons.github}Source<span class="hp"> for ${escapeHtml(
-        project.title
-      )}</span></a>`
+      )}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml(
+        fmt(ui.sourceFor, { title })
+      )}">${icons.github}${escapeHtml(ui.source)}</a>`
     );
   }
   const linksHtml = links.length ? `<div class="project-links">${links.join("")}</div>` : "";
@@ -295,14 +407,13 @@ function projectCard(ctx, project) {
     .join("");
 
   const left = `<div class="project-head">
-      <h3 class="project-title">${escapeHtml(project.title.replace(/^TODO:?\s*/i, ""))}</h3>
+      <h3 class="project-title">${escapeHtml(title)}</h3>
       <div class="project-meta">${meta}</div>
     </div>
-    <p class="project-tagline">${escapeHtml(project.tagline.replace(/^TODO:?\s*/i, ""))}</p>
-    <p class="project-desc">${escapeHtml(project.description.replace(/^TODO:?\s*/i, ""))}</p>
+    <p class="project-tagline">${escapeHtml(clean(project.tagline))}</p>
+    <p class="project-desc">${escapeHtml(clean(project.description))}</p>
     ${stack}`;
 
-  // Featured cards split into two columns on wide screens.
   if (project.featured) {
     return `<article class="project project-featured reveal">
   <div class="project-body">${left}</div>
@@ -314,6 +425,7 @@ function projectCard(ctx, project) {
 }
 
 function projectsSection(ctx) {
+  const { ui } = ctx;
   const featured = ctx.projects.filter((p) => p.featured);
   const rest = ctx.projects.filter((p) => !p.featured);
 
@@ -321,10 +433,10 @@ function projectsSection(ctx) {
   <div class="wrap">
     <div class="section-head">
       <div>
-        <p class="eyebrow">Selected work</p>
-        <h2 class="section-title" id="work-title">Projects</h2>
+        <p class="eyebrow">${escapeHtml(ui.selectedWork)}</p>
+        <h2 class="section-title" id="work-title">${escapeHtml(ui.projects)}</h2>
       </div>
-      <p class="section-blurb">Things I've designed, built and shipped. Numbers are real outcomes, not vanity metrics.</p>
+      <p class="section-blurb">${escapeHtml(ui.projectsBlurb)}</p>
     </div>
     <div class="project-grid">
       ${[...featured, ...rest].map((project) => projectCard(ctx, project)).join("\n      ")}
@@ -334,11 +446,9 @@ function projectsSection(ctx) {
 }
 
 function aboutSection(ctx) {
-  const { about } = ctx;
+  const { about, ui } = ctx;
 
-  const paragraphs = about.paragraphs
-    .map((text) => `<p>${escapeHtml(text.replace(/^TODO:?\s*/i, ""))}</p>`)
-    .join("");
+  const paragraphs = about.paragraphs.map((text) => `<p>${escapeHtml(clean(text))}</p>`).join("");
 
   const skills = about.skills.length
     ? `<ul class="skills">${about.skills
@@ -359,9 +469,9 @@ function aboutSection(ctx) {
           (entry) => `<li>
         <div class="timeline-period">${escapeHtml(entry.period)}</div>
         <div>
-          <h3 class="timeline-title">${escapeHtml(entry.title.replace(/^TODO:?\s*/i, ""))}</h3>
-          <p class="timeline-org">${escapeHtml(entry.org.replace(/^TODO:?\s*/i, ""))}</p>
-          <p class="timeline-detail">${escapeHtml(entry.detail.replace(/^TODO:?\s*/i, ""))}</p>
+          <h3 class="timeline-title">${escapeHtml(clean(entry.title))}</h3>
+          <p class="timeline-org">${escapeHtml(clean(entry.org))}</p>
+          <p class="timeline-detail">${escapeHtml(clean(entry.detail))}</p>
         </div>
       </li>`
         )
@@ -372,7 +482,7 @@ function aboutSection(ctx) {
   <div class="wrap">
     <div class="section-head">
       <div>
-        <p class="eyebrow">Background</p>
+        <p class="eyebrow">${escapeHtml(ui.background)}</p>
         <h2 class="section-title" id="about-title">${escapeHtml(about.heading)}</h2>
       </div>
     </div>
@@ -391,8 +501,8 @@ function postListItem(ctx, post) {
     : "";
 
   return `<li class="post-item">
-  <a class="post-link" href="${url(ctx, post.path)}">
-    <time class="post-date" datetime="${post.date}">${formatDate(post.date, ctx.site.lang)}</time>
+  <a class="post-link" href="${lurl(ctx, post.path)}">
+    <time class="post-date" datetime="${post.date}">${formatDate(post.date, ctx.locale)}</time>
     <div>
       <h3 class="post-title">${escapeHtml(post.title)}</h3>
       <p class="post-desc">${escapeHtml(post.description)}</p>
@@ -404,26 +514,26 @@ function postListItem(ctx, post) {
 }
 
 function writingSection(ctx) {
-  const { writing, posts } = ctx;
+  const { writing, posts, ui } = ctx;
   const shown = posts.slice(0, writing.homepageCount);
 
   const body = shown.length
     ? `<ul class="post-list">${shown.map((post) => postListItem(ctx, post)).join("")}</ul>`
-    : `<p class="empty-note">No posts yet. Add a markdown file to <code>posts/</code> and it'll appear here.</p>`;
+    : `<p class="empty-note">${ui.noPostsYet}</p>`;
 
   const more =
     posts.length > shown.length
-      ? `<div style="margin-top:1.75rem"><a class="btn btn-secondary" href="${url(
+      ? `<div class="section-more"><a class="btn btn-secondary" href="${lurl(
           ctx,
           "/blog/"
-        )}">All ${posts.length} posts${icons.arrowRight}</a></div>`
+        )}">${escapeHtml(fmt(ui.allPosts, { n: posts.length }))}${icons.arrowRight}</a></div>`
       : "";
 
   return `<section class="section" id="writing" aria-labelledby="writing-title">
   <div class="wrap">
     <div class="section-head">
       <div>
-        <p class="eyebrow">Notes</p>
+        <p class="eyebrow">${escapeHtml(ui.notes)}</p>
         <h2 class="section-title" id="writing-title">${escapeHtml(writing.heading)}</h2>
       </div>
       <p class="section-blurb">${escapeHtml(writing.blurb)}</p>
@@ -434,7 +544,7 @@ function writingSection(ctx) {
 }
 
 function contactSection(ctx) {
-  const { contact, site, social } = ctx;
+  const { contact, site, social, ui } = ctx;
 
   const direct = [
     site.email
@@ -444,11 +554,9 @@ function contactSection(ctx) {
       .filter((item) => item.href && item.icon !== "mail")
       .map(
         (item) =>
-          `<a href="${escapeHtml(
-            item.href
-          )}" target="_blank" rel="noopener noreferrer">${icons[item.icon] || icons.external}${escapeHtml(
-            item.name
-          )}</a>`
+          `<a href="${escapeHtml(item.href)}" target="_blank" rel="noopener noreferrer">${
+            icons[item.icon] || icons.external
+          }${escapeHtml(item.name)}</a>`
       ),
   ]
     .filter(Boolean)
@@ -458,43 +566,55 @@ function contactSection(ctx) {
   <div class="wrap">
     <div class="section-head">
       <div>
-        <p class="eyebrow">Contact</p>
+        <p class="eyebrow">${escapeHtml(ui.contact)}</p>
         <h2 class="section-title" id="contact-title">${escapeHtml(contact.heading)}</h2>
       </div>
     </div>
     <div class="contact-grid">
       <div class="contact-aside reveal">
-        <p>${escapeHtml(contact.blurb.replace(/^TODO:?\s*/i, ""))}</p>
+        <p>${escapeHtml(clean(contact.blurb))}</p>
         <div class="contact-direct">${direct}</div>
       </div>
 
       <form class="form reveal" data-contact-form action="https://api.web3forms.com/submit" method="POST">
         <input type="hidden" name="access_key" value="${escapeHtml(contact.web3formsKey)}">
         <input type="hidden" name="subject" value="${escapeHtml(contact.subject)}">
-        <input type="hidden" name="from_name" value="${escapeHtml(site.name)} portfolio">
+        <input type="hidden" name="from_name" value="${escapeHtml(site.name)} ${escapeHtml(
+    ui.fromNameSuffix
+  )}">
         <input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
 
         <div class="field">
-          <label for="name">Name</label>
-          <input id="name" name="name" type="text" required autocomplete="name" placeholder="Jane Doe" maxlength="100">
+          <label for="name">${escapeHtml(ui.fieldName)}</label>
+          <input id="name" name="name" type="text" required autocomplete="name" placeholder="${escapeHtml(
+            ui.placeholderName
+          )}" maxlength="100">
           <span class="field-error" role="alert"></span>
         </div>
 
         <div class="field">
-          <label for="email">Email</label>
-          <input id="email" name="email" type="email" required autocomplete="email" placeholder="jane@company.com" maxlength="150">
+          <label for="email">${escapeHtml(ui.fieldEmail)}</label>
+          <input id="email" name="email" type="email" required autocomplete="email" placeholder="${escapeHtml(
+            ui.placeholderEmail
+          )}" maxlength="150">
           <span class="field-error" role="alert"></span>
         </div>
 
         <div class="field">
-          <label for="message">Message <span class="hint">— what's the role, or what are you building?</span></label>
-          <textarea id="message" name="message" required placeholder="Hi! We're hiring for…" maxlength="3000"></textarea>
+          <label for="message">${escapeHtml(ui.fieldMessage)} <span class="hint">${escapeHtml(
+    ui.messageHint
+  )}</span></label>
+          <textarea id="message" name="message" required placeholder="${escapeHtml(
+            ui.placeholderMessage
+          )}" maxlength="3000"></textarea>
           <span class="field-error" role="alert"></span>
         </div>
 
         <p class="form-status" data-form-status role="status" aria-live="polite"></p>
 
-        <button class="btn btn-primary" type="submit"><span class="spinner" aria-hidden="true"></span>Send message</button>
+        <button class="btn btn-primary" type="submit"><span class="spinner" aria-hidden="true"></span>${escapeHtml(
+          ui.sendMessage
+        )}</button>
       </form>
     </div>
   </div>
@@ -512,33 +632,34 @@ export function homePage(ctx) {
 
   const page = {
     title: `${ctx.site.name} — ${ctx.site.role}`,
-    description: ctx.site.description.replace(/^TODO:?\s*/i, ""),
+    description: clean(ctx.site.description),
     path: "/",
+    isHome: true,
     activeHref: null,
     schema: {
       "@context": "https://schema.org",
       "@graph": [
         {
           "@type": "Person",
-          "@id": absoluteUrl(ctx, "/#person"),
+          "@id": absoluteUrlIn(ctx, ctx.locale, "/#person"),
           name: ctx.site.name,
           alternateName: ctx.site.shortName,
           jobTitle: ctx.site.role,
           email: `mailto:${ctx.site.email}`,
-          url: absoluteUrl(ctx, "/"),
-          image: absoluteUrl(ctx, "/og.png"),
+          url: absoluteUrlIn(ctx, ctx.locale, "/"),
+          image: absoluteUrlIn(ctx, ctx.locale, "/og.png"),
           address: { "@type": "PostalAddress", addressLocality: ctx.site.location },
           knowsAbout: ctx.site.keywords,
           sameAs: ctx.social.filter((s) => s.href && s.href.startsWith("http")).map((s) => s.href),
         },
         {
           "@type": "WebSite",
-          "@id": absoluteUrl(ctx, "/#website"),
-          url: absoluteUrl(ctx, "/"),
+          "@id": absoluteUrlIn(ctx, ctx.locale, "/#website"),
+          url: absoluteUrlIn(ctx, ctx.locale, "/"),
           name: `${ctx.site.name} — ${ctx.site.role}`,
-          description: ctx.site.description.replace(/^TODO:?\s*/i, ""),
-          publisher: { "@id": absoluteUrl(ctx, "/#person") },
-          inLanguage: ctx.site.lang,
+          description: clean(ctx.site.description),
+          publisher: { "@id": absoluteUrlIn(ctx, ctx.locale, "/#person") },
+          inLanguage: getLocale(ctx.locale).htmlLang,
         },
       ],
     },
@@ -551,11 +672,13 @@ export function homePage(ctx) {
  * Blog index
  * ------------------------------------------------------------------------ */
 export function blogIndexPage(ctx) {
-  const body = `<section class="section" style="border-top:0" aria-labelledby="blog-title">
+  const { ui } = ctx;
+
+  const body = `<section class="section section-flush" aria-labelledby="blog-title">
   <div class="wrap">
     <div class="section-head">
       <div>
-        <p class="eyebrow">Notes</p>
+        <p class="eyebrow">${escapeHtml(ui.notes)}</p>
         <h1 class="section-title" id="blog-title">${escapeHtml(ctx.writing.heading)}</h1>
       </div>
       <p class="section-blurb">${escapeHtml(ctx.writing.blurb)}</p>
@@ -563,30 +686,31 @@ export function blogIndexPage(ctx) {
     ${
       ctx.posts.length
         ? `<ul class="post-list">${ctx.posts.map((post) => postListItem(ctx, post)).join("")}</ul>`
-        : `<p class="empty-note">No posts yet. Add a markdown file to <code>posts/</code> and it'll appear here.</p>`
+        : `<p class="empty-note">${ui.noPostsYet}</p>`
     }
-    <div style="margin-top:2.5rem">
-      <a class="back-link" href="${url(ctx, "/")}">${icons.arrowLeft}Back home</a>
+    <div class="section-more">
+      <a class="back-link" href="${lurl(ctx, "/")}">${icons.arrowLeft}${escapeHtml(ui.backHome)}</a>
     </div>
   </div>
 </section>`;
 
   const page = {
-    title: `Writing — ${ctx.site.shortName}`,
+    title: `${ui.writing} — ${ctx.site.shortName}`,
     description: ctx.writing.blurb,
     path: "/blog/",
     activeHref: "#writing",
     schema: {
       "@context": "https://schema.org",
       "@type": "Blog",
-      name: `${ctx.site.name} — Writing`,
-      url: absoluteUrl(ctx, "/blog/"),
+      name: `${ctx.site.name} — ${ui.writing}`,
+      url: absoluteUrlIn(ctx, ctx.locale, "/blog/"),
+      inLanguage: getLocale(ctx.locale).htmlLang,
       author: { "@type": "Person", name: ctx.site.name },
       blogPost: ctx.posts.map((post) => ({
         "@type": "BlogPosting",
         headline: post.title,
         datePublished: post.date,
-        url: absoluteUrl(ctx, post.path),
+        url: absoluteUrlIn(ctx, ctx.locale, post.path),
       })),
     },
   };
@@ -598,6 +722,8 @@ export function blogIndexPage(ctx) {
  * Blog post
  * ------------------------------------------------------------------------ */
 export function postPage(ctx, post) {
+  const { ui } = ctx;
+
   const tags = post.tags.length
     ? `<ul class="post-tags">${post.tags.map((tag) => `<li>${escapeHtml(tag)}</li>`).join("")}</ul>`
     : "";
@@ -605,12 +731,14 @@ export function postPage(ctx, post) {
   const body = `<article class="article wrap">
   <div class="article-inner">
     <header class="article-header">
-      <a class="back-link" href="${url(ctx, "/blog/")}">${icons.arrowLeft}All writing</a>
+      <a class="back-link" href="${lurl(ctx, "/blog/")}">${icons.arrowLeft}${escapeHtml(
+    ui.allWriting
+  )}</a>
       <h1 class="article-title">${escapeHtml(post.title)}</h1>
       <div class="article-meta">
-        <time datetime="${post.date}">${formatDate(post.date, ctx.site.lang)}</time>
+        <time datetime="${post.date}">${formatDate(post.date, ctx.locale)}</time>
         <span aria-hidden="true">·</span>
-        <span>${post.readingTime} min read</span>
+        <span>${escapeHtml(fmt(ui.minRead, { n: post.readingTime }))}</span>
       </div>
       ${tags}
     </header>
@@ -620,8 +748,10 @@ ${post.html}
     </div>
 
     <footer class="article-footer">
-      <a class="back-link" href="${url(ctx, "/blog/")}">${icons.arrowLeft}All writing</a>
-      <a class="btn btn-secondary" href="${url(ctx, "/")}#contact">Get in touch</a>
+      <a class="back-link" href="${lurl(ctx, "/blog/")}">${icons.arrowLeft}${escapeHtml(
+    ui.allWriting
+  )}</a>
+      <a class="btn btn-secondary" href="${lurl(ctx, "/")}#contact">${escapeHtml(ui.getInTouch)}</a>
     </footer>
   </div>
 </article>`;
@@ -633,6 +763,11 @@ ${post.html}
     activeHref: "#writing",
     ogType: "article",
     publishedTime: post.date,
+    // Only the locales this post actually exists in — keeps hreflang reciprocal.
+    availableIn: post.availableIn,
+    // The visible toggle always needs a destination, so an untranslated post
+    // sends the other language to its blog index rather than a dead URL.
+    toggleTargets: post.toggleTargets,
     schema: {
       "@context": "https://schema.org",
       "@type": "BlogPosting",
@@ -640,17 +775,13 @@ ${post.html}
       description: post.description,
       datePublished: post.date,
       dateModified: post.date,
-      url: absoluteUrl(ctx, post.path),
-      mainEntityOfPage: { "@type": "WebPage", "@id": absoluteUrl(ctx, post.path) },
-      image: absoluteUrl(ctx, "/og.png"),
+      url: absoluteUrlIn(ctx, ctx.locale, post.path),
+      mainEntityOfPage: { "@type": "WebPage", "@id": absoluteUrlIn(ctx, ctx.locale, post.path) },
+      image: absoluteUrlIn(ctx, ctx.locale, "/og.png"),
       keywords: post.tags.join(", "),
       wordCount: post.wordCount,
-      inLanguage: ctx.site.lang,
-      author: {
-        "@type": "Person",
-        name: ctx.site.name,
-        url: absoluteUrl(ctx, "/"),
-      },
+      inLanguage: getLocale(ctx.locale).htmlLang,
+      author: { "@type": "Person", name: ctx.site.name, url: absoluteUrlIn(ctx, ctx.locale, "/") },
       publisher: { "@type": "Person", name: ctx.site.name },
     },
   };
@@ -660,23 +791,53 @@ ${post.html}
 
 /* --------------------------------------------------------------------------
  * 404
+ *
+ * GitHub Pages serves this ONE file for every miss across the whole site,
+ * including under /en/ and at any depth — there is no per-directory 404. So it
+ * shows both languages at once and links into both trees, and the header nav
+ * is suppressed because the page cannot know which tree the visitor was in.
  * ------------------------------------------------------------------------ */
 export function notFoundPage(ctx) {
-  const body = `<section class="section wrap" style="border-top:0;text-align:center">
-  <p class="eyebrow">Error 404</p>
-  <h1 class="hero-title" style="margin-inline:auto;margin-top:.75rem">This page doesn't exist.</h1>
-  <p class="hero-intro" style="margin-inline:auto">The link may be out of date, or the page may have moved. The work is all still on the homepage.</p>
-  <div class="hero-actions" style="justify-content:center">
-    <a class="btn btn-primary" href="${url(ctx, "/")}">Back home${icons.arrowRight}</a>
-    <a class="btn btn-secondary" href="${url(ctx, "/blog/")}">Read the writing</a>
-  </div>
+  const block = (code) => {
+    const ui = UI[code];
+    const loc = getLocale(code);
+    const level = code === ctx.locale ? "1" : "2";
+
+    return `<div class="notfound-block" lang="${loc.htmlLang}" data-lang="${code}">
+    <p class="eyebrow">${escapeHtml(ui.notFoundEyebrow)}</p>
+    <h${level} class="notfound-title">${escapeHtml(ui.notFoundTitle)}</h${level}>
+    <p class="notfound-body">${escapeHtml(ui.notFoundBody)}</p>
+    <div class="hero-actions notfound-actions">
+      <a class="btn btn-primary" href="${urlIn(ctx, code, "/")}">${escapeHtml(ui.backHome)}${
+      icons.arrowRight
+    }</a>
+      <a class="btn btn-secondary" href="${urlIn(ctx, code, "/blog/")}">${escapeHtml(
+      ui.readTheWriting
+    )}</a>
+    </div>
+  </div>`;
+  };
+
+  const body = `<section class="section section-flush wrap notfound">
+  ${LOCALES.map((l) => block(l.code)).join("\n  ")}
 </section>`;
 
-  return layout(ctx, {
-    title: `Page not found — ${ctx.site.shortName}`,
-    description: "The page you were looking for doesn't exist.",
-    path: "/404.html",
-    activeHref: null,
-    schema: { "@context": "https://schema.org", "@type": "WebPage", name: "Page not found" },
-  }, body);
+  return layout(
+    ctx,
+    {
+      title: `${ctx.ui.notFoundName} — ${ctx.site.shortName}`,
+      description: ctx.ui.notFoundDescription,
+      path: "/404.html",
+      activeHref: null,
+      neutralLang: true,
+      noindex: true,
+      noCanonical: true,
+      availableIn: [ctx.locale],
+      // Only the root 404 is ever served, so there is no /en/404.html to
+      // point at — send the toggle to each language's homepage instead.
+      toggleTargets: { mn: "/", en: "/" },
+      schema: { "@context": "https://schema.org", "@type": "WebPage", name: ctx.ui.notFoundName },
+    },
+    body
+  );
 }

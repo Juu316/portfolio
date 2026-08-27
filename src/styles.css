@@ -1289,8 +1289,10 @@ button {
   display: block;
 }
 
-/* Honeypot — hidden from humans, catches naive bots */
-.hp {
+/* Visually hidden but read aloud. Used for the form honeypot (hidden from
+   humans, catches naive bots) and for screen-reader-only label text. */
+.hp,
+.sr-only {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -1468,4 +1470,148 @@ button {
     font-size: 0.8em;
     color: #555;
   }
+}
+
+/* --------------------------------------------------------------------------
+   Language toggle
+   A segmented pill of two plain links — no JavaScript involved, so it works
+   with JS off and can never flash the wrong language.
+   -------------------------------------------------------------------------- */
+.lang {
+  display: inline-flex;
+  align-items: stretch;
+  flex: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elev);
+  overflow: hidden;
+  margin-inline-end: 0.25rem;
+}
+
+.lang-opt {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  min-width: 2.5rem;
+  height: 2.25rem;
+  padding-inline: 0.2rem;
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+  /* --text-faint only reaches 4.37:1 on --bg-elev in dark mode. */
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.15s var(--ease), background-color 0.15s var(--ease);
+}
+
+/* Extends the touch target vertically to ~48px without changing the visual
+   size. Two small adjacent controls next to the theme button are the most
+   plausible way to lose Lighthouse's tap-target audit. */
+.lang-opt::after {
+  content: "";
+  position: absolute;
+  inset: -0.4rem 0;
+}
+
+.lang-opt + .lang-opt {
+  border-left: 1px solid var(--border);
+}
+
+.lang-opt:hover {
+  color: var(--text);
+  background: var(--bg-sunken);
+}
+
+.lang-opt[aria-current="page"] {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.lang-opt[aria-current="page"]:hover {
+  background: var(--accent-hover);
+  color: var(--accent-contrast);
+}
+
+/* --------------------------------------------------------------------------
+   Small layout utilities (previously inline styles)
+   -------------------------------------------------------------------------- */
+.section-flush {
+  border-top: 0;
+}
+
+.section-more {
+  margin-top: 2rem;
+}
+
+/* --------------------------------------------------------------------------
+   404
+   GitHub Pages serves one 404 for the whole site, so it carries both
+   languages at once and links into both trees.
+   -------------------------------------------------------------------------- */
+.notfound {
+  text-align: center;
+}
+
+.notfound-block + .notfound-block {
+  margin-top: clamp(2.5rem, 6vw, 4rem);
+  padding-top: clamp(2.5rem, 6vw, 4rem);
+  border-top: 1px solid var(--border);
+}
+
+.notfound-title {
+  font-size: clamp(1.6rem, 1.2rem + 2vw, 2.5rem);
+  letter-spacing: -0.03em;
+  margin-block: 0.75rem 1rem;
+}
+
+.notfound-body {
+  color: var(--text-muted);
+  max-width: 48ch;
+  margin-inline: auto;
+}
+
+.notfound-actions {
+  justify-content: center;
+}
+
+/* --------------------------------------------------------------------------
+   Mongolian
+   Scoped to [lang="mn"] so the English tree stays byte-identical. Mongolian
+   phrasing runs longer than English, which overflows anything sized for
+   Latin text or pinned with white-space: nowrap.
+   -------------------------------------------------------------------------- */
+html[lang="mn"] .hero-title {
+  /* 18ch is tuned for English and would stack Mongolian to five lines,
+     pushing the call-to-action below the fold. */
+  max-width: 24ch;
+}
+
+html[lang="mn"] .hero-intro {
+  max-width: 58ch;
+}
+
+html[lang="mn"] .btn,
+html[lang="mn"] .project-link {
+  /* "Мессеж илгээх" and friends are simply longer than the button. */
+  white-space: normal;
+  text-align: center;
+}
+
+html[lang="mn"] .eyebrow,
+html[lang="mn"] .skill-group-name {
+  /* Letter-spacing tuned for Latin caps is too airy for Cyrillic. */
+  letter-spacing: 0.05em;
+}
+
+@media (min-width: 44rem) {
+  html[lang="mn"] .timeline li {
+    /* "2025 — одоог хүртэл" does not fit the 11rem English column. */
+    grid-template-columns: 13rem 1fr;
+  }
+}
+
+/* The 404 carries an English block inside a Mongolian document, so put the
+   English measurements back for that subtree. */
+html[lang="mn"] [lang="en"] .btn {
+  white-space: nowrap;
 }

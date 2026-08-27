@@ -1,7 +1,8 @@
 {
-  "name": "Usukh-Erdene Choijamts — Full-stack Developer",
+  "name": "Үсүх-Эрдэнэ Чойжамц — Full-stack хөгжүүлэгч",
   "short_name": "magixx",
-  "description": "Full-stack developer building fast, reliable web products. I care about performance, clean data models, and shipping things people actually use.",
+  "description": "Хурдан, найдвартай вэб бүтээгдэхүүн хөгжүүлдэг full-stack хөгжүүлэгч. Гүйцэтгэл, цэвэр өгөгдлийн загвар, хэрэглэгчдэд үнэхээр хэрэгтэй бүтээгдэхүүнд анхаардаг.",
+  "lang": "mn",
   "start_url": "/portfolio/",
   "scope": "/portfolio/",
   "display": "standalone",

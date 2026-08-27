@@ -1,24 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://juu316.github.io/portfolio/</loc>
+      <xhtml:link rel="alternate" hreflang="mn" href="https://juu316.github.io/portfolio/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://juu316.github.io/portfolio/en/"/>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://juu316.github.io/portfolio/en/</loc>
+      <xhtml:link rel="alternate" hreflang="mn" href="https://juu316.github.io/portfolio/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://juu316.github.io/portfolio/en/"/>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://juu316.github.io/portfolio/blog/</loc>
+      <xhtml:link rel="alternate" hreflang="mn" href="https://juu316.github.io/portfolio/blog/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://juu316.github.io/portfolio/en/blog/"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://juu316.github.io/portfolio/en/blog/</loc>
+      <xhtml:link rel="alternate" hreflang="mn" href="https://juu316.github.io/portfolio/blog/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://juu316.github.io/portfolio/en/blog/"/>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://juu316.github.io/portfolio/blog/how-this-site-is-built/</loc>
     <lastmod>2026-08-27</lastmod>
+      <xhtml:link rel="alternate" hreflang="mn" href="https://juu316.github.io/portfolio/blog/how-this-site-is-built/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://juu316.github.io/portfolio/en/blog/how-this-site-is-built/"/>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://juu316.github.io/portfolio/en/blog/how-this-site-is-built/</loc>
+    <lastmod>2026-08-27</lastmod>
+      <xhtml:link rel="alternate" hreflang="mn" href="https://juu316.github.io/portfolio/blog/how-this-site-is-built/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://juu316.github.io/portfolio/en/blog/how-this-site-is-built/"/>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://juu316.github.io/portfolio/blog/template-what-i-learned/</loc>
     <lastmod>2026-08-20</lastmod>
+      <xhtml:link rel="alternate" hreflang="mn" href="https://juu316.github.io/portfolio/blog/template-what-i-learned/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://juu316.github.io/portfolio/en/blog/template-what-i-learned/"/>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://juu316.github.io/portfolio/en/blog/template-what-i-learned/</loc>
+    <lastmod>2026-08-20</lastmod>
+      <xhtml:link rel="alternate" hreflang="mn" href="https://juu316.github.io/portfolio/blog/template-what-i-learned/"/>
+      <xhtml:link rel="alternate" hreflang="en" href="https://juu316.github.io/portfolio/en/blog/template-what-i-learned/"/>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
