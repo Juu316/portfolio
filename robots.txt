@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://juu316.github.io/portfolio/sitemap.xml

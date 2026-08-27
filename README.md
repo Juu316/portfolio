@@ -124,9 +124,13 @@ src/markdown.js  markdown renderer
 src/og.js        social-preview PNG generator (Latin + Cyrillic bitmap font)
 ```
 
-Everything else in the repo root is **generated output** and is wiped and
-rewritten on every build. It's committed so the site works even if CI is down,
-and regenerated on every deploy so it can't drift.
+Everything else in the repo root is **generated output** — wiped and rewritten
+on every build, and **not committed** (see `.gitignore`). CI runs
+`node build.js` before uploading to Pages, so the live site is always built
+fresh from source and diffs stay source-only.
+
+After a fresh clone, run `npm run build` (or `npm run dev`) to produce a local
+copy of the site.
 
 ### URL layout
 
@@ -217,6 +221,7 @@ Handled automatically, but the rules are easy to break by hand:
 2. Add that key to the pairs in `content.js`. Missing keys fall back and are
    reported — they don't break the build.
 3. Name post files `<name>.<code>.md`.
+4. Add the new output directory to `.gitignore` (it's generated output).
 
 Everything else — routing, hreflang, sitemap, feeds, the toggle — follows.
 
