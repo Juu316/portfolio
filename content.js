@@ -35,7 +35,7 @@ export const site = {
   // IDENTITY
   // ---------------------------------------------------------------------
   name: {
-    mn: "Үсүх-Эрдэнэ Чойжамц", // TODO: check this spelling is how you write it
+    mn: "Өсөх-Эрдэнэ Чойжамц", // TODO: check this spelling is how you write it
     en: "Usukh-Erdene Choijamts",
   },
 

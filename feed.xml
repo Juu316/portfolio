@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>Үсүх-Эрдэнэ Чойжамц — Нийтлэл</title>
+    <title>Өсөх-Эрдэнэ Чойжамц — Нийтлэл</title>
     <link>https://juu316.github.io/portfolio/blog/</link>
     <description>Миний бүтээж, эвдэж үзсэн зүйлсийн тухай тэмдэглэл. Ажлынхаа тухай бичих нь сэтгэлгээгээ харуулах хамгийн хямд арга — ажил олгогчид үүнийг уншдаг.</description>
     <language>mn</language>
-    <lastBuildDate>Thu, 27 Aug 2026 13:27:42 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 27 Aug 2026 13:56:21 GMT</lastBuildDate>
     <atom:link href="https://juu316.github.io/portfolio/feed.xml" rel="self" type="application/rss+xml"/>
     <item>
       <title>Энэ портфолио framework-гүйгээр яаж хурдан ажилладаг вэ</title>
