@@ -1,19 +1,16 @@
 {
   "name": "portfolio",
   "version": "1.0.0",
-  "description": "",
-  "main": "magixx.js",
+  "private": true,
+  "description": "Developer portfolio — static site, zero dependencies",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "magixx": "node magixx.js",
-    "dev": "pnpm dlx @tailwindcss/cli -i ./magixx.css -o ./output.css --watch && nodemon magixx.js"
+    "build": "node build.js",
+    "dev": "node serve.js",
+    "check": "node build.js --quiet && node check.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.33.0",
-  "dependencies": {
-    "@tailwindcss/cli": "^4.2.4",
-    "tailwindcss": "^4.2.4"
-  }
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
 }

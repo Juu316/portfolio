@@ -1,0 +1,23 @@
+{
+  "name": "Usukh-Erdene Choijamts — Full-stack Developer",
+  "short_name": "magixx",
+  "description": "Full-stack developer building fast, reliable web products. I care about performance, clean data models, and shipping things people actually use.",
+  "start_url": "/portfolio/",
+  "scope": "/portfolio/",
+  "display": "standalone",
+  "background_color": "#0c0d11",
+  "theme_color": "#0c0d11",
+  "icons": [
+    {
+      "src": "/portfolio/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/portfolio/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
