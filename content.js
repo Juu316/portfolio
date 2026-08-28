@@ -52,11 +52,11 @@ export const site = {
     en: "Ulaanbaatar, Mongolia",
   },
 
-  email: "uujuu316@gmail.com", // TODO: the address recruiters should use
+  email: "iikii427@proton.me", // TODO: the address recruiters should use
 
   // One sentence. Shows in Google results and link previews. 140–160 chars.
   description: {
-    mn: "TODO: Хурдан, найдвартай вэб бүтээгдэхүүн хөгжүүлдэг full-stack хөгжүүлэгч. Гүйцэтгэл, цэвэр өгөгдлийн загвар, хэрэглэгчдэд үнэхээр хэрэгтэй бүтээгдэхүүнд анхаардаг.",
+    mn: "TODO: Хурдан, найдвартай вэбсайт хөгжүүлдэг full-stack developer. Гүйцэтгэл, хэрэглэгчдэд үнэхээр хэрэгтэй бүтээгдэхүүнд анхаардаг.",
     en: "TODO: Full-stack developer building fast, reliable web products. I care about performance, clean data models, and shipping things people actually use.",
   },
 
@@ -77,12 +77,12 @@ export const site = {
 // -------------------------------------------------------------------------
 export const hero = {
   eyebrow: {
-    mn: "Шинэ боломжид нээлттэй", // TODO — or set both to "" to hide
+    mn: "Full-time ажил хайж байна", // TODO — or set both to "" to hide
     en: "Available for new opportunities",
   },
 
   headline: {
-    mn: "Би вэбд хурдан, хэрэгтэй зүйлс бүтээдэг.", // TODO
+    mn: "Би вэбд хурдан, хэрэгтэй бүтээдэг.", // TODO
     en: "I build fast, useful things for the web.",
   },
 
