@@ -8,6 +8,13 @@ interface Props {
 
 const { locale } = Astro.props;
 const thanks = new URL(localeUrl(locale, "thanks/"), Astro.site);
+const bare = (url: string) => url.replace(/^https:\/\/(www\.)?/, "").replace(/\/$/, "");
+const links = [
+  { href: person.github, label: bare(person.github), rel: "me" },
+  { href: person.instagram, label: bare(person.instagram), rel: "me noopener" },
+  { href: person.facebook, label: bare(person.facebook), rel: "me noopener" },
+  { href: `tel:+976${person.phone}`, label: person.phone },
+];
 ---
 
 <section id="contact" class="wrap contact" aria-labelledby="contact-title">
@@ -20,11 +27,15 @@ const thanks = new URL(localeUrl(locale, "thanks/"), Astro.site);
       <a class="email display" href={`mailto:${person.email}`}>
         {person.email}
       </a>
-      <p class="also">
-        <a href={person.github} rel="me">
-          github.com/Juu316
-        </a>
-      </p>
+      <ul class="also">
+        {links.map((link) => (
+          <li>
+            <a href={link.href} rel={link.rel}>
+              {link.label}
+            </a>
+          </li>
+        ))}
+      </ul>
     </div>
 
     {/* Plain HTML POST: Web3Forms emails the message and redirects to /thanks/. */}
@@ -71,7 +82,11 @@ const thanks = new URL(localeUrl(locale, "thanks/"), Astro.site);
   }
 
   .also {
+    display: grid;
+    gap: var(--space-2);
     margin-top: var(--space-4);
+    padding: 0;
+    list-style: none;
     color: var(--muted);
   }
 

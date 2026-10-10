@@ -12,7 +12,6 @@ const { locale, path } = Astro.props;
 const home = localeUrl(locale);
 const other = otherLocale(locale);
 const links = [
-  { href: `${home}#work`, label: t(locale, "work") },
   { href: `${home}#about`, label: t(locale, "about") },
   { href: `${home}#contact`, label: t(locale, "contact") },
 ];
@@ -37,7 +36,8 @@ const links = [
       lang={other}
       aria-label={t(locale, "switchLanguageLabel")}
     >
-      {t(locale, "switchLanguage")}
+      <span class="full">{t(locale, "switchLanguage")}</span>
+      <span class="short">{t(locale, "switchLanguageShort")}</span>
     </a>
   </div>
 </header>
@@ -85,11 +85,44 @@ const links = [
     border-left: 1px solid var(--rule);
   }
 
-  /* The switch wraps onto its own row here, so the divider has nothing to divide. */
+  .short {
+    display: none;
+  }
+
+  /*
+   * Below desktop the header keeps only the nav and the language switch on
+   * one row; the socials are repeated in the contact section and the footer.
+   */
+  @media (max-width: 63.99rem) {
+    .inner {
+      flex-wrap: nowrap;
+      gap: var(--space-5);
+    }
+
+    .inner :global(.socials) {
+      display: none;
+    }
+  }
+
   @media (max-width: 47.99rem) {
+    .inner {
+      gap: var(--space-4);
+    }
+
+    ul {
+      gap: var(--space-4);
+    }
+
     .lang {
-      padding-left: 0;
-      border-left: 0;
+      padding-left: var(--space-4);
+    }
+
+    .full {
+      display: none;
+    }
+
+    .short {
+      display: inline;
     }
   }
 </style>

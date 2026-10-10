@@ -1,0 +1,90 @@
+---
+/**
+ * A crewmate that drifts after the pointer, after natsha.me. Mouse/trackpad
+ * only and off under reduced motion; the GIF is only fetched once enabled.
+ */
+---
+
+<style is:global>
+  /* Created by the script below, so the page has no image without it. */
+  .cursor-buddy {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 4;
+    width: 80px;
+    height: 80px;
+    pointer-events: none;
+    will-change: transform;
+  }
+</style>
+
+<script>
+  const SIZE = 80;
+  // natsha.me lerps at 90 Hz by these factors; y trails x for the floaty drift.
+  const TICK = 1000 / 90;
+  const EASE_X = (5 * TICK) / 1000;
+  const EASE_Y = (3 * TICK) / 1000;
+
+  const enabled =
+    matchMedia("(pointer: fine)").matches &&
+    !matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (enabled) {
+    let buddy: HTMLImageElement | null = null;
+    let pointer = { x: innerWidth / 2, y: innerHeight };
+    let pos = { x: pointer.x + scrollX, y: pointer.y + scrollY };
+    let target = { ...pos };
+    let last = 0;
+    let frame = 0;
+
+    const clampTarget = () => {
+      const root = document.documentElement;
+      target = {
+        x: Math.min(pointer.x + scrollX, root.clientWidth - SIZE),
+        y: Math.min(pointer.y + scrollY, root.scrollHeight - SIZE),
+      };
+    };
+
+    const step = (now: number) => {
+      const dt = last ? now - last : TICK;
+      last = now;
+      pos.x += (target.x - pos.x) * (1 - (1 - EASE_X) ** (dt / TICK));
+      pos.y += (target.y - pos.y) * (1 - (1 - EASE_Y) ** (dt / TICK));
+      if (!buddy) return;
+      buddy.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
+      if (Math.abs(target.x - pos.x) > 0.5 || Math.abs(target.y - pos.y) > 0.5) {
+        frame = requestAnimationFrame(step);
+      } else {
+        frame = 0;
+      }
+    };
+
+    const wake = () => {
+      clampTarget();
+      if (!frame) {
+        last = 0;
+        frame = requestAnimationFrame(step);
+      }
+    };
+
+    addEventListener(
+      "pointermove",
+      (e) => {
+        if (e.pointerType !== "mouse") return;
+        pointer = { x: e.clientX, y: e.clientY };
+        if (!buddy) {
+          buddy = new Image(SIZE, SIZE);
+          buddy.className = "cursor-buddy";
+          buddy.alt = "";
+          buddy.setAttribute("aria-hidden", "true");
+          buddy.src = `${import.meta.env.BASE_URL}amongus.gif`;
+          document.body.append(buddy);
+        }
+        wake();
+      },
+      { passive: true },
+    );
+    addEventListener("scroll", wake, { passive: true });
+  }
+</script>

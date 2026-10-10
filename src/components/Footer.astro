@@ -15,17 +15,19 @@ const { locale } = Astro.props;
     © {new Date().getFullYear()} {person.name[locale]}
   </p>
   <p>{t(locale, "footerNote")}</p>
-  <ul>
-    <li>
-      <a href={`mailto:${person.email}`}>{person.email}</a>
-    </li>
-    <li>
-      <a href={person.github} rel="me">
-        GitHub
-      </a>
-    </li>
-  </ul>
-  <Socials />
+  <div class="links">
+    <ul>
+      <li>
+        <a href={`mailto:${person.email}`}>{person.email}</a>
+      </li>
+      <li>
+        <a href={person.github} rel="me">
+          GitHub
+        </a>
+      </li>
+    </ul>
+    <Socials />
+  </div>
 </footer>
 
 <style>
@@ -40,11 +42,29 @@ const { locale } = Astro.props;
     font-size: var(--step--1);
   }
 
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3) var(--space-5);
+    margin-left: auto;
+  }
+
   ul {
     display: flex;
     gap: var(--space-5);
-    margin-left: auto;
     padding: 0;
     list-style: none;
+  }
+
+  /* Too narrow for one row: stack, everything left-aligned. */
+  @media (max-width: 63.99rem) {
+    .site-footer {
+      flex-direction: column;
+    }
+
+    .links {
+      margin-left: 0;
+    }
   }
 </style>

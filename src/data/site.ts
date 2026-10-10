@@ -20,6 +20,8 @@ export const person = {
   instagram: "https://www.instagram.com/uujuu316/",
   facebook: "https://www.facebook.com/uujuu316",
   phone: "80383316",
+  /** In public/; one PDF for both locales. */
+  resume: "resume.pdf",
 };
 
 /** The one sentence under the name. Built from what the three projects actually do. */
@@ -29,10 +31,7 @@ export const statement: Localized = {
 };
 
 /** src: owner CV 2026-08-24 ("Бүтэн цагийн"). Set to null to hide. */
-export const availability: Localized | null = {
-  mn: "Full-time ажлын саналд нээлттэй",
-  en: "Open to full-time roles",
-};
+export const availability: Localized | null = null;
 
 /** src: owner CV 2026-08-24 (intro paragraph) and git history. */
 export const about: Localized<string[]> = {
@@ -88,22 +87,28 @@ export const expertise: { group: Localized; items: string[] }[] = [
   },
 ];
 
-type Entry = { period: string | Localized; org: Localized; detail: Localized };
+type Entry = {
+  period: string | Localized;
+  org: Localized;
+  role: Localized;
+  points?: Localized<string[]>;
+};
 
 /** src: owner CV 2026-08-24. */
 export const experience: Entry[] = [
   {
     period: { mn: "2025.12 – одоо", en: "2025.12 – present" },
     org: { mn: "Мон Тай Сино Групп ХХК (GTC Mongolia)", en: "Mon Thai Sino Group (GTC Mongolia)" },
-    detail: {
-      mn: "Full-stack хөгжүүлэгч. global-travel.mn, orchuulga.mn. 2 хүнтэй баг удирдсан.",
-      en: "Full-stack developer. global-travel.mn and orchuulga.mn. Led a team of two.",
+    role: { mn: "Full-stack хөгжүүлэгч", en: "Full-stack developer" },
+    points: {
+      mn: ["global-travel.mn, orchuulga.mn", "2 хүнтэй баг удирдсан."],
+      en: ["global-travel.mn and orchuulga.mn", "Led a team of two."],
     },
   },
   {
     period: "2024.05 – 2024.06",
     org: { mn: "IT Park", en: "IT Park" },
-    detail: { mn: "Дадлагажигч", en: "Intern" },
+    role: { mn: "Дадлагажигч", en: "Intern" },
   },
 ];
 
@@ -115,7 +120,7 @@ export const education: Entry[] = [
   {
     period: "2024 – 2025",
     org: { mn: "Pinecone Academy", en: "Pinecone Academy" },
-    detail: {
+    role: {
       mn: "Full Stack Software Engineer хөтөлбөр",
       en: "Full Stack Software Engineer programme",
     },
@@ -123,7 +128,7 @@ export const education: Entry[] = [
   {
     period: "2022 – 2023",
     org: { mn: "King's Own Institute, Австрали", en: "King's Own Institute, Australia" },
-    detail: {
+    role: {
       mn: "Мэдээллийн технологи, бакалаврын хөтөлбөрт суралцсан",
       en: "Studied for a bachelor's in IT",
     },
@@ -131,7 +136,7 @@ export const education: Entry[] = [
   {
     period: "2021 – 2022",
     org: { mn: "ШУТИС", en: "Mongolian University of Science and Technology" },
-    detail: {
+    role: {
       mn: "Мэдээллийн технологи, бакалаврын хөтөлбөрт суралцсан",
       en: "Studied for a bachelor's in IT",
     },

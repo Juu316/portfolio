@@ -3,7 +3,7 @@ import { getCollection } from "astro:content";
 import Base from "../layouts/Base.astro";
 import ProjectIndex from "./ProjectIndex.astro";
 import Contact from "./Contact.astro";
-import { otherLocale, splitId, t, type Locale } from "../i18n/ui";
+import { splitId, t, type Locale } from "../i18n/ui";
 import {
   about,
   availability,
@@ -23,24 +23,84 @@ const { locale } = Astro.props;
 const projects = (await getCollection("projects", (p) => splitId(p.id).locale === locale)).sort(
   (a, b) => a.data.order - b.data.order,
 );
-const other = otherLocale(locale);
 ---
 
 <Base locale={locale} description={statement[locale]}>
-  <section class="hero wrap" aria-labelledby="hero-name">
-    <h1 id="hero-name" class="display">
-      {person.name[locale]}
-    </h1>
-    {/* The name in the other script: the site is written for both readers. */}
-    <p class="alt-name" lang={other}>
-      {person.name[other]}
-    </p>
-    <p class="role">
-      {person.role[locale]}, {person.location[locale]}
-    </p>
-    <p class="statement">{statement[locale]}</p>
-    {availability && <p class="cta">{availability[locale]}</p>}
-  </section>
+  <div class="hero wrap">
+    <section class="intro" aria-labelledby="hero-name">
+      <h1 id="hero-name" class="display">
+        {person.name[locale]}
+      </h1>
+      <p class="role">
+        {person.role[locale]}, {person.location[locale]}
+      </p>
+      <a class="resume" href={`${import.meta.env.BASE_URL}${person.resume}`} download>
+        {/* Lucide "download" icon. */}
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path d="M12 15V3"></path>
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <path d="m7 10 5 5 5-5"></path>
+        </svg>
+        {t(locale, "downloadResume")}
+      </a>
+      <p class="statement">{statement[locale]}</p>
+      {availability && <p class="cta">{availability[locale]}</p>}
+    </section>
+
+    <section id="background" aria-labelledby="background-title">
+      <h2 class="section-title" id="background-title">
+        {t(locale, "background")}
+      </h2>
+      {/* Radio-driven tabs: no client JS, arrow keys switch between them. */}
+      <div class="tabs">
+        <input type="radio" name="bg-tab" id="tab-work" class="visually-hidden" checked />
+        <input type="radio" name="bg-tab" id="tab-education" class="visually-hidden" />
+        <div class="switch">
+          <label for="tab-work">{t(locale, "experience")}</label>
+          <label for="tab-education">{t(locale, "education")}</label>
+        </div>
+        <div class="card">
+          {[
+            { key: "work", entries: experience },
+            { key: "education", entries: education },
+          ].map((list) => (
+            <ol class:list={["timeline", list.key]}>
+              {list.entries.map((entry) => (
+                <li>
+                  <h3>{entry.org[locale]}</h3>
+                  <p class="meta">
+                    <span>{entry.role[locale]}</span>
+                    <span class="period">
+                      {typeof entry.period === "string" ? entry.period : entry.period[locale]}
+                    </span>
+                  </p>
+                  {entry.points && (
+                    <ul>
+                      {entry.points[locale].map((point) => (
+                        <li>{point}</li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              ))}
+            </ol>
+          ))}
+        </div>
+      </div>
+      <p class="languages">
+        <strong>{t(locale, "languages")}:</strong> {languages[locale]}
+      </p>
+    </section>
+  </div>
 
   <ProjectIndex locale={locale} projects={projects} />
 
@@ -60,37 +120,6 @@ const other = otherLocale(locale);
     </dl>
   </section>
 
-  <section id="background" class="wrap block" aria-labelledby="background-title">
-    <h2 class="section-title" id="background-title">
-      {t(locale, "background")}
-    </h2>
-    <div class="background">
-      {[
-        { title: t(locale, "experience"), entries: experience },
-        { title: t(locale, "education"), entries: education },
-      ].map((list) => (
-        <div>
-          <h3>{list.title}</h3>
-          <dl class="timeline">
-            {list.entries.map((entry) => (
-              <div>
-                <dt>{entry.org[locale]}</dt>
-                <dd class="period">
-                  {typeof entry.period === "string" ? entry.period : entry.period[locale]}
-                </dd>
-                <dd>{entry.detail[locale]}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      ))}
-      <div>
-        <h3>{t(locale, "languages")}</h3>
-        <p class="languages">{languages[locale]}</p>
-      </div>
-    </div>
-  </section>
-
   <section id="about" class="wrap block" aria-labelledby="about-title">
     <h2 class="section-title" id="about-title">
       {t(locale, "about")}
@@ -107,24 +136,54 @@ const other = otherLocale(locale);
 
 <style>
   .hero {
-    padding-block: var(--space-8) var(--space-7);
+    padding-block: var(--space-6) var(--space-7);
+  }
+
+  #background {
+    margin-top: var(--space-7);
+  }
+
+  /* Desktop: the timeline sits beside the intro. */
+  @media (min-width: 64rem) {
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 32rem);
+      gap: var(--space-7);
+      align-items: start;
+    }
+
+    #background {
+      margin-top: 0;
+    }
   }
 
   h1 {
-    font-size: clamp(2.6rem, 1.6rem + 4.5vw, 5.75rem);
-    line-height: 1;
-    max-width: 12ch;
-  }
-
-  .alt-name {
-    margin-top: var(--space-4);
-    color: var(--muted);
-    font-size: var(--step-1);
+    font-size: var(--step-3);
+    line-height: 1.1;
   }
 
   .role {
-    margin-top: var(--space-7);
+    margin-top: var(--space-4);
     font-weight: 600;
+  }
+
+  .resume {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+    color: var(--ink);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .resume:hover {
+    text-decoration: underline;
+  }
+
+  .resume svg {
+    width: 1.1em;
+    height: 1.1em;
   }
 
   .statement {
@@ -132,11 +191,6 @@ const other = otherLocale(locale);
     max-width: 52ch;
     font-size: var(--step-1);
     line-height: 1.45;
-  }
-
-  .cta {
-    margin-top: var(--space-6);
-    color: var(--muted);
   }
 
   .block {
@@ -158,41 +212,139 @@ const other = otherLocale(locale);
     color: var(--muted);
   }
 
-  .background {
+  .tabs {
+    max-width: 48rem;
+  }
+
+  .switch {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-    gap: var(--space-6) var(--space-5);
-  }
-
-  h3 {
-    font-size: var(--step-0);
-    font-weight: 600;
-    color: var(--muted);
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-1);
+    padding: var(--space-1);
     margin-bottom: var(--space-4);
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-frame);
   }
 
-  .timeline > div + div {
-    margin-top: var(--space-5);
+  .switch label {
+    padding: var(--space-2) var(--space-3);
+    white-space: nowrap;
+    border-radius: calc(var(--radius-frame) - 4px);
+    color: var(--muted);
+    text-align: center;
+    cursor: pointer;
   }
 
-  .timeline dt {
-    margin-bottom: 0;
+  .switch label:hover {
+    color: var(--ink);
   }
 
-  .timeline dd + dd {
+  #tab-work:checked ~ .switch [for="tab-work"],
+  #tab-education:checked ~ .switch [for="tab-education"] {
+    background: var(--paper);
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  #tab-work:focus-visible ~ .switch [for="tab-work"],
+  #tab-education:focus-visible ~ .switch [for="tab-education"] {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .card {
+    padding: var(--space-4);
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-frame);
+  }
+
+  @media (max-width: 29.99rem) {
+    .switch {
+      font-size: var(--step--1);
+    }
+  }
+
+  @media (min-width: 40rem) {
+    .card {
+      padding: var(--space-5);
+    }
+  }
+
+  #tab-work:checked ~ .card .education,
+  #tab-education:checked ~ .card .work {
+    display: none;
+  }
+
+  .timeline {
+    position: relative;
+    margin: 0;
+    padding: 0 0 0 var(--space-5);
+    list-style: none;
+  }
+
+  /* The vertical line the dots sit on. */
+  .timeline::before {
+    content: "";
+    position: absolute;
+    inset-block: 0.5rem;
+    left: 0.3rem;
+    width: 1px;
+    background: var(--rule);
+  }
+
+  .timeline > li {
+    position: relative;
+  }
+
+  .timeline > li + li {
+    margin-top: var(--space-6);
+  }
+
+  .timeline > li::before {
+    content: "";
+    position: absolute;
+    top: 0.45em;
+    left: calc(-1 * var(--space-5));
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background: var(--ink);
+  }
+
+  .timeline h3 {
+    font-size: var(--step-1);
+    font-weight: 600;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0 var(--space-4);
     margin-top: var(--space-1);
+    color: var(--muted);
   }
 
   .period {
+    white-space: nowrap;
+    font-size: var(--step--1);
     font-variant-numeric: tabular-nums;
   }
 
-  .timeline dd:not(.period) {
-    color: var(--ink);
+  .timeline ul {
+    margin: var(--space-2) 0 0;
+    padding-left: var(--space-5);
+    list-style: disc;
+  }
+
+  .timeline ul li + li {
+    margin-top: var(--space-1);
   }
 
   .languages {
-    color: var(--ink);
+    margin-top: var(--space-5);
   }
 
   .about {
