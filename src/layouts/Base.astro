@@ -8,7 +8,9 @@ import SpaceBackground from "../components/SpaceBackground.astro";
 import Footer from "../components/Footer.astro";
 import { LOCALES, OG_LOCALE, localeUrl, t, type Locale } from "../i18n/ui";
 import { person } from "../data/site";
-import defaultOg from "../assets/projects/b2c/home.webp";
+// The site's own homepage, shot by `npm run capture -- og`.
+import ogMn from "../assets/og/home-mn.webp";
+import ogEn from "../assets/og/home-en.webp";
 
 // Only the three subsets Mongolian and English text actually use. Ө and Ү
 // live in cyrillic-ext, so it is preloaded alongside cyrillic.
@@ -27,7 +29,14 @@ interface Props {
   noindex?: boolean;
 }
 
-const { locale, title, description, path = "", ogImage = defaultOg, noindex = false } = Astro.props;
+const {
+  locale,
+  title,
+  description,
+  path = "",
+  ogImage = locale === "mn" ? ogMn : ogEn,
+  noindex = false,
+} = Astro.props;
 
 const name = person.name[locale];
 const fullTitle = title ? `${title} — ${name}` : `${name} — ${person.role[locale]}`;
