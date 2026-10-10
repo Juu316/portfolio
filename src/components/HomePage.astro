@@ -4,7 +4,16 @@ import Base from "../layouts/Base.astro";
 import ProjectIndex from "./ProjectIndex.astro";
 import Contact from "./Contact.astro";
 import { otherLocale, splitId, t, type Locale } from "../i18n/ui";
-import { about, availability, expertise, person, statement } from "../data/site";
+import {
+  about,
+  availability,
+  education,
+  experience,
+  expertise,
+  languages,
+  person,
+  statement,
+} from "../data/site";
 
 interface Props {
   locale: Locale;
@@ -52,6 +61,37 @@ const other = otherLocale(locale);
         </div>
       ))}
     </dl>
+  </section>
+
+  <section id="background" class="wrap block" aria-labelledby="background-title">
+    <h2 class="section-title" id="background-title">
+      {t(locale, "background")}
+    </h2>
+    <div class="background">
+      {[
+        { title: t(locale, "experience"), entries: experience },
+        { title: t(locale, "education"), entries: education },
+      ].map((list) => (
+        <div>
+          <h3>{list.title}</h3>
+          <dl class="timeline">
+            {list.entries.map((entry) => (
+              <div>
+                <dt>{entry.org[locale]}</dt>
+                <dd class="period">
+                  {typeof entry.period === "string" ? entry.period : entry.period[locale]}
+                </dd>
+                <dd>{entry.detail[locale]}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      ))}
+      <div>
+        <h3>{t(locale, "languages")}</h3>
+        <p class="languages">{languages[locale]}</p>
+      </div>
+    </div>
   </section>
 
   <section id="about" class="wrap block" aria-labelledby="about-title">
@@ -126,6 +166,43 @@ const other = otherLocale(locale);
 
   dd {
     color: var(--muted);
+  }
+
+  .background {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: var(--space-6) var(--space-5);
+  }
+
+  h3 {
+    font-size: var(--step-0);
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: var(--space-4);
+  }
+
+  .timeline > div + div {
+    margin-top: var(--space-5);
+  }
+
+  .timeline dt {
+    margin-bottom: 0;
+  }
+
+  .timeline dd + dd {
+    margin-top: var(--space-1);
+  }
+
+  .period {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .timeline dd:not(.period) {
+    color: var(--ink);
+  }
+
+  .languages {
+    color: var(--ink);
   }
 
   .about {
