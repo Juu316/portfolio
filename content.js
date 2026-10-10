@@ -318,7 +318,7 @@ export const social = [
   { name: "GitHub", href: "https://github.com/Juu316", icon: "github" },
   { name: "LinkedIn", href: "", icon: "linkedin" }, // TODO
   { name: "X", href: "", icon: "x" }, // TODO
-  { name: { mn: "И-мэйл", en: "Email" }, href: "mailto:uujuu316@gmail.com", icon: "mail" }, // TODO
+  { name: { mn: "И-мэйл", en: "Email" }, href: "mailto:iikii427@proton.me", icon: "mail" }, // TODO
 ];
 
 // -------------------------------------------------------------------------
