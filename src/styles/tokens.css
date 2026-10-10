@@ -1,22 +1,22 @@
 /*
  * Design tokens. Components read these; they never hard-code colour, type
- * size or spacing. Dark mode swaps values only.
+ * size or spacing. The site is dark only.
  */
 :root {
-  color-scheme: light dark;
+  color-scheme: dark;
 
-  /* Base: a cool, neutral instrument the projects bring their colour into. */
-  --paper: #f5f6f4;
-  --surface: #ffffff;
-  --ink: #1a2030;
-  --muted: #5e6675;
-  --rule: #d9dce1;
-  --focus: #1a2030;
+  /* Base: a deep, neutral night the projects bring their colour into. */
+  --paper: #12161f;
+  --surface: #1a1f2b;
+  --ink: #e7e9ee;
+  --muted: #9aa2b1;
+  --rule: #2a3140;
+  --focus: #e7e9ee;
 
-  /* Project accents: each project's real brand colour, darkened to AA on paper. */
-  --accent-gtc: #0273ad;
-  --accent-shuren: #8e5e47;
-  --accent-orchuulga: #00785e;
+  /* Project accents: each project's real brand colour, lightened to AA on paper. */
+  --accent-gtc: #4cc3f7;
+  --accent-shuren: #d4a38a;
+  --accent-orchuulga: #3cd3a9;
   --accent: var(--ink);
 
   /* Type */
@@ -46,21 +46,6 @@
   --radius-frame: 10px;
 
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: #12161f;
-    --surface: #1a1f2b;
-    --ink: #e7e9ee;
-    --muted: #9aa2b1;
-    --rule: #2a3140;
-    --focus: #e7e9ee;
-
-    --accent-gtc: #4cc3f7;
-    --accent-shuren: #d4a38a;
-    --accent-orchuulga: #3cd3a9;
-  }
 }
 
 [data-accent="gtc"] {

@@ -10,6 +10,9 @@ import type { Locale } from "../i18n/ui";
 
 type Localized<T = string> = Record<Locale, T>;
 
+/** Flags drawn by Flag.astro. */
+export type FlagCode = "MN" | "GB" | "JP";
+
 export const person = {
   name: { mn: "Өсөх-Эрдэнэ Чойжамц", en: "Usukh-Erdene Choijamts" } as Localized,
   // src: owner CV 2026-08-24 ("Fullstack хөгжүүлэгч").
@@ -144,10 +147,16 @@ export const education: Entry[] = [
 ];
 
 /** src: owner CV 2026-08-24. */
-export const languages: Localized = {
-  mn: "Англи хэл — чөлөөтэй (IELTS 7). Япон хэл — анхан шат.",
-  en: "English — fluent (IELTS 7). Japanese — beginner.",
-};
+export const languages: { flag: FlagCode; text: Localized }[] = [
+  {
+    flag: "GB",
+    text: { mn: "Англи хэл — ахисан түвшин (IELTS 7).", en: "English — fluent (IELTS 7)." },
+  },
+  {
+    flag: "JP",
+    text: { mn: "Япон хэл — анхан шат.", en: "Japanese — beginner." },
+  },
+];
 
 /**
  * Web3Forms delivers form posts to the owner's inbox. The key is public by

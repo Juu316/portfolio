@@ -33,21 +33,28 @@ outranks everything below it.
 Tokens live in `src/styles/tokens.css`; components never hard-code colour,
 type size or spacing.
 
-- **Palette:** paper `#F5F6F4`, ink `#1A2030`, muted `#5E6675`, rule
-  `#D9DCE1`. Dark mode swaps these values; nothing else changes.
-- **Project accents** are the projects' real brand colours, darkened until
-  they pass WCAG AA on paper: GTC `#0284C7`, Shuren `#8E5E47`, Orchuulga
-  `#00876A`. An accent appears only inside its project's context
+- **Palette:** the site is dark only. Paper `#12161F`, surface `#1A1F2B`,
+  ink `#E7E9EE`, muted `#9AA2B1`, rule `#2A3140`.
+- **Project accents** are the projects' real brand colours, lightened until
+  they pass WCAG AA on paper: GTC `#4CC3F7`, Shuren `#D4A38A`, Orchuulga
+  `#3CD3A9`. An accent appears only inside its project's context
   (`--accent` set on the element).
 - **Type:** Golos Text for everything (display at 700 for names and project
   titles). It covers Mongolian Cyrillic including Ө/Ү; Unbounded was dropped
   because it lacks them. Mongolian is the root locale, so check every heading
   in Cyrillic first.
 - **Do not add:** all-caps eyebrows, 01/02/03 markers on content that isn't a
-  sequence, gradient washes, glass panels, identical card grids, `→` appended to
-  links, or a mono font for labels. Borders and radii only on screenshot frames.
-- **Motion:** one moment, the project-index accent/preview crossfade. Anything
-  else must respond to a user action. Respect `prefers-reduced-motion`.
+  sequence, gradient washes on content (the site sky is the one exception),
+  glass panels, identical card grids, `→` appended to links, or a mono font
+  for labels. Borders and radii only on screenshot frames.
+- **Sky:** the page background is `SpaceBackground.astro`, chosen by the
+  owner: a canvas port of Aceternity's "Shooting Stars and Stars Background"
+  with a twinkling star field and many shooting stars at once. It pauses
+  when the tab is hidden, draws a still star field with no shooting stars
+  under reduced motion, and leaves the plain paper colour without JS.
+- **Motion:** the sky, plus one moment, the project-index accent/preview
+  crossfade. Anything else must respond to a user action. Respect
+  `prefers-reduced-motion`.
 
 ## 3. Case-study structure
 

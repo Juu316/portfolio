@@ -1,0 +1,24 @@
+---
+import * as flags from "country-flag-icons/string/3x2";
+import type { FlagCode } from "../data/site";
+
+interface Props {
+  code: FlagCode;
+}
+
+const { code } = Astro.props;
+---
+
+<span class="flag" aria-hidden="true" set:html={flags[code]} />
+
+<style>
+  .flag {
+    display: inline-flex;
+    flex-shrink: 0;
+  }
+
+  .flag :global(svg) {
+    width: 1.5em;
+    height: 1em;
+  }
+</style>

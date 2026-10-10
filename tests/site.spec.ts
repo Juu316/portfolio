@@ -181,6 +181,25 @@ test("contact: mailto link and a form that posts to Web3Forms", async ({ page })
   }
 });
 
+test("the crewmate cursor can be switched off and stays off", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop", "the buddy only runs with a mouse");
+  await page.goto("en/");
+  const toggle = page.locator("[data-cursor-toggle]");
+  await page.mouse.move(400, 400);
+  await expect(page.locator(".cursor-buddy")).toHaveCount(1);
+  await expect(toggle).toHaveAttribute("aria-pressed", "true");
+
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-pressed", "false");
+  await expect(toggle).toHaveAccessibleName("Crewmate cursor: off");
+  await expect(page.locator(".cursor-buddy")).toHaveCount(0);
+
+  await page.reload();
+  await page.mouse.move(500, 500);
+  await expect(toggle).toHaveAttribute("aria-pressed", "false");
+  await expect(page.locator(".cursor-buddy")).toHaveCount(0);
+});
+
 test("404 page is served for unknown paths", async ({ page }) => {
   const res = await page.goto("does-not-exist/");
   expect(res?.status()).toBe(404);

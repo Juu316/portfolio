@@ -2,6 +2,8 @@
 /**
  * A crewmate that drifts after the pointer, after natsha.me. Mouse/trackpad
  * only and off under reduced motion; the GIF is only fetched once enabled.
+ * The header's [data-cursor-toggle] button turns it off and on, remembered in
+ * localStorage; the button stays hidden wherever the buddy can't run.
  */
 ---
 
@@ -30,7 +32,11 @@
     matchMedia("(pointer: fine)").matches &&
     !matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  const STORAGE_KEY = "cursor-buddy";
+  const toggle = document.querySelector<HTMLButtonElement>("[data-cursor-toggle]");
+
   if (enabled) {
+    let on = localStorage.getItem(STORAGE_KEY) !== "off";
     let buddy: HTMLImageElement | null = null;
     let pointer = { x: innerWidth / 2, y: innerHeight };
     let pos = { x: pointer.x + scrollX, y: pointer.y + scrollY };
@@ -61,6 +67,7 @@
     };
 
     const wake = () => {
+      if (!on) return;
       clampTarget();
       if (!frame) {
         last = 0;
@@ -68,10 +75,18 @@
       }
     };
 
+    const syncToggle = () => {
+      if (!toggle) return;
+      const label = (on ? toggle.dataset.labelOn : toggle.dataset.labelOff) ?? "";
+      toggle.setAttribute("aria-pressed", String(on));
+      toggle.setAttribute("aria-label", label);
+      toggle.title = label;
+    };
+
     addEventListener(
       "pointermove",
       (e) => {
-        if (e.pointerType !== "mouse") return;
+        if (!on || e.pointerType !== "mouse") return;
         pointer = { x: e.clientX, y: e.clientY };
         if (!buddy) {
           buddy = new Image(SIZE, SIZE);
@@ -79,6 +94,8 @@
           buddy.alt = "";
           buddy.setAttribute("aria-hidden", "true");
           buddy.src = `${import.meta.env.BASE_URL}amongus.gif`;
+          // Start where the pointer is, not where it was when last switched off.
+          pos = { x: pointer.x + scrollX, y: pointer.y + scrollY };
           document.body.append(buddy);
         }
         wake();
@@ -86,5 +103,21 @@
       { passive: true },
     );
     addEventListener("scroll", wake, { passive: true });
+
+    if (toggle) {
+      syncToggle();
+      toggle.hidden = false;
+      toggle.addEventListener("click", () => {
+        on = !on;
+        localStorage.setItem(STORAGE_KEY, on ? "on" : "off");
+        if (!on) {
+          cancelAnimationFrame(frame);
+          frame = 0;
+          buddy?.remove();
+          buddy = null;
+        }
+        syncToggle();
+      });
+    }
   }
 </script>

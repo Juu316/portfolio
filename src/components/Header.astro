@@ -1,5 +1,6 @@
 ---
 import { localeUrl, otherLocale, t, type Locale } from "../i18n/ui";
+import Flag from "./Flag.astro";
 import Socials from "./Socials.astro";
 
 interface Props {
@@ -36,9 +37,31 @@ const links = [
       lang={other}
       aria-label={t(locale, "switchLanguageLabel")}
     >
+      <Flag code={other === "mn" ? "MN" : "GB"} />
       <span class="full">{t(locale, "switchLanguage")}</span>
       <span class="short">{t(locale, "switchLanguageShort")}</span>
     </a>
+    <!-- Shown and wired up by CursorBuddy.astro where the buddy can run. -->
+    <button
+      class="buddy-toggle"
+      type="button"
+      hidden
+      data-cursor-toggle
+      aria-pressed="true"
+      aria-label={t(locale, "cursorBuddyOn")}
+      data-label-on={t(locale, "cursorBuddyOn")}
+      data-label-off={t(locale, "cursorBuddyOff")}
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <rect x="3" y="9" width="4" height="9" rx="1.5"></rect>
+        <path d="M13 2a6 6 0 0 0-6 6v12.5A1.5 1.5 0 0 0 8.5 22h2a1.5 1.5 0 0 0 1.5-1.5V19h2v1.5a1.5 1.5 0 0 0 1.5 1.5h2a1.5 1.5 0 0 0 1.5-1.5V8a6 6 0 0 0-6-6Z"></path>
+        <rect class="visor" x="12" y="6" width="9" height="5" rx="2.5"></rect>
+        <g class="strike">
+          <path class="halo" d="M3 3l18 18"></path>
+          <path d="M3 3l18 18"></path>
+        </g>
+      </svg>
+    </button>
   </div>
 </header>
 
@@ -47,7 +70,9 @@ const links = [
     position: sticky;
     top: 0;
     z-index: 5;
-    background: var(--paper);
+    background: color-mix(in srgb, var(--paper) 85%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--rule);
     font-size: var(--step--1);
   }
@@ -81,12 +106,65 @@ const links = [
   }
 
   .lang {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
     padding-left: var(--space-5);
     border-left: 1px solid var(--rule);
   }
 
   .short {
     display: none;
+  }
+
+  .buddy-toggle {
+    display: inline-flex;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  .buddy-toggle[hidden] {
+    display: none;
+  }
+
+  .buddy-toggle[aria-pressed="false"] {
+    color: var(--muted);
+  }
+
+  .buddy-toggle:hover {
+    color: var(--ink);
+  }
+
+  .buddy-toggle svg {
+    width: 1.5em;
+    height: 1.5em;
+    fill: currentColor;
+  }
+
+  .visor {
+    fill: var(--paper);
+    stroke: currentColor;
+    stroke-width: 1.5;
+  }
+
+  .strike {
+    display: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  .strike .halo {
+    stroke: var(--paper);
+    stroke-width: 5;
+  }
+
+  .buddy-toggle[aria-pressed="false"] .strike {
+    display: inline;
   }
 
   /*

@@ -3,6 +3,7 @@ import { getCollection } from "astro:content";
 import Base from "../layouts/Base.astro";
 import ProjectIndex from "./ProjectIndex.astro";
 import Contact from "./Contact.astro";
+import Flag from "./Flag.astro";
 import { splitId, t, type Locale } from "../i18n/ui";
 import {
   about,
@@ -34,8 +35,13 @@ const projects = (await getCollection("projects", (p) => splitId(p.id).locale ==
       <p class="role">
         {person.role[locale]}, {person.location[locale]}
       </p>
-      <a class="resume" href={`${import.meta.env.BASE_URL}${person.resume}`} download>
-        {/* Lucide "download" icon. */}
+      <a
+        class="resume"
+        href={`${import.meta.env.BASE_URL}${person.resume}`}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {/* Lucide "external-link" icon. */}
         <svg
           viewBox="0 0 24 24"
           fill="none"
@@ -46,11 +52,11 @@ const projects = (await getCollection("projects", (p) => splitId(p.id).locale ==
           aria-hidden="true"
           focusable="false"
         >
-          <path d="M12 15V3"></path>
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-          <path d="m7 10 5 5 5-5"></path>
+          <path d="M15 3h6v6"></path>
+          <path d="M10 14 21 3"></path>
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
         </svg>
-        {t(locale, "downloadResume")}
+        {t(locale, "viewResume")}
       </a>
       <p class="statement">{statement[locale]}</p>
       {availability && <p class="cta">{availability[locale]}</p>}
@@ -97,7 +103,13 @@ const projects = (await getCollection("projects", (p) => splitId(p.id).locale ==
         </div>
       </div>
       <p class="languages">
-        <strong>{t(locale, "languages")}:</strong> {languages[locale]}
+        <strong>{t(locale, "languages")}:</strong>
+        {languages.map((language) => (
+          <span class="language">
+            <Flag code={language.flag} />
+            {language.text[locale]}
+          </span>
+        ))}
       </p>
     </section>
   </div>
@@ -344,7 +356,18 @@ const projects = (await getCollection("projects", (p) => splitId(p.id).locale ==
   }
 
   .languages {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: var(--space-2) var(--space-3);
     margin-top: var(--space-5);
+  }
+
+  .language {
+    grid-column: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
   }
 
   .about {
