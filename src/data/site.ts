@@ -50,7 +50,8 @@ export const about: Localized<string[]> = {
   ],
 };
 
-/** Repo-backed technologies, plus the ones listed in the owner's CV (2026-08-24). */
+/** Repo-backed technologies, plus the ones listed in the owner's CV (2026-08-24)
+ * and Java, Spring Boot and Go added by the owner (2026-10-10). */
 export const expertise: { group: Localized; items: string[] }[] = [
   {
     group: { mn: "Frontend", en: "Frontend" },
@@ -66,7 +67,7 @@ export const expertise: { group: Localized; items: string[] }[] = [
   },
   {
     group: { mn: "Backend", en: "Backend" },
-    items: ["Node.js", "Express", "Better Auth", "Socket.IO", "Zod"],
+    items: ["Node.js", "Express", "Java", "Spring Boot", "Go", "Better Auth", "Socket.IO", "Zod"],
   },
   {
     group: { mn: "Өгөгдөл", en: "Data" },
