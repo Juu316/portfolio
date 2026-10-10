@@ -9,7 +9,14 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  scroll-padding-top: var(--space-6);
+  /* Clears the sticky header (one row on wide screens, up to three on phones). */
+  scroll-padding-top: 5rem;
+}
+
+@media (max-width: 47.99rem) {
+  html {
+    scroll-padding-top: 8.5rem;
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -114,7 +121,7 @@ a:hover {
 
 .display {
   font-family: var(--font-display);
-  font-weight: 500;
+  font-weight: 700;
   letter-spacing: -0.02em;
 }
 

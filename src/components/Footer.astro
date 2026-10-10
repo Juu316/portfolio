@@ -1,6 +1,7 @@
 ---
 import { t, type Locale } from "../i18n/ui";
 import { person } from "../data/site";
+import Socials from "./Socials.astro";
 
 interface Props {
   locale: Locale;
@@ -24,6 +25,7 @@ const { locale } = Astro.props;
       </a>
     </li>
   </ul>
+  <Socials />
 </footer>
 
 <style>

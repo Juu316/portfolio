@@ -39,9 +39,10 @@ type size or spacing.
   they pass WCAG AA on paper: GTC `#0284C7`, Shuren `#8E5E47`, Orchuulga
   `#00876A`. An accent appears only inside its project's context
   (`--accent` set on the element).
-- **Type:** Unbounded (display; names and project titles only) and Onest
-  (everything else). Both have full Cyrillic coverage; Mongolian is the root
-  locale, so check every heading in Cyrillic first.
+- **Type:** Golos Text for everything (display at 700 for names and project
+  titles). It covers Mongolian Cyrillic including Ө/Ү; Unbounded was dropped
+  because it lacks them. Mongolian is the root locale, so check every heading
+  in Cyrillic first.
 - **Do not add:** all-caps eyebrows, 01/02/03 markers on content that isn't a
   sequence, gradient washes, glass panels, identical card grids, `→` appended to
   links, or a mono font for labels. Borders and radii only on screenshot frames.

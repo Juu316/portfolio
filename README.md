@@ -19,4 +19,4 @@ I build fast, useful things for the web.
 ## Contact
 
 - Email: [iikii427@proton.me](mailto:iikii427@proton.me)
-- GitHub: [@Juu316](https://github.com/Juu316)
+- Phone: 80383316

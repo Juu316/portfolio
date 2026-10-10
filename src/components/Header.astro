@@ -1,6 +1,6 @@
 ---
 import { localeUrl, otherLocale, t, type Locale } from "../i18n/ui";
-import { person } from "../data/site";
+import Socials from "./Socials.astro";
 
 interface Props {
   locale: Locale;
@@ -18,44 +18,47 @@ const links = [
 ];
 ---
 
-<header class="site-header wrap">
-  <a class="mark" href={home}>
-    {person.name[locale]}
-  </a>
-  <nav aria-label={t(locale, "navLabel")}>
-    <ul>
-      {links.map((link) => (
-        <li>
-          <a href={link.href}>{link.label}</a>
-        </li>
-      ))}
-    </ul>
-  </nav>
-  <a
-    class="lang"
-    href={localeUrl(other, path)}
-    hreflang={other}
-    lang={other}
-    aria-label={t(locale, "switchLanguageLabel")}
-  >
-    {t(locale, "switchLanguage")}
-  </a>
+<header class="site-header">
+  <div class="wrap inner">
+    <nav aria-label={t(locale, "navLabel")}>
+      <ul>
+        {links.map((link) => (
+          <li>
+            <a href={link.href}>{link.label}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+    <Socials email github />
+    <a
+      class="lang"
+      href={localeUrl(other, path)}
+      hreflang={other}
+      lang={other}
+      aria-label={t(locale, "switchLanguageLabel")}
+    >
+      {t(locale, "switchLanguage")}
+    </a>
+  </div>
 </header>
 
 <style>
   .site-header {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: var(--space-3) var(--space-6);
-    padding-block: var(--space-5);
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule);
     font-size: var(--step--1);
   }
 
-  .mark {
-    font-weight: 600;
-    text-decoration: none;
-    margin-right: auto;
+  .inner {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-3) var(--space-6);
+    padding-block: var(--space-3);
   }
 
   ul {
@@ -82,12 +85,11 @@ const links = [
     border-left: 1px solid var(--rule);
   }
 
-  @media (max-width: 34rem) {
-    .mark {
-      flex-basis: 100%;
-    }
+  /* The switch wraps onto its own row here, so the divider has nothing to divide. */
+  @media (max-width: 47.99rem) {
     .lang {
-      margin-left: auto;
+      padding-left: 0;
+      border-left: 0;
     }
   }
 </style>

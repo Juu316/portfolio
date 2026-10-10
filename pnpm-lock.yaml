@@ -14,10 +14,7 @@ importers:
       '@astrojs/sitemap':
         specifier: ^3.7.4
         version: 3.7.4
-      '@fontsource-variable/onest':
-        specifier: ^5.3.1
-        version: 5.3.1
-      '@fontsource-variable/unbounded':
+      '@fontsource-variable/golos-text':
         specifier: ^5.3.0
         version: 5.3.0
       astro:
@@ -365,11 +362,8 @@ packages:
   '@emnapi/wasi-threads@1.2.3':
     resolution: {integrity: sha512-ELEBe8PsLvvJ6QMr0zLt8ffvOHW/dc1m3CEzNMg7aJUv3bMaoDtw2TXyDAwkYBuroxxuHEwhRTLJSe5sya547g==}
 
-  '@fontsource-variable/onest@5.3.1':
-    resolution: {integrity: sha512-xaaw6G4HDB2/RczsWLD/2bnib4ykmQlTlBUN3GOEOiyErilZukQWVJG95h9zwAy0i8KY+QzDa+COPfqhI72Acw==}
-
-  '@fontsource-variable/unbounded@5.3.0':
-    resolution: {integrity: sha512-ea565Ncn4r7gPdBEHcmaF31V11hDfkL7b/JCklLobQbMfbu2ZZQrVWNgdeEFWFLqNh36yhieZWOgxdAnMTzrLg==}
+  '@fontsource-variable/golos-text@5.3.0':
+    resolution: {integrity: sha512-D+Evz5yqXYh6tsalc537FS+cPDWn2FTdO8j/K1ZZuFAvA7ib6WnusTiihciq7mMnm6GBo6XTlh0JXPrhBsam2g==}
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -2066,9 +2060,7 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@fontsource-variable/onest@5.3.1': {}
-
-  '@fontsource-variable/unbounded@5.3.0': {}
+  '@fontsource-variable/golos-text@5.3.0': {}
 
   '@img/colour@1.1.0': {}
 

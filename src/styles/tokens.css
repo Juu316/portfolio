@@ -20,8 +20,8 @@
   --accent: var(--ink);
 
   /* Type */
-  --font-display: "Unbounded", "Onest", system-ui, sans-serif;
-  --font-text: "Onest", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Golos Text", system-ui, sans-serif;
+  --font-text: "Golos Text", system-ui, -apple-system, "Segoe UI", sans-serif;
 
   --step--1: clamp(0.84rem, 0.82rem + 0.1vw, 0.9rem);
   --step-0: clamp(1rem, 0.96rem + 0.2vw, 1.0625rem);

@@ -3,7 +3,8 @@
  * it lives in src/content/projects/<slug>/<locale>.mdx.
  *
  * Sources: the owner's CV (2026-08-24), git history and the projects' own repos.
- * Nothing private from the CV (ID number, birth date, phones, salary) goes here.
+ * Nothing private from the CV (ID number, birth date, salary) goes here. The
+ * phone number below was supplied by the owner for publishing.
  */
 import type { Locale } from "../i18n/ui";
 
@@ -16,18 +17,21 @@ export const person = {
   location: { mn: "Улаанбаатар", en: "Ulaanbaatar" } as Localized,
   email: "iikii427@proton.me",
   github: "https://github.com/Juu316",
+  instagram: "https://www.instagram.com/uujuu316/",
+  facebook: "https://www.facebook.com/uujuu316",
+  phone: "80383316",
 };
 
 /** The one sentence under the name. Built from what the three projects actually do. */
 export const statement: Localized = {
-  mn: "Аялал жуулчлалын компани, үнэт эдлэлийн дэлгүүр, орчуулгын товчоонд зориулж төлбөр, гэрээ, барааны үлдэгдэл зэрэг алдаа гаргаж болохгүй системүүдийг бүтээдэг.",
-  en: "I build the parts of a business that have to be right: payments, signed contracts, stock counts — for a tour operator, a jewelry shop and a translation agency in Mongolia.",
+  mn: "Аялал жуулчлалын компани, үнэт эдлэлийн дэлгүүр, төлбөр, гэрээ, барааны үлдэгдэл зэрэг алдаа гаргаж болохгүй систем бүтээдэг.",
+  en: "I build the parts of a business that have to be right: payments, signed contracts, stock counts — for a tour operator and a jewelry shop in Mongolia.",
 };
 
 /** src: owner CV 2026-08-24 ("Бүтэн цагийн"). Set to null to hide. */
 export const availability: Localized | null = {
-  mn: "Бүтэн цагийн ажилд нээлттэй.",
-  en: "Open to full-time roles.",
+  mn: "Full-time ажлын саналд нээлттэй",
+  en: "Open to full-time roles",
 };
 
 /** src: owner CV 2026-08-24 (intro paragraph) and git history. */

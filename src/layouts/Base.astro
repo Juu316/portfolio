@@ -10,12 +10,9 @@ import defaultOg from "../assets/projects/b2c/home.webp";
 
 // Only the three subsets Mongolian and English text actually use. Ө and Ү
 // live in cyrillic-ext, so it is preloaded alongside cyrillic.
-import onestLatin from "@fontsource-variable/onest/files/onest-latin-wght-normal.woff2?url";
-import onestCyr from "@fontsource-variable/onest/files/onest-cyrillic-wght-normal.woff2?url";
-import onestCyrExt from "@fontsource-variable/onest/files/onest-cyrillic-ext-wght-normal.woff2?url";
-import unbLatin from "@fontsource-variable/unbounded/files/unbounded-latin-wght-normal.woff2?url";
-import unbCyr from "@fontsource-variable/unbounded/files/unbounded-cyrillic-wght-normal.woff2?url";
-import unbCyrExt from "@fontsource-variable/unbounded/files/unbounded-cyrillic-ext-wght-normal.woff2?url";
+import golosLatin from "@fontsource-variable/golos-text/files/golos-text-latin-wght-normal.woff2?url";
+import golosCyr from "@fontsource-variable/golos-text/files/golos-text-cyrillic-wght-normal.woff2?url";
+import golosCyrExt from "@fontsource-variable/golos-text/files/golos-text-cyrillic-ext-wght-normal.woff2?url";
 
 interface Props {
   locale: Locale;
@@ -50,12 +47,9 @@ const RANGE = {
   cyrillicExt: "U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F",
 };
 const faces = [
-  ["Onest", onestLatin, RANGE.latin],
-  ["Onest", onestCyr, RANGE.cyrillic],
-  ["Onest", onestCyrExt, RANGE.cyrillicExt],
-  ["Unbounded", unbLatin, RANGE.latin],
-  ["Unbounded", unbCyr, RANGE.cyrillic],
-  ["Unbounded", unbCyrExt, RANGE.cyrillicExt],
+  ["Golos Text", golosLatin, RANGE.latin],
+  ["Golos Text", golosCyr, RANGE.cyrillic],
+  ["Golos Text", golosCyrExt, RANGE.cyrillicExt],
 ];
 const fontCss = faces
   .map(
@@ -63,10 +57,9 @@ const fontCss = faces
       `@font-face{font-family:"${family}";font-style:normal;font-display:swap;font-weight:100 900;src:url(${src}) format("woff2");unicode-range:${range}}`,
   )
   .join("");
-// The first screen uses Onest everywhere and Unbounded for the name. Preload
-// the subsets for this page's script; the rest load on demand.
-const preload =
-  locale === "mn" ? [onestCyr, onestCyrExt, unbCyr, unbCyrExt] : [onestLatin, unbLatin];
+// Golos Text is the only family. Preload the subsets for this page's script;
+// the rest load on demand.
+const preload = locale === "mn" ? [golosCyr, golosCyrExt] : [golosLatin];
 ---
 
 <!doctype html>

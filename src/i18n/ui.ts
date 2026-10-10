@@ -26,7 +26,7 @@ export const ui = {
     contact: "Холбоо барих",
     switchLanguage: "English",
     switchLanguageLabel: "Англиар үзэх",
-    selectedWork: "Сонгосон төслүүд",
+    selectedWork: "Бодит төслүүд",
     readCaseStudy: "Дэлгэрэнгүй",
     allProjects: "Бүх төсөл",
     client: "Захиалагч",
@@ -50,7 +50,7 @@ export const ui = {
     backHome: "Нүүр хуудас руу буцах",
     notFoundTitle: "Ийм хуудас алга",
     notFoundBody: "Холбоос хуучирсан эсвэл хуудас зөөгдсөн байж магадгүй.",
-    footerNote: "Astro дээр бүтээв. Дэлгэцийн зургууд нь бодит вэбсайтуудаас авсан.",
+    footerNote: "Astro дээр бүтээв.",
   },
   en: {
     skipToContent: "Skip to content",
@@ -89,7 +89,7 @@ export const ui = {
     backHome: "Back to the homepage",
     notFoundTitle: "This page doesn't exist",
     notFoundBody: "The link may be out of date, or the page may have moved.",
-    footerNote: "Built with Astro. Screenshots are captured from the live sites.",
+    footerNote: "Built with Astro.",
   },
 } satisfies Record<Locale, Record<string, string>>;
 
