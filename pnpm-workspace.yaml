@@ -1,0 +1,2 @@
+minimumReleaseAgeExclude:
+  - prettier-plugin-astro@1.1.1

@@ -1,0 +1,76 @@
+---
+/**
+ * One engineering decision: problem → decision → trade-off.
+ * The decision itself is the slot, so it can hold inline code and links.
+ */
+import { t, type Locale } from "../i18n/ui";
+
+interface Props {
+  title: string;
+  problem: string;
+  tradeoff: string;
+  locale: Locale;
+}
+
+const { title, problem, tradeoff, locale } = Astro.props;
+---
+
+<article class="decision">
+  <h3>{title}</h3>
+  <dl>
+    <div>
+      <dt>{t(locale, "problem")}</dt>
+      <dd>{problem}</dd>
+    </div>
+    <div>
+      <dt>{t(locale, "decision")}</dt>
+      <dd>
+        <slot />
+      </dd>
+    </div>
+    <div>
+      <dt>{t(locale, "tradeoff")}</dt>
+      <dd>{tradeoff}</dd>
+    </div>
+  </dl>
+</article>
+
+<style>
+  .decision {
+    margin-top: var(--space-7);
+    padding-top: var(--space-5);
+    border-top: 2px solid var(--accent);
+  }
+
+  h3 {
+    font-size: var(--step-1);
+    margin-bottom: var(--space-4);
+  }
+
+  dl {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  dt {
+    font-size: var(--step--1);
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  dd {
+    margin-top: var(--space-1);
+  }
+
+  @media (min-width: 48rem) {
+    dl > div {
+      display: grid;
+      grid-template-columns: 8rem 1fr;
+      gap: var(--space-5);
+    }
+
+    dd {
+      margin-top: 0;
+    }
+  }
+</style>

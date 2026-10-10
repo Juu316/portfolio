@@ -1,0 +1,135 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import ProjectIndex from "./ProjectIndex.astro";
+import Contact from "./Contact.astro";
+import { otherLocale, splitId, t, type Locale } from "../i18n/ui";
+import { about, availability, expertise, person, statement } from "../data/site";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const projects = (await getCollection("projects", (p) => splitId(p.id).locale === locale)).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+const other = otherLocale(locale);
+---
+
+<Base locale={locale} description={statement[locale]}>
+  <section class="hero wrap" aria-labelledby="hero-name">
+    <h1 id="hero-name" class="display">
+      {person.name[locale]}
+    </h1>
+    {/* The name in the other script: the site is written for both readers. */}
+    <p class="alt-name" lang={other}>
+      {person.name[other]}
+    </p>
+    <p class="role">
+      {person.role[locale]}, {person.location[locale]}
+    </p>
+    <p class="statement">{statement[locale]}</p>
+    <p class="cta">
+      {availability && <span>{availability[locale]}</span>}
+      <a href={`mailto:${person.email}`}>{person.email}</a>
+    </p>
+  </section>
+
+  <ProjectIndex locale={locale} projects={projects} />
+
+  <section id="expertise" class="wrap block" aria-labelledby="expertise-title">
+    <h2 class="section-title" id="expertise-title">
+      {t(locale, "expertise")}
+    </h2>
+    <dl class="skills">
+      {expertise.map((group) => (
+        <div>
+          <dt>{group.group[locale]}</dt>
+          {group.items.map((item) => (
+            <dd>{item}</dd>
+          ))}
+        </div>
+      ))}
+    </dl>
+  </section>
+
+  <section id="about" class="wrap block" aria-labelledby="about-title">
+    <h2 class="section-title" id="about-title">
+      {t(locale, "about")}
+    </h2>
+    <div class="about prose">
+      {about[locale].map((paragraph) => (
+        <p>{paragraph}</p>
+      ))}
+    </div>
+  </section>
+
+  <Contact locale={locale} />
+</Base>
+
+<style>
+  .hero {
+    padding-block: var(--space-8) var(--space-7);
+  }
+
+  h1 {
+    font-size: clamp(2.6rem, 1.6rem + 4.5vw, 5.75rem);
+    line-height: 1;
+    max-width: 12ch;
+  }
+
+  .alt-name {
+    margin-top: var(--space-4);
+    color: var(--muted);
+    font-size: var(--step-1);
+  }
+
+  .role {
+    margin-top: var(--space-7);
+    font-weight: 600;
+  }
+
+  .statement {
+    margin-top: var(--space-2);
+    max-width: 52ch;
+    font-size: var(--step-1);
+    line-height: 1.45;
+  }
+
+  .cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+    margin-top: var(--space-6);
+    color: var(--muted);
+  }
+
+  .cta a {
+    color: var(--ink);
+  }
+
+  .block {
+    margin-top: var(--space-8);
+  }
+
+  .skills {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+    gap: var(--space-6) var(--space-5);
+  }
+
+  dt {
+    font-weight: 600;
+    margin-bottom: var(--space-2);
+  }
+
+  dd {
+    color: var(--muted);
+  }
+
+  .about {
+    font-size: var(--step-1);
+    line-height: 1.5;
+  }
+</style>

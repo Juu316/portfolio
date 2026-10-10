@@ -1,0 +1,123 @@
+---
+title: "Shuren Goyol"
+summary: "An online jewelry shop and its admin portal — two SvelteKit apps on Cloudflare Workers sharing one database."
+client: "Shuren Goyol, a jewelry shop in Ulaanbaatar"
+role: "Sole developer, freelance"
+period: "Aug – Oct 2026"
+year: 2026
+order: 2
+url: https://shuren.mn
+stack:
+  [
+    SvelteKit,
+    Svelte 5,
+    TypeScript,
+    Tailwind CSS,
+    Cloudflare Workers,
+    Cloudflare D1,
+    Cloudflare R2,
+    Drizzle ORM,
+    Better Auth,
+    Vitest,
+    Playwright,
+  ]
+accent: shuren
+size: full
+cover: ../../../assets/projects/shuren/home.webp
+coverAlt: "The shuren.mn homepage, showing popular products — a diamond ring, pearl earrings, a pearl bracelet and an amethyst necklace — with prices in tugrik."
+---
+
+import Decision from "../../../components/Decision.astro";
+import Shot from "../../../components/Shot.astro";
+import Shots from "../../../components/Shots.astro";
+import category from "../../../assets/projects/shuren/category.webp";
+import product from "../../../assets/projects/shuren/product-mobile.webp";
+import giftCard from "../../../assets/projects/shuren/gift-card.webp";
+
+## Context
+
+Shuren Goyol sells pearls, rings, necklaces, earrings, bracelets and watches, plus digital gift
+cards. Shoppers can check out as guests, pay with QPay or a bank app through the Wire gateway,
+follow their order and review what they bought. Staff run the shop from a separate admin portal:
+products, stock, orders, gift cards, reports and the wording of the site itself.
+
+## What I built
+
+All of it, alone, in 72 commits between 24 August and 9 October 2026: the storefront (19 pages),
+the admin portal (26 pages) and the shared TypeScript package that holds the business logic both
+apps use. The two apps deploy as separate Cloudflare Workers bound to the same D1 database and R2
+image bucket. The project's working name was Nova, and the Cloudflare resources still carry it.
+{/* src: nova git log; +page.svelte counts per app; frontend/wrangler.jsonc, admin/wrangler.jsonc */}
+
+## Decisions
+
+<Decision
+  locale="en"
+  title="Stock as an append-only ledger"
+  problem="Two shoppers buying the last necklace at the same moment must not both succeed, and every correction staff make has to stay traceable."
+  tradeoff="Stock is a SUM over rows instead of a single column, and the history only grows."
+>
+  Stock is the sum of ledger rows. A sale appends a negative row with a single conditional `INSERT …
+  SELECT … WHERE` that only writes if the total stays at zero or above, and D1 serialises writes, so
+  nothing can slip between the check and the write. Corrections are new rows, never edits.
+</Decision>
+
+<Decision
+  locale="en"
+  title="The payment provider is the only source of truth"
+  problem="News of a payment arrives four ways — the webhook, the return redirect, the order page polling, a cron sweep — and any of them can be late, repeated or forged."
+  tradeoff="An extra API call for every confirmation. Money that arrives for a cancelled order is flagged for staff to refund by hand, not fixed automatically."
+>
+  All four paths call one function that re-reads the payment from Wire's API. The webhook's
+  signature is checked, but its body is never trusted. Marking an order paid is a guarded `UPDATE …
+  WHERE status = 'pending'`, so exactly one path wins and only the winner sends the confirmation
+  email. Every request to Wire carries an idempotency key.
+</Decision>
+
+<Decision
+  locale="en"
+  title="A cron job inside a SvelteKit Worker"
+  problem="Orders that are never paid must release their stock, and scheduled gift cards must go out on their date — but SvelteKit's Cloudflare adapter can't produce a scheduled handler."
+  tradeoff="The wrapper depends on the shape of the adapter's output, so an adapter upgrade can break it."
+>
+  A small custom Worker entry wraps the generated one and adds a `scheduled` handler that runs every
+  five minutes.
+</Decision>
+
+<Decision
+  locale="en"
+  title="A security review of my own code"
+  problem="Staff upload product images, and an SVG is a document that can run script on the shop's own domain."
+  tradeoff="Only raster images are accepted, so the brand's SVG artwork has to be exported first."
+>
+  A review I wrote up in the repo found that SVG uploads passed the check, along with other issues.
+  Uploads now reject SVG, both image proxies send `nosniff` and a sandboxing CSP, and they serve
+  only storage keys that match an allowlist.
+</Decision>
+
+<Shots layout="pair">
+  <Shot
+    src={category}
+    alt="The pearls category page on shuren.mn: a grid of pearl necklaces, earrings and bracelets with prices."
+    caption="A category page on desktop."
+  />
+  <Shot
+    src={product}
+    device="mobile"
+    alt="A product page on a phone: an amethyst necklace, its sale price, stock left, and buttons to add to cart or buy now."
+    caption="Product page on a phone, where most shoppers buy. Stock comes from the ledger."
+  />
+</Shots>
+
+<Shot
+  src={giftCard}
+  alt="The gift card page: preset amounts from 50,000₮ to 500,000₮, a card preview, and fields for the recipient, an optional send date and a message."
+  caption="Gift cards can be scheduled; the cron sends them at 09:00 on the chosen day."
+/>
+
+## Outcome
+
+The shop is live at shuren.mn, and staff manage it from its admin portal. The repo has 262 test
+cases in 26 files, several of which run against a local D1 database with the real migrations
+applied.
+{/* src: grep count of it()/test() in tracked *.test.ts files — counted, not run; shared/vitest.config.ts */}

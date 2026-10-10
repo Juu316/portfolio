@@ -1,0 +1,32 @@
+---
+/**
+ * Lays out screenshots wider than the prose column.
+ *   stack  — one under another, full width (B2C: several surfaces of one system)
+ *   pair   — desktop beside mobile (Shuren: a mobile-first shop)
+ */
+interface Props {
+  layout?: "stack" | "pair";
+}
+
+const { layout = "stack" } = Astro.props;
+---
+
+<div class:list={["shots", layout]}>
+  <slot />
+</div>
+
+<style>
+  .shots {
+    display: grid;
+    gap: var(--space-7);
+    margin-block: var(--space-7);
+    width: min(100vw - 2 * var(--gutter), var(--wrap));
+  }
+
+  @media (min-width: 48rem) {
+    .pair {
+      grid-template-columns: minmax(0, 1fr) 320px;
+      align-items: start;
+    }
+  }
+</style>

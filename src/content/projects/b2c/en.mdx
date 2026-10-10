@@ -1,0 +1,134 @@
+---
+title: "Global Travel"
+summary: "The booking, e-contract and payment system behind GTC Mongolia's outbound tours."
+client: "Global Travel Corporation (GTC Mongolia)"
+role: "Full-stack developer, one of two"
+period: "Dec 2025 – Sep 2026"
+year: 2025
+order: 1
+url: https://global-travel.mn
+stack:
+  [
+    React 19,
+    TypeScript,
+    Vite,
+    Tailwind CSS,
+    Express 5,
+    PostgreSQL,
+    Drizzle ORM,
+    Better Auth,
+    Socket.IO,
+    Puppeteer,
+    Expo,
+  ]
+accent: gtc
+size: full
+cover: ../../../assets/projects/b2c/home.webp
+coverAlt: "The global-travel.mn homepage, a grid of tour packages to Thailand, Hainan and Turkey with prices in tugrik."
+---
+
+import Decision from "../../../components/Decision.astro";
+import Shot from "../../../components/Shot.astro";
+import Shots from "../../../components/Shots.astro";
+import tour from "../../../assets/projects/b2c/tour.webp";
+import insurance from "../../../assets/projects/b2c/insurance.webp";
+import mobile from "../../../assets/projects/b2c/home-mobile.webp";
+
+{/* TODO(owner): confirm the period end — the last commit is 25 Sep 2026. */}
+
+## Context
+
+GTC Mongolia sells package tours from Ulaanbaatar to China, Thailand, Vietnam, Turkey and beyond.
+The public site — tours, destinations, flight tickets, travel insurance — is the front of a much
+larger system. Behind it, managers price tours, issue contracts and invoices, chat with customers
+and track their tasks, and agents earn commission through promo codes.
+
+## What I built
+
+Two of us built the system. By git authorship I wrote about 980 of its roughly 1,270 commits.
+{/* src: git shortlog over the four author identities */}
+
+- **The data layer.** The backend moved from raw SQL to Prisma and then to Drizzle on PostgreSQL;
+  I wrote the query layer that let it do so without rewriting the routes.
+- **Authentication** with Better Auth: email and password, Google sign-in, required email
+  verification.
+- **The production server** for the React app: security headers, and server-rendered titles and
+  link previews for tour and news pages.
+- **Contract signing**, from template to signed PDF.
+- **Travel insurance:** quotes and purchase through daatguul.mn.
+- **HiPay invoicing** and the fix for race conditions in pay-first QPay orders.
+- **The customer AI chat assistant**, the real-time chat between staff and customers, and the
+  Expo mobile app with push notifications.
+
+My colleague ganaabna led the Golomt card-payment integration and the first versions of the
+e-commerce, promo-code and commission features.
+
+## Decisions
+
+<Decision
+  locale="en"
+  title="One query API across three data layers"
+  problem="Around 70 route modules had been written against the old data-access API. Each migration — raw SQL, then Prisma, then Drizzle — threatened a rewrite of all of them."
+  tradeoff="A homemade abstraction of about 1,200 lines that the team has to maintain, with looser types at its boundary."
+>
+  A proxy (`queryClient.ts`) exposes Prisma-style calls on top of Drizzle: it maps camelCase to
+  snake_case and raises Prisma's error codes (`P2002`, `P2025`), so existing routes and their error
+  handling kept working unchanged.
+</Decision>
+
+<Decision
+  locale="en"
+  title="Deposit rules that can't drift"
+  problem="The deposit a customer pays depends on how far away departure is. The rule runs in the browser, to show the price, and on the server, to charge it — and copies of it had already drifted apart once."
+  tradeoff="The rule is still written twice, because the frontend and backend share no build step. Only the fixture is shared."
+>
+  Both implementations are tested against one JSON fixture, signed off by the product owner. The
+  functions take no tour argument at all, so a per-tour exception can't be added quietly.
+</Decision>
+
+<Decision
+  locale="en"
+  title="Contracts signed without an account"
+  problem="Customers sign a legally binding contract from a link a manager sends them, without logging in."
+  tradeoff="The link is the credential, so expiry, rate limits and the audit trail have to do the work that authentication normally does."
+>
+  Templates are rendered and escaped on the server and sanitised again with DOMPurify in the
+  browser. Signing links expire seven days after they're sent, every state change is appended to an
+  audit log, and the public endpoints are rate-limited and validated with Zod.
+</Decision>
+
+<Decision
+  locale="en"
+  title="A server in front of a single-page app"
+  problem="A React single-page app gives search engines and chat-app link previews an empty page, and static hosting offers no place to set security headers."
+  tradeoff="One more Node process to run and monitor, instead of serving files from a CDN."
+>
+  An Express server serves the built app, sets HSTS, frame, referrer and permissions policies, and
+  writes each tour's and news post's title and Open Graph tags into the HTML before sending it.
+</Decision>
+
+<Shots>
+  <Shot
+    src={tour}
+    alt="A tour page for Da Nang, Vietnam: a photo gallery, tabs for itinerary, prices and terms, and a price box starting at 3,990,000₮."
+    caption="A tour page. The title and preview tags are written on the server, so shared links show the tour."
+  />
+  <Shot
+    src={insurance}
+    alt="A five-step travel insurance form: destination countries as chips, travel dates, and traveller counts by age band."
+    caption="Travel insurance: choose a destination, dates and travellers, then compare quotes and pay."
+  />
+</Shots>
+
+<Shot
+  src={mobile}
+  device="mobile"
+  alt="The global-travel.mn homepage on a phone, showing tour cards stacked in one column."
+  caption="The same homepage on a phone."
+/>
+
+## Outcome
+
+The system runs the company's public site at global-travel.mn and its internal console. The
+backend and frontend have 659 Vitest tests between them.
+{/* src: `vitest run` in b2c/backend (449) and b2c/frontend (210), 10 Oct 2026 */}

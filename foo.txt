@@ -1,0 +1,14 @@
+Set up Profilescape (https://github.com/chethandvg/profilescape) on this
+GitHub profile README.
+
+- Add a workflow that runs every day, using chethandvg/profilescape@v1
+  with these cards: hero, socials, stats, 3d, languages, repos, stack
+  (it needs "contents: write" permission)
+- Add the Profilescape markers to my README, and let the workflow
+  update it (readme: README.md)
+- My role: Fullstack developer
+- My skills: 
+- My LinkedIn: YOUR LINKEDIN URL
+- Use the theme "aurora"
+
+Show me the changes before you commit, then push them.

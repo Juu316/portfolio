@@ -1,0 +1,74 @@
+/*
+ * Design tokens. Components read these; they never hard-code colour, type
+ * size or spacing. Dark mode swaps values only.
+ */
+:root {
+  color-scheme: light dark;
+
+  /* Base: a cool, neutral instrument the projects bring their colour into. */
+  --paper: #f5f6f4;
+  --surface: #ffffff;
+  --ink: #1a2030;
+  --muted: #5e6675;
+  --rule: #d9dce1;
+  --focus: #1a2030;
+
+  /* Project accents: each project's real brand colour, darkened to AA on paper. */
+  --accent-gtc: #0273ad;
+  --accent-shuren: #8e5e47;
+  --accent-orchuulga: #00785e;
+  --accent: var(--ink);
+
+  /* Type */
+  --font-display: "Unbounded", "Onest", system-ui, sans-serif;
+  --font-text: "Onest", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --step--1: clamp(0.84rem, 0.82rem + 0.1vw, 0.9rem);
+  --step-0: clamp(1rem, 0.96rem + 0.2vw, 1.0625rem);
+  --step-1: clamp(1.2rem, 1.12rem + 0.4vw, 1.375rem);
+  --step-2: clamp(1.45rem, 1.3rem + 0.75vw, 1.85rem);
+  --step-3: clamp(1.8rem, 1.5rem + 1.5vw, 2.6rem);
+  --step-4: clamp(2.3rem, 1.7rem + 3vw, 4.25rem);
+
+  /* Space */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: clamp(4rem, 3rem + 4vw, 7rem);
+
+  --wrap: 76rem;
+  --gutter: clamp(1.25rem, 0.75rem + 2.5vw, 3rem);
+  --measure: 65ch;
+  --radius-frame: 10px;
+
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #12161f;
+    --surface: #1a1f2b;
+    --ink: #e7e9ee;
+    --muted: #9aa2b1;
+    --rule: #2a3140;
+    --focus: #e7e9ee;
+
+    --accent-gtc: #4cc3f7;
+    --accent-shuren: #d4a38a;
+    --accent-orchuulga: #3cd3a9;
+  }
+}
+
+[data-accent="gtc"] {
+  --accent: var(--accent-gtc);
+}
+[data-accent="shuren"] {
+  --accent: var(--accent-shuren);
+}
+[data-accent="orchuulga"] {
+  --accent: var(--accent-orchuulga);
+}

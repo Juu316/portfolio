@@ -1,0 +1,75 @@
+---
+title: "Orchuulga.mn"
+summary: "Хакердуулсан WordPress сайтыг нэг ч хуудас алдалгүй урьдчилан рендерлэсэн SvelteKit руу шилжүүлсэн нь."
+client: "Улаанбаатар дахь баталгаат орчуулгын товчоо"
+role: "Цорын ганц хөгжүүлэгч, гэрээт"
+period: "2026.04 – 2026.09"
+year: 2026
+order: 3
+url: https://www.orchuulga.mn
+stack: [SvelteKit, Svelte 5, Vite, Node.js, Railway, Cloudflare]
+accent: orchuulga
+size: short
+cover: ../../../assets/projects/orchuulga/home.webp
+coverAlt: "orchuulga.mn-ийн нүүр хуудас — «Мэргэжлийн баталгаат орчуулгын товчоо» гарчиг, орчуулагчдын ажиллаж буй зураг."
+---
+
+import Decision from "../../../components/Decision.astro";
+import Shot from "../../../components/Shot.astro";
+import mobile from "../../../assets/projects/orchuulga/home-mobile.webp";
+
+## Танилцуулга
+
+Orchuulga.mn бол англи, хятад, орос, япон, солонгос, турк, герман, польш хэлээр ажилладаг
+баталгаат орчуулгын товчооны вэбсайт. Сайт WordPress дээр ажилладаг байсан бөгөөд хакердуулсан
+байв: хуудсууд руу шургуулсан script утаснаас орсон зочин бүрийг зар сурталчилгааны сүлжээ рүү
+шилжүүлдэг байсан.
+
+```html
+<script>
+  (function () {
+    if (/Android|iPhone|iPad|iPod|BlackBerry|Windows Phone/i.test(navigator.userAgent)) {
+      location.href = "https://[зар сурталчилгааны сүлжээ]/link?z=…&var=orchuulga";
+    }
+  })();
+</script>
+```
+
+## Миний хийсэн ажил
+
+Шургуулсан script-ийг 56 хуудаснаас бүгдээс нь устгаад, сайтыг WordPress-ээс гаргаж, хуудас бүрийг
+статик HTML болгон урьдчилан рендерлэдэг SvelteKit апп руу шилжүүлсэн. Товчооны дизайн, кирилл
+үсэгтэй URL-ууд, хайлтын мета өгөгдлийг хэвээр нь хадгалсан.
+
+<Decision
+  locale="mn"
+  title="Хуудсуудыг үлдээж, WordPress-ийг орхих"
+  problem="Товчоо сайтаа URL, хайлтын байр сууриа алдалгүй хэвээр нь авахыг хүссэн — гэтэл халдагч WordPress-ээр дамжиж орсон."
+  tradeoff="Агуулга өөрчлөхөд HTML засаж дахин байршуулах шаардлагатай; CMS байхгүй."
+>
+  Нэг удаагийн script сайтын статик экспортыг хуудас бүрт нэг SvelteKit route болгон хувиргаж, route
+  бүрийг build хийх үед урьдчилан рендерлэдэг. Хуучин SEO tag-уудыг арилгаж зөв canonical
+  URL-тэйгээр дахин бичиж, sitemap-ийг route-уудын хавтсаас кирилл slug-уудыг encode хийн үүсгэдэг.
+</Decision>
+
+<Decision
+  locale="mn"
+  title="Шинэ framework дотор хуучин theme-ийн script"
+  problem="Theme-ийн слайдер, цэсүүд хуудас бүтэн ачаалагдана гэж тооцдог. HTML-ээр оруулсан script хэзээ ч ажилладаггүй, client талын шилжилтэд listener-ээ хоёр дахин холбоно."
+  tradeoff="Хуудас хооронд шилжихэд WordPress дээрх шиг бүтэн дахин ачаалагдана."
+>
+  Рендер бүрийн дараа script-үүдийг жинхэнэ `<script>` элемент болгон дахин үүсгэж, хуудасны
+  агуулга доторх холбоос бүр хуудсыг бүтэн ачаалдаг.
+</Decision>
+
+<Shot
+  src={mobile}
+  device="mobile"
+  alt="orchuulga.mn-ийн нүүр хуудас утсан дээр, гарчиг болон үйлчилгээний тайлбарын хамт."
+  caption="Нүүр хуудас утсан дээр — шургуулсан script-ийн булаан авдаг байсан харагдац."
+/>
+
+## Үр дүн
+
+56 хуудас бүгд Cloudflare-ийн ард Railway дээрх Node серверээс статик HTML хэлбэрээр түгээгддэг
+бөгөөд шургуулсан script аль ч хуудсанд үлдээгүй.

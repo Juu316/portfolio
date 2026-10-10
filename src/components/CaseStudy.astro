@@ -1,0 +1,174 @@
+---
+import { Picture } from "astro:assets";
+import { render, type CollectionEntry } from "astro:content";
+import Base from "../layouts/Base.astro";
+import { domainOf, localeUrl, splitId, t, type Locale } from "../i18n/ui";
+
+interface Props {
+  entry: CollectionEntry<"projects">;
+  next: CollectionEntry<"projects">;
+}
+
+const { entry, next } = Astro.props;
+const { slug, locale } = splitId(entry.id) as { slug: string; locale: Locale };
+const { Content } = await render(entry);
+const p = entry.data;
+const domain = domainOf(p.url);
+---
+
+<Base
+  locale={locale}
+  title={p.title}
+  description={p.summary}
+  path={`projects/${slug}/`}
+  ogImage={p.cover}
+>
+  <article class="case" data-accent={p.accent}>
+    <header class="wrap head">
+      <p class="back">
+        <a href={`${localeUrl(locale)}#work`}>{t(locale, "allProjects")}</a>
+      </p>
+      <h1 class="display">{p.title}</h1>
+      <p class="summary">{p.summary}</p>
+
+      <dl class="facts">
+        <div>
+          <dt>{t(locale, "client")}</dt>
+          <dd>{p.client}</dd>
+        </div>
+        <div>
+          <dt>{t(locale, "role")}</dt>
+          <dd>{p.role}</dd>
+        </div>
+        <div>
+          <dt>{t(locale, "period")}</dt>
+          <dd>{p.period}</dd>
+        </div>
+        <div>
+          <dt>{t(locale, "liveSite")}</dt>
+          <dd>
+            <a href={p.url}>{domain}</a>
+          </dd>
+        </div>
+        <div class="stack">
+          <dt>{t(locale, "stack")}</dt>
+          <dd>{p.stack.join(", ")}</dd>
+        </div>
+      </dl>
+    </header>
+
+    <figure class="wrap cover">
+      <Picture
+        src={p.cover}
+        alt={p.coverAlt}
+        widths={[640, 960, 1280, 1920]}
+        sizes="(min-width: 76rem) 1216px, 92vw"
+        formats={["avif", "webp"]}
+        fallbackFormat="webp"
+        loading="eager"
+        fetchpriority="high"
+      />
+    </figure>
+
+    <div class="wrap body">
+      <div class="prose">
+        <Content />
+      </div>
+    </div>
+
+    <nav class="wrap next" aria-label={t(locale, "nextProject")}>
+      <p>{t(locale, "nextProject")}</p>
+      <a
+        class="display"
+        href={localeUrl(locale, `projects/${splitId(next.id).slug}/`)}
+        data-accent={next.data.accent}
+      >
+        {next.data.title}
+      </a>
+    </nav>
+  </article>
+</Base>
+
+<style>
+  .head {
+    padding-block: var(--space-7) var(--space-6);
+  }
+
+  .back {
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+
+  h1 {
+    margin-top: var(--space-6);
+    font-size: var(--step-4);
+    line-height: 1;
+    color: var(--accent);
+  }
+
+  .summary {
+    margin-top: var(--space-4);
+    max-width: 52ch;
+    font-size: var(--step-1);
+    line-height: 1.45;
+  }
+
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: var(--space-5);
+    margin-top: var(--space-7);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--rule);
+    font-size: var(--step--1);
+  }
+
+  .facts .stack {
+    grid-column: 1 / -1;
+  }
+
+  dt {
+    color: var(--muted);
+  }
+
+  dd {
+    margin-top: var(--space-1);
+  }
+
+  .cover :global(img) {
+    width: 100%;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-frame);
+  }
+
+  .body {
+    margin-top: var(--space-7);
+  }
+
+  .body :global(a) {
+    color: var(--accent);
+  }
+
+  .next {
+    margin-top: var(--space-8);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--rule);
+  }
+
+  .next p {
+    color: var(--muted);
+    font-size: var(--step--1);
+  }
+
+  .next a {
+    display: inline-block;
+    margin-top: var(--space-2);
+    font-size: var(--step-3);
+    text-decoration: none;
+    color: var(--accent);
+  }
+
+  .next a:hover {
+    text-decoration: underline;
+  }
+</style>

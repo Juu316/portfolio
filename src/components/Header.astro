@@ -1,0 +1,93 @@
+---
+import { localeUrl, otherLocale, t, type Locale } from "../i18n/ui";
+import { person } from "../data/site";
+
+interface Props {
+  locale: Locale;
+  /** Locale-less path of the current page, so the switch keeps you in place. */
+  path: string;
+}
+
+const { locale, path } = Astro.props;
+const home = localeUrl(locale);
+const other = otherLocale(locale);
+const links = [
+  { href: `${home}#work`, label: t(locale, "work") },
+  { href: `${home}#about`, label: t(locale, "about") },
+  { href: `${home}#contact`, label: t(locale, "contact") },
+];
+---
+
+<header class="site-header wrap">
+  <a class="mark" href={home}>
+    {person.name[locale]}
+  </a>
+  <nav aria-label={t(locale, "navLabel")}>
+    <ul>
+      {links.map((link) => (
+        <li>
+          <a href={link.href}>{link.label}</a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+  <a
+    class="lang"
+    href={localeUrl(other, path)}
+    hreflang={other}
+    lang={other}
+    aria-label={t(locale, "switchLanguageLabel")}
+  >
+    {t(locale, "switchLanguage")}
+  </a>
+</header>
+
+<style>
+  .site-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-3) var(--space-6);
+    padding-block: var(--space-5);
+    font-size: var(--step--1);
+  }
+
+  .mark {
+    font-weight: 600;
+    text-decoration: none;
+    margin-right: auto;
+  }
+
+  ul {
+    display: flex;
+    gap: var(--space-5);
+    padding: 0;
+    list-style: none;
+  }
+
+  nav a,
+  .lang {
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  nav a:hover,
+  .lang:hover {
+    color: var(--ink);
+    text-decoration: underline;
+  }
+
+  .lang {
+    padding-left: var(--space-5);
+    border-left: 1px solid var(--rule);
+  }
+
+  @media (max-width: 34rem) {
+    .mark {
+      flex-basis: 100%;
+    }
+    .lang {
+      margin-left: auto;
+    }
+  }
+</style>

@@ -1,0 +1,19 @@
+---
+import { getCollection } from "astro:content";
+import CaseStudy from "../../components/CaseStudy.astro";
+import { splitId } from "../../i18n/ui";
+
+export async function getStaticPaths() {
+  const entries = (await getCollection("projects", (p) => splitId(p.id).locale === "mn")).sort(
+    (a, b) => a.data.order - b.data.order,
+  );
+  return entries.map((entry, i) => ({
+    params: { slug: splitId(entry.id).slug },
+    props: { entry, next: entries[(i + 1) % entries.length]! },
+  }));
+}
+
+const { entry, next } = Astro.props;
+---
+
+<CaseStudy entry={entry} next={next} />

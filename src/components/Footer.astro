@@ -1,0 +1,48 @@
+---
+import { t, type Locale } from "../i18n/ui";
+import { person } from "../data/site";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+---
+
+<footer class="site-footer wrap">
+  <p>
+    © {new Date().getFullYear()} {person.name[locale]}
+  </p>
+  <p>{t(locale, "footerNote")}</p>
+  <ul>
+    <li>
+      <a href={`mailto:${person.email}`}>{person.email}</a>
+    </li>
+    <li>
+      <a href={person.github} rel="me">
+        GitHub
+      </a>
+    </li>
+  </ul>
+</footer>
+
+<style>
+  .site-footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-6);
+    margin-top: var(--space-8);
+    padding-block: var(--space-6);
+    border-top: 1px solid var(--rule);
+    color: var(--muted);
+    font-size: var(--step--1);
+  }
+
+  ul {
+    display: flex;
+    gap: var(--space-5);
+    margin-left: auto;
+    padding: 0;
+    list-style: none;
+  }
+</style>

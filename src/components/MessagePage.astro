@@ -1,0 +1,38 @@
+---
+import Base from "../layouts/Base.astro";
+import { localeUrl, t, type Locale, type UIKey } from "../i18n/ui";
+
+interface Props {
+  locale: Locale;
+  title: UIKey;
+  body: UIKey;
+  path?: string;
+}
+
+const { locale, title, body, path } = Astro.props;
+---
+
+<Base locale={locale} title={t(locale, title)} description={t(locale, body)} path={path} noindex>
+  <section class="wrap message">
+    <h1 class="display">{t(locale, title)}</h1>
+    <p>{t(locale, body)}</p>
+    <p>
+      <a href={localeUrl(locale)}>{t(locale, "backHome")}</a>
+    </p>
+  </section>
+</Base>
+
+<style>
+  .message {
+    padding-block: var(--space-8);
+  }
+
+  h1 {
+    font-size: var(--step-3);
+  }
+
+  p {
+    margin-top: var(--space-4);
+    max-width: var(--measure);
+  }
+</style>
