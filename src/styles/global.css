@@ -186,3 +186,95 @@ a:hover {
   border: 0;
   background: none;
 }
+
+/*
+ * Motion. Everything below is CSS-only and lives behind
+ * prefers-reduced-motion; browsers without view transitions or scroll-driven
+ * animations simply show the static page.
+ */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+    filter: blur(6px);
+  }
+}
+
+@keyframes page-out {
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* Underline that draws in from the left on hover. */
+.underline-grow {
+  text-decoration: none;
+  background: linear-gradient(currentColor, currentColor) no-repeat 0 100% / 0 1px;
+}
+
+.underline-grow:hover,
+.underline-grow:focus-visible {
+  background-size: 100% 1px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Cross-document view transitions: same-origin page loads morph. */
+  @view-transition {
+    navigation: auto;
+  }
+
+  ::view-transition-group(*) {
+    animation-duration: var(--vt-duration);
+    animation-timing-function: var(--ease-out-expo);
+  }
+
+  ::view-transition-old(root) {
+    animation: page-out var(--dur-fast) var(--ease) both;
+  }
+
+  ::view-transition-new(root) {
+    animation: page-in var(--vt-duration) var(--ease-out-expo) both;
+  }
+
+  /* The sky and header stay put instead of crossfading. */
+  ::view-transition-group(sky),
+  ::view-transition-old(sky),
+  ::view-transition-new(sky),
+  ::view-transition-group(site-header),
+  ::view-transition-old(site-header),
+  ::view-transition-new(site-header) {
+    animation: none;
+  }
+
+  ::view-transition-old(sky),
+  ::view-transition-old(site-header) {
+    display: none;
+  }
+
+  /* Staggered entrance on load: set --i on each element for its order. */
+  .enter {
+    animation: rise var(--dur-slow) var(--ease-out-expo) both;
+    animation-delay: calc(var(--i, 0) * var(--stagger));
+  }
+
+  .underline-grow {
+    transition: background-size var(--dur-med) var(--ease-out-expo);
+  }
+
+  /* Scroll reveal, driven by the element's own visibility. */
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 60%;
+    }
+  }
+}

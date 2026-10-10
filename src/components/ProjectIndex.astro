@@ -24,9 +24,12 @@ const items = projects.map((p) => ({
   <div class="index">
     <ul class="rows">
       {items.map((p) => (
-        <li class="row" data-accent={p.accent}>
+        <li class="row reveal" data-accent={p.accent} style={`--vt: cover-${p.slug}`}>
           <a class="row-link" href={p.href}>
-            <span class="name display">{p.title}</span>
+            {/* Morphs into the case study's <h1> on navigation. */}
+            <span class="name display" style={`view-transition-name: title-${p.slug}`}>
+              {p.title}
+            </span>
             <span class="summary">{p.summary}</span>
             <span class="meta">
               <span>{p.period}</span>
@@ -53,7 +56,7 @@ const items = projects.map((p) => ({
     {/* Wide screens: one frame that follows hover and keyboard focus. */}
     <div class="previews" aria-hidden="true">
       {items.map((p, i) => (
-        <div class="preview" data-for={p.accent}>
+        <div class="preview" data-for={p.accent} style={`--vt: cover-${p.slug}`}>
           <Picture
             src={p.cover}
             alt=""
@@ -96,12 +99,15 @@ const items = projects.map((p) => ({
     font-size: var(--step-3);
     line-height: 1.05;
     color: var(--ink);
-    transition: color 200ms var(--ease);
+    transition:
+      color var(--dur-fast) var(--ease),
+      translate var(--dur-med) var(--ease-out-expo);
   }
 
   .row-link:hover .name,
   .row-link:focus-visible .name {
     color: var(--accent);
+    translate: 6px 0;
   }
 
   .summary {
@@ -123,6 +129,8 @@ const items = projects.map((p) => ({
 
   .row-shot {
     margin-bottom: var(--space-6);
+    /* Shared with the case-study cover; hidden (so not captured) on wide screens. */
+    view-transition-name: var(--vt);
   }
 
   .row-shot :global(img),
@@ -158,15 +166,23 @@ const items = projects.map((p) => ({
     .preview {
       grid-area: 1 / 1;
       opacity: 0;
-      transition: opacity 260ms var(--ease);
+      scale: 0.97;
+      transition:
+        opacity 260ms var(--ease),
+        scale var(--dur-med) var(--ease-out-expo);
     }
 
+    /* Only the visible preview carries the shared cover name. */
     .preview:first-child {
       opacity: 1;
+      scale: 1;
+      view-transition-name: var(--vt);
     }
 
     .index:has(.row:is(:hover, :focus-within)) .preview:first-child {
       opacity: 0;
+      scale: 0.97;
+      view-transition-name: none;
     }
 
     .index:has(.row[data-accent="gtc"]:is(:hover, :focus-within)) .preview[data-for="gtc"],
@@ -174,6 +190,8 @@ const items = projects.map((p) => ({
     .index:has(.row[data-accent="orchuulga"]:is(:hover, :focus-within))
       .preview[data-for="orchuulga"] {
       opacity: 1;
+      scale: 1;
+      view-transition-name: var(--vt);
     }
 
     /* The page around the index takes on the active project's colour. */

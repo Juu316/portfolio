@@ -29,14 +29,15 @@ const projects = (await getCollection("projects", (p) => splitId(p.id).locale ==
 <Base locale={locale} description={statement[locale]}>
   <div class="hero wrap">
     <section class="intro" aria-labelledby="hero-name">
-      <h1 id="hero-name" class="display">
+      <h1 id="hero-name" class="display enter" style="--i: 0">
         {person.name[locale]}
       </h1>
-      <p class="role">
+      <p class="role enter" style="--i: 1">
         {person.role[locale]}, {person.location[locale]}
       </p>
       <a
-        class="resume"
+        class="resume underline-grow enter"
+        style="--i: 2"
         href={`${import.meta.env.BASE_URL}${person.resume}`}
         target="_blank"
         rel="noopener noreferrer"
@@ -58,11 +59,17 @@ const projects = (await getCollection("projects", (p) => splitId(p.id).locale ==
         </svg>
         {t(locale, "viewResume")}
       </a>
-      <p class="statement">{statement[locale]}</p>
-      {availability && <p class="cta">{availability[locale]}</p>}
+      <p class="statement enter" style="--i: 3">
+        {statement[locale]}
+      </p>
+      {availability && (
+        <p class="cta enter" style="--i: 4">
+          {availability[locale]}
+        </p>
+      )}
     </section>
 
-    <section id="background" aria-labelledby="background-title">
+    <section id="background" class="enter" style="--i: 4" aria-labelledby="background-title">
       <h2 class="section-title" id="background-title">
         {t(locale, "background")}
       </h2>
@@ -122,7 +129,7 @@ const projects = (await getCollection("projects", (p) => splitId(p.id).locale ==
     </h2>
     <dl class="skills">
       {expertise.map((group) => (
-        <div>
+        <div class="reveal">
           <dt>{group.group[locale]}</dt>
           {group.items.map((item) => (
             <dd>{item}</dd>
@@ -138,7 +145,7 @@ const projects = (await getCollection("projects", (p) => splitId(p.id).locale ==
     </h2>
     <div class="about prose">
       {about[locale].map((paragraph) => (
-        <p>{paragraph}</p>
+        <p class="reveal">{paragraph}</p>
       ))}
     </div>
   </section>
@@ -189,13 +196,14 @@ const projects = (await getCollection("projects", (p) => splitId(p.id).locale ==
     text-decoration: none;
   }
 
-  .resume:hover {
-    text-decoration: underline;
-  }
-
   .resume svg {
     width: 1.1em;
     height: 1.1em;
+    transition: translate var(--dur-med) var(--ease-out-expo);
+  }
+
+  .resume:hover svg {
+    translate: 2px -2px;
   }
 
   .statement {
@@ -229,6 +237,7 @@ const projects = (await getCollection("projects", (p) => splitId(p.id).locale ==
   }
 
   .switch {
+    position: relative;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--space-1);
@@ -239,13 +248,31 @@ const projects = (await getCollection("projects", (p) => splitId(p.id).locale ==
     border-radius: var(--radius-frame);
   }
 
+  /* One pill that slides under the checked label. */
+  .switch::before {
+    content: "";
+    position: absolute;
+    inset-block: var(--space-1);
+    left: var(--space-1);
+    width: calc(50% - 1.5 * var(--space-1));
+    border-radius: calc(var(--radius-frame) - 4px);
+    background: var(--paper);
+    transition: translate var(--dur-med) var(--ease-out-expo);
+  }
+
+  #tab-education:checked ~ .switch::before {
+    translate: calc(100% + var(--space-1)) 0;
+  }
+
   .switch label {
+    position: relative;
     padding: var(--space-2) var(--space-3);
     white-space: nowrap;
     border-radius: calc(var(--radius-frame) - 4px);
     color: var(--muted);
     text-align: center;
     cursor: pointer;
+    transition: color var(--dur-fast) var(--ease);
   }
 
   .switch label:hover {
@@ -254,7 +281,6 @@ const projects = (await getCollection("projects", (p) => splitId(p.id).locale ==
 
   #tab-work:checked ~ .switch [for="tab-work"],
   #tab-education:checked ~ .switch [for="tab-education"] {
-    background: var(--paper);
     color: var(--ink);
     font-weight: 600;
   }
@@ -353,6 +379,51 @@ const projects = (await getCollection("projects", (p) => splitId(p.id).locale ==
 
   .timeline ul li + li {
     margin-top: var(--space-1);
+  }
+
+  /*
+   * Motion: the shown panel rises in (switching tabs re-plays it, since the
+   * other panel goes display: none), the line draws down and the dots pop in.
+   */
+  @keyframes draw {
+    from {
+      scale: 1 0;
+    }
+  }
+
+  @keyframes pop {
+    from {
+      scale: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .timeline {
+      animation: rise var(--dur-med) var(--ease-out-expo) both;
+    }
+
+    .timeline::before {
+      transform-origin: top;
+      animation: draw var(--dur-slow) var(--ease-out-expo) both 150ms;
+    }
+
+    .timeline > li::before {
+      animation: pop var(--dur-med) var(--ease-out-expo) both;
+      animation-delay: calc(250ms + var(--n, 0) * 120ms);
+    }
+
+    .timeline > li:nth-child(2) {
+      --n: 1;
+    }
+    .timeline > li:nth-child(3) {
+      --n: 2;
+    }
+    .timeline > li:nth-child(4) {
+      --n: 3;
+    }
+    .timeline > li:nth-child(n + 5) {
+      --n: 4;
+    }
   }
 
   .languages {

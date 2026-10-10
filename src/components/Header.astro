@@ -24,7 +24,9 @@ const links = [
       <ul>
         {links.map((link) => (
           <li>
-            <a href={link.href}>{link.label}</a>
+            <a class="underline-grow" href={link.href}>
+              {link.label}
+            </a>
           </li>
         ))}
       </ul>
@@ -75,6 +77,7 @@ const links = [
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--rule);
     font-size: var(--step--1);
+    view-transition-name: site-header;
   }
 
   .inner {
@@ -97,11 +100,16 @@ const links = [
   .lang {
     color: var(--muted);
     text-decoration: none;
+    transition: color var(--dur-fast) var(--ease);
   }
 
   nav a:hover,
   .lang:hover {
     color: var(--ink);
+  }
+
+  .lang:hover .full,
+  .lang:hover .short {
     text-decoration: underline;
   }
 

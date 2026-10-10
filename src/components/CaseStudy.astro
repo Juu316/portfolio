@@ -14,6 +14,7 @@ const { slug, locale } = splitId(entry.id) as { slug: string; locale: Locale };
 const { Content } = await render(entry);
 const p = entry.data;
 const domain = domainOf(p.url);
+const nextSlug = splitId(next.id).slug;
 ---
 
 <Base
@@ -25,13 +26,18 @@ const domain = domainOf(p.url);
 >
   <article class="case" data-accent={p.accent}>
     <header class="wrap head">
-      <p class="back">
+      <p class="back enter" style="--i: 0">
         <a href={`${localeUrl(locale)}#work`}>{t(locale, "allProjects")}</a>
       </p>
-      <h1 class="display">{p.title}</h1>
-      <p class="summary">{p.summary}</p>
+      {/* The title and cover morph from the project index (view transitions). */}
+      <h1 class="display" style={`view-transition-name: title-${slug}`}>
+        {p.title}
+      </h1>
+      <p class="summary enter" style="--i: 1">
+        {p.summary}
+      </p>
 
-      <dl class="facts">
+      <dl class="facts enter" style="--i: 2">
         <div>
           <dt>{t(locale, "client")}</dt>
           <dd>{p.client}</dd>
@@ -57,7 +63,7 @@ const domain = domainOf(p.url);
       </dl>
     </header>
 
-    <figure class="wrap cover">
+    <figure class="wrap cover" style={`view-transition-name: cover-${slug}`}>
       <Picture
         src={p.cover}
         alt={p.coverAlt}
@@ -76,12 +82,13 @@ const domain = domainOf(p.url);
       </div>
     </div>
 
-    <nav class="wrap next" aria-label={t(locale, "nextProject")}>
+    <nav class="wrap next reveal" aria-label={t(locale, "nextProject")}>
       <p>{t(locale, "nextProject")}</p>
       <a
         class="display"
-        href={localeUrl(locale, `projects/${splitId(next.id).slug}/`)}
+        href={localeUrl(locale, `projects/${nextSlug}/`)}
         data-accent={next.data.accent}
+        style={`view-transition-name: title-${nextSlug}`}
       >
         {next.data.title}
       </a>
@@ -135,10 +142,32 @@ const domain = domainOf(p.url);
     margin-top: var(--space-1);
   }
 
-  .cover :global(img) {
-    width: 100%;
+  .cover {
+    overflow: hidden;
     border: 1px solid var(--rule);
     border-radius: var(--radius-frame);
+  }
+
+  .cover :global(img) {
+    width: 100%;
+  }
+
+  /* The screenshot drifts closer inside its frame as it scrolls away. */
+  @keyframes drift {
+    to {
+      scale: 1.06;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .cover :global(img) {
+        transform-origin: top;
+        animation: drift linear both;
+        animation-timeline: view();
+        animation-range: exit 0% exit 100%;
+      }
+    }
   }
 
   .body {

@@ -46,6 +46,14 @@
   --radius-frame: 10px;
 
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Motion */
+  --dur-fast: 200ms;
+  --dur-med: 450ms;
+  --dur-slow: 800ms;
+  --vt-duration: 450ms;
+  --stagger: 80ms;
 }
 
 [data-accent="gtc"] {

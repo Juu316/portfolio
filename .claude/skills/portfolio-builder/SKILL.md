@@ -52,9 +52,19 @@ type size or spacing.
   with a twinkling star field and many shooting stars at once. It pauses
   when the tab is hidden, draws a still star field with no shooting stars
   under reduced motion, and leaves the plain paper colour without JS.
-- **Motion:** the sky, plus one moment, the project-index accent/preview
-  crossfade. Anything else must respond to a user action. Respect
-  `prefers-reduced-motion`.
+- **Motion:** chosen by the owner, CSS-only (no client JS added), all of it
+  behind `prefers-reduced-motion: no-preference`:
+  - the sky;
+  - cross-document view transitions (`@view-transition` in `global.css`),
+    with each project's title and cover morphing between the index and its
+    case study (`title-<slug>` / `cover-<slug>`; names must stay unique per
+    page);
+  - a staggered entrance on load (`.enter` + `--i`);
+  - scroll reveals via `animation-timeline: view()` (`.reveal`);
+  - interaction feedback: the project-index crossfade, the sliding tab pill,
+    hover underlines and nudges.
+    Browsers without support must see the static page; nothing may start
+    hidden unless an animation brings it in.
 
 ## 3. Case-study structure
 

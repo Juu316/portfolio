@@ -23,7 +23,7 @@ const links = [
   </h2>
 
   <div class="grid">
-    <div>
+    <div class="reveal">
       <a class="email display" href={`mailto:${person.email}`}>
         {person.email}
       </a>
@@ -39,7 +39,7 @@ const links = [
     </div>
 
     {/* Plain HTML POST: Web3Forms emails the message and redirects to /thanks/. */}
-    <form method="POST" action={contactForm.action} aria-labelledby="form-title">
+    <form class="reveal" method="POST" action={contactForm.action} aria-labelledby="form-title">
       <h3 id="form-title">{t(locale, "formHeading")}</h3>
       <input type="hidden" name="access_key" value={contactForm.accessKey} />
       <input type="hidden" name="subject" value={contactForm.subject[locale]} />
@@ -145,7 +145,23 @@ const links = [
     cursor: pointer;
   }
 
+  button {
+    transition:
+      opacity var(--dur-fast) var(--ease),
+      transform var(--dur-fast) var(--ease);
+  }
+
   button:hover {
     opacity: 0.88;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    button:hover {
+      transform: translateY(-2px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
   }
 </style>

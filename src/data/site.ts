@@ -14,7 +14,7 @@ type Localized<T = string> = Record<Locale, T>;
 export type FlagCode = "MN" | "GB" | "JP";
 
 export const person = {
-  name: { mn: "Өсөх-Эрдэнэ Чойжамц", en: "Usukh-Erdene Choijamts" } as Localized,
+  name: { mn: "Өсөх-Эрдэнэ", en: "Usukh-Erdene Choijamts" } as Localized,
   // src: owner CV 2026-08-24 ("Fullstack хөгжүүлэгч").
   role: { mn: "Full-stack хөгжүүлэгч", en: "Full-stack developer" } as Localized,
   location: { mn: "Улаанбаатар", en: "Ulaanbaatar" } as Localized,

@@ -58,6 +58,8 @@ for (const path of PAGES) {
     });
 
     test("has no detectable accessibility violations", async ({ page }) => {
+      // Scroll reveals leave off-screen content mid-fade; check the settled page.
+      await page.emulateMedia({ reducedMotion: "reduce" });
       await page.goto(path);
       await loadEverything(page);
       const results = await new AxeBuilder({ page })
@@ -123,6 +125,7 @@ test.describe("dark mode", () => {
   test.use({ colorScheme: "dark" });
   for (const path of ["en/", "projects/b2c/", "en/projects/shuren/", "en/projects/orchuulga/"]) {
     test(`/${path} has no contrast or other axe violations`, async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: "reduce" });
       await page.goto(path);
       await loadEverything(page);
       const results = await new AxeBuilder({ page }).withTags(["wcag2aa", "wcag21aa"]).analyze();
