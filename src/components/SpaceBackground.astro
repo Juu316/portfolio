@@ -4,7 +4,8 @@
  * and Stars Background", ported to one plain 2D canvas: a twinkling star
  * field plus a steady stream of shooting stars. Pauses while the tab is
  * hidden; under reduced motion it draws a still star field and nothing flies.
- * Without JS the page keeps its plain dark background.
+ * Without JS the page keeps its plain dark background. In light mode the
+ * canvas is hidden and the loop stops; switching back to dark resumes it.
  */
 ---
 
@@ -26,6 +27,10 @@
     display: block;
     width: 100%;
     height: 100%;
+  }
+
+  :global([data-theme="light"]) canvas {
+    display: none;
   }
 </style>
 
@@ -140,14 +145,19 @@
     draw(now);
   }
 
+  // Animate only while the tab is visible and the theme is dark.
+  const root = document.documentElement;
+  function sync() {
+    cancelAnimationFrame(raf);
+    last = 0;
+    if (!document.hidden && root.dataset.theme !== "light") raf = requestAnimationFrame(frame);
+  }
+
   resize();
   addEventListener("resize", resize);
   if (!still) {
-    raf = requestAnimationFrame(frame);
-    document.addEventListener("visibilitychange", () => {
-      cancelAnimationFrame(raf);
-      last = 0;
-      if (!document.hidden) raf = requestAnimationFrame(frame);
-    });
+    sync();
+    document.addEventListener("visibilitychange", sync);
+    new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
   }
 </script>

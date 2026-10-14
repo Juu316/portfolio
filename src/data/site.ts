@@ -15,6 +15,8 @@ export type FlagCode = "MN" | "GB" | "JP";
 
 export const person = {
   name: { mn: "Өсөх-Эрдэнэ", en: "Usukh-Erdene Choijamts" } as Localized,
+  /** The header's brand mark. */
+  shortName: { mn: "Өсөх-Эрдэнэ", en: "Usukh-Erdene" } as Localized,
   // src: owner CV 2026-08-24 ("Fullstack хөгжүүлэгч").
   role: { mn: "Full-stack хөгжүүлэгч", en: "Full-stack developer" } as Localized,
   location: { mn: "Улаанбаатар", en: "Ulaanbaatar" } as Localized,
@@ -23,18 +25,46 @@ export const person = {
   instagram: "https://www.instagram.com/uujuu316/",
   facebook: "https://www.facebook.com/uujuu316",
   phone: "80383316",
+  /** Shown as written; `phone` above is what tel: links and copy use. */
+  phoneDisplay: "+976 8038 3316",
+  // TODO(owner): confirm the phone number takes Viber messages, then set true.
+  viber: false,
   /** In public/; one PDF for both locales. */
   resume: "resume.pdf",
 };
 
-/** The one sentence under the name. Built from what the three projects actually do. */
-export const statement: Localized = {
-  mn: "Аялал жуулчлалын компани, үнэт эдлэлийн дэлгүүр, төлбөр, гэрээ, барааны үлдэгдэл зэрэг алдаа гаргаж болохгүй систем бүтээдэг.",
-  en: "I build the parts of a business that have to be right: payments, signed contracts, stock counts — for a tour operator and a jewelry shop in Mongolia.",
+/**
+ * The hero sentence, built from what the three projects actually do. Linked
+ * parts point at the case study they describe and carry that project's accent.
+ */
+export type StatementPart = string | { text: string; slug: string; accent: string };
+
+export const statement: Localized<StatementPart[]> = {
+  mn: [
+    { text: "Аялал жуулчлалын компани", slug: "b2c", accent: "gtc" },
+    ", ",
+    { text: "үнэт эдлэлийн дэлгүүр", slug: "shuren", accent: "shuren" },
+    ", төлбөр, гэрээ, барааны үлдэгдэл зэрэг алдаа гаргаж болохгүй систем бүтээдэг.",
+  ],
+  en: [
+    "I build the parts of a business that have to be right: payments, signed contracts, stock counts — for ",
+    { text: "a tour operator", slug: "b2c", accent: "gtc" },
+    " and ",
+    { text: "a jewelry shop", slug: "shuren", accent: "shuren" },
+    " in Mongolia.",
+  ],
 };
+
+/** The hero sentence as plain text, for meta descriptions. */
+export function statementText(locale: Locale) {
+  return statement[locale].map((part) => (typeof part === "string" ? part : part.text)).join("");
+}
 
 /** src: owner CV 2026-08-24 ("Бүтэн цагийн"). Set to null to hide. */
 export const availability: Localized | null = null;
+
+/** TODO(owner): how fast you usually reply, e.g. "within a day". Null hides it. */
+export const replyTime: Localized | null = null;
 
 /** src: owner CV 2026-08-24 (intro paragraph) and git history. */
 export const about: Localized<string[]> = {
@@ -92,6 +122,10 @@ export const expertise: { group: Localized; items: string[] }[] = [
 ];
 
 type Entry = {
+  /** Year the entry starts; the timeline groups by it. */
+  start: number;
+  /** The job the hero's "now" line and terminal name. */
+  current?: boolean;
   period: string | Localized;
   org: Localized;
   role: Localized;
@@ -101,6 +135,19 @@ type Entry = {
 /** src: owner CV 2026-08-24. */
 export const experience: Entry[] = [
   {
+    start: 2026,
+    // src: owner CV 2026-10-10 ("Freelance Developer — Shuren Goyol jewelry shop").
+    period: "2026.08 – 2026.10",
+    org: { mn: "Шүрэн Гоёл үнэт эдлэлийн дэлгүүр", en: "Shuren Goyol jewelry shop" },
+    role: { mn: "Гэрээт хөгжүүлэгч", en: "Freelance developer" },
+    points: {
+      mn: ["shuren.mn: дэлгүүр болон админ портал, ганцаараа."],
+      en: ["shuren.mn: storefront and admin portal, built alone."],
+    },
+  },
+  {
+    start: 2025,
+    current: true,
     period: { mn: "2025.12 – одоо", en: "2025.12 – present" },
     org: { mn: "Мон Тай Сино Групп ХХК (GTC Mongolia)", en: "Mon Thai Sino Group (GTC Mongolia)" },
     role: { mn: "Full-stack хөгжүүлэгч", en: "Full-stack developer" },
@@ -110,6 +157,7 @@ export const experience: Entry[] = [
     },
   },
   {
+    start: 2024,
     period: "2024.05 – 2024.06",
     org: { mn: "IT Park", en: "IT Park" },
     role: { mn: "Дадлагажигч", en: "Intern" },
@@ -122,6 +170,7 @@ export const experience: Entry[] = [
  */
 export const education: Entry[] = [
   {
+    start: 2024,
     period: "2024 – 2025",
     org: { mn: "Pinecone Academy", en: "Pinecone Academy" },
     role: {
@@ -130,6 +179,7 @@ export const education: Entry[] = [
     },
   },
   {
+    start: 2022,
     period: "2022 – 2023",
     org: { mn: "King's Own Institute, Австрали", en: "King's Own Institute, Australia" },
     role: {
@@ -138,6 +188,7 @@ export const education: Entry[] = [
     },
   },
   {
+    start: 2021,
     period: "2021 – 2022",
     org: { mn: "ШУТИС", en: "Mongolian University of Science and Technology" },
     role: {
@@ -146,6 +197,12 @@ export const education: Entry[] = [
     },
   },
 ];
+
+/**
+ * TODO(owner): add certificates here (name, issuer, year, link). The CV lists
+ * none, so the list is empty and the homepage hides the section.
+ */
+export const certificates: { name: Localized; issuer: string; year: number; url?: string }[] = [];
 
 /** src: owner CV 2026-08-24. */
 export const languages: { flag: FlagCode; text: Localized }[] = [

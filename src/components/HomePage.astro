@@ -2,18 +2,17 @@
 import { getCollection } from "astro:content";
 import Base from "../layouts/Base.astro";
 import ProjectIndex from "./ProjectIndex.astro";
+import Timeline from "./Timeline.astro";
 import Contact from "./Contact.astro";
-import Flag from "./Flag.astro";
-import { splitId, t, type Locale } from "../i18n/ui";
+import { domainOf, localeUrl, splitId, t, type Locale } from "../i18n/ui";
 import {
   about,
   availability,
-  education,
   experience,
   expertise,
-  languages,
   person,
   statement,
+  statementText,
 } from "../data/site";
 
 interface Props {
@@ -24,104 +23,116 @@ const { locale } = Astro.props;
 const projects = (await getCollection("projects", (p) => splitId(p.id).locale === locale)).sort(
   (a, b) => a.data.order - b.data.order,
 );
+const now = experience.find((entry) => entry.current);
+const shipped = projects.map((p) => ({
+  domain: domainOf(p.data.url),
+  accent: p.data.accent,
+  href: localeUrl(locale, `projects/${splitId(p.id).slug}/`),
+}));
 ---
 
-<Base locale={locale} description={statement[locale]}>
+<Base locale={locale} description={statementText(locale)}>
   <div class="hero wrap">
     <section class="intro" aria-labelledby="hero-name">
-      <h1 id="hero-name" class="display enter" style="--i: 0">
+      <p class="status enter" style="--i: 0">
+        <span class="dot" aria-hidden="true"></span>
+        {t(locale, "locationValue")}
+        {availability && <span class="available">{availability[locale]}</span>}
+      </p>
+      <h1 id="hero-name" class="enter" style="--i: 1">
         {person.name[locale]}
+        <span class="role">{person.role[locale]}</span>
       </h1>
-      <p class="role enter" style="--i: 1">
-        {person.role[locale]}, {person.location[locale]}
+      <p class="statement display enter" style="--i: 2">
+        {statement[locale].map((part) =>
+          typeof part === "string" ? (
+            part
+          ) : (
+            <a href={localeUrl(locale, `projects/${part.slug}/`)} data-accent={part.accent}>
+              {part.text}
+            </a>
+          ),
+        )}
       </p>
-      <a
-        class="resume underline-grow enter"
-        style="--i: 2"
-        href={`${import.meta.env.BASE_URL}${person.resume}`}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        {/* Lucide "external-link" icon. */}
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-          focusable="false"
-        >
-          <path d="M15 3h6v6"></path>
-          <path d="M10 14 21 3"></path>
-          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-        </svg>
-        {t(locale, "viewResume")}
-      </a>
-      <p class="statement enter" style="--i: 3">
-        {statement[locale]}
+      <p class="ctas enter" style="--i: 3">
+        <a class="btn-pill primary" href="#work">
+          {t(locale, "work")}
+        </a>
+        <a class="underline-grow" href="#contact">
+          {t(locale, "contact")}
+        </a>
       </p>
-      {availability && (
-        <p class="cta enter" style="--i: 4">
-          {availability[locale]}
-        </p>
-      )}
     </section>
 
-    <section id="background" class="enter" style="--i: 4" aria-labelledby="background-title">
-      <h2 class="section-title" id="background-title">
-        {t(locale, "background")}
-      </h2>
-      {/* Radio-driven tabs: no client JS, arrow keys switch between them. */}
-      <div class="tabs">
-        <input type="radio" name="bg-tab" id="tab-work" class="visually-hidden" checked />
-        <input type="radio" name="bg-tab" id="tab-education" class="visually-hidden" />
-        <div class="switch">
-          <label for="tab-work">{t(locale, "experience")}</label>
-          <label for="tab-education">{t(locale, "education")}</label>
-        </div>
-        <div class="card">
-          {[
-            { key: "work", entries: experience },
-            { key: "education", entries: education },
-          ].map((list) => (
-            <ol class:list={["timeline", list.key]}>
-              {list.entries.map((entry) => (
-                <li>
-                  <h3>{entry.org[locale]}</h3>
-                  <p class="meta">
-                    <span>{entry.role[locale]}</span>
-                    <span class="period">
-                      {typeof entry.period === "string" ? entry.period : entry.period[locale]}
-                    </span>
-                  </p>
-                  {entry.points && (
-                    <ul>
-                      {entry.points[locale].map((point) => (
-                        <li>{point}</li>
-                      ))}
-                    </ul>
-                  )}
-                </li>
-              ))}
-            </ol>
-          ))}
-        </div>
+    {/* Every line is a fact from src/data/site.ts or the project files. */}
+    <figure class="terminal enter" style="--i: 3" aria-label={t(locale, "terminalLabel")}>
+      <div class="term-bar" aria-hidden="true">
+        <span class="lights">
+          <i></i>
+          <i></i>
+          <i></i>
+        </span>
+        <span>juu@debian</span>
       </div>
-      <p class="languages">
-        <strong>{t(locale, "languages")}:</strong>
-        {languages.map((language) => (
-          <span class="language">
-            <Flag code={language.flag} />
-            {language.text[locale]}
-          </span>
-        ))}
-      </p>
-    </section>
+      <div class="term-body">
+        <p class="cmd">
+          <span aria-hidden="true">$ </span>whoami
+        </p>
+        <p class="out">
+          {person.role[locale]}, {person.location[locale]}
+        </p>
+        {now && (
+          <>
+            <p class="cmd">
+              <span aria-hidden="true">$ </span>cat now
+            </p>
+            <p class="out">
+              {now.org[locale]}, {typeof now.period === "string" ? now.period : now.period[locale]}
+            </p>
+          </>
+        )}
+        <p class="cmd">
+          <span aria-hidden="true">$ </span>ls ~/shipped
+        </p>
+        <p class="out shipped">
+          {shipped.map((s) => (
+            <a href={s.href} data-accent={s.accent}>
+              {s.domain}
+            </a>
+          ))}
+        </p>
+        <p class="cmd">
+          <span aria-hidden="true">$ </span>uname -o
+        </p>
+        {/* src: owner CV ("works on Debian Linux"). */}
+        <p class="out">GNU/Linux (Debian)</p>
+        <p class="cmd" aria-hidden="true">
+          $ <span class="caret"></span>
+        </p>
+      </div>
+    </figure>
+
+    <dl class="facts enter" style="--i: 4">
+      <div>
+        <dt>{t(locale, "location")}</dt>
+        <dd>{t(locale, "locationValue")}</dd>
+      </div>
+      {now && (
+        <div>
+          <dt>{t(locale, "nowAt")}</dt>
+          <dd>{now.org[locale]}</dd>
+        </div>
+      )}
+      <div>
+        <dt>{t(locale, "liveSites")}</dt>
+        <dd>{projects.length}</dd>
+      </div>
+    </dl>
   </div>
 
   <ProjectIndex locale={locale} projects={projects} />
+
+  <Timeline locale={locale} />
 
   <section id="expertise" class="wrap block" aria-labelledby="expertise-title">
     <h2 class="section-title" id="expertise-title">
@@ -155,66 +166,202 @@ const projects = (await getCollection("projects", (p) => splitId(p.id).locale ==
 
 <style>
   .hero {
-    padding-block: var(--space-6) var(--space-7);
+    display: grid;
+    gap: var(--space-7);
+    padding-block: var(--space-7) var(--space-8);
   }
 
-  #background {
-    margin-top: var(--space-7);
-  }
-
-  /* Desktop: the timeline sits beside the intro. */
+  /* Desktop: the sentence on the left, the terminal beside it. */
   @media (min-width: 64rem) {
     .hero {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 32rem);
-      gap: var(--space-7);
-      align-items: start;
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      align-items: center;
+      padding-top: var(--space-8);
     }
 
-    #background {
-      margin-top: 0;
+    .facts {
+      grid-column: 1 / -1;
     }
+  }
+
+  .status {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-3);
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+
+  .dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--signal);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--signal) 25%, transparent);
+  }
+
+  .available {
+    color: var(--signal);
   }
 
   h1 {
-    font-size: var(--step-3);
-    line-height: 1.1;
+    margin-top: var(--space-5);
+    font-size: var(--step-1);
+    font-weight: 600;
+    line-height: 1.3;
   }
 
   .role {
-    margin-top: var(--space-4);
-    font-weight: 600;
+    display: block;
+    font-weight: var(--weight-text);
+    color: var(--muted);
   }
 
-  .resume {
-    display: inline-flex;
+  /* The one loud thing on the page. */
+  .statement {
+    margin-top: var(--space-5);
+    max-width: 22ch;
+    font-size: clamp(1.9rem, 1.15rem + 2.7vw, 3.5rem);
+    line-height: 1.06;
+    text-wrap: balance;
+  }
+
+  /* The clients in the sentence link to their case studies, underlined in their colour. */
+  .statement a {
+    text-decoration-line: underline;
+    text-decoration-color: var(--accent);
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.12em;
+    transition: color var(--dur-fast) var(--ease);
+  }
+
+  .statement a:hover {
+    color: var(--accent);
+  }
+
+  .ctas {
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-2);
-    margin-top: var(--space-3);
-    color: var(--ink);
-    font-weight: 600;
+    gap: var(--space-3) var(--space-5);
+    margin-top: var(--space-6);
+  }
+
+  .ctas .btn-pill {
+    padding: var(--space-3) var(--space-5);
+  }
+
+  .ctas .underline-grow {
+    font-weight: 500;
+  }
+
+  .terminal {
+    overflow: hidden;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-frame);
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    box-shadow: var(--shadow-float);
+    font-family: var(--font-code);
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+
+  .term-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-2) var(--space-4);
+    border-bottom: 1px solid var(--rule);
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+
+  .lights {
+    display: inline-flex;
+    gap: 6px;
+  }
+
+  .lights i {
+    width: 0.65rem;
+    height: 0.65rem;
+    border-radius: 50%;
+    background: var(--rule);
+  }
+
+  .term-body {
+    padding: var(--space-4) var(--space-5) var(--space-5);
+    overflow-wrap: anywhere;
+  }
+
+  .cmd span {
+    color: var(--signal);
+  }
+
+  .cmd + .out {
+    color: var(--muted);
+  }
+
+  .out + .cmd {
+    margin-top: var(--space-2);
+  }
+
+  .shipped {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-4);
+  }
+
+  /* 24px tall, so the links stay easy to tap when they wrap onto two lines. */
+  .shipped a {
+    display: inline-block;
+    min-height: 24px;
+    line-height: 24px;
+    color: var(--accent);
     text-decoration: none;
   }
 
-  .resume svg {
-    width: 1.1em;
+  .shipped a:hover {
+    text-decoration: underline;
+  }
+
+  .caret {
+    display: inline-block;
+    width: 0.55em;
     height: 1.1em;
-    transition: translate var(--dur-med) var(--ease-out-expo);
+    vertical-align: text-bottom;
+    background: var(--muted);
   }
 
-  .resume:hover svg {
-    translate: 2px -2px;
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
   }
 
-  .statement {
-    margin-top: var(--space-2);
-    max-width: 52ch;
-    font-size: var(--step-1);
-    line-height: 1.45;
+  @media (prefers-reduced-motion: no-preference) {
+    .caret {
+      animation: blink 1.1s steps(1) infinite;
+    }
   }
 
-  .block {
-    margin-top: var(--space-8);
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: var(--space-5);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--rule);
+    font-size: var(--step--1);
+  }
+
+  .facts dt {
+    color: var(--muted);
+  }
+
+  .facts dd {
+    margin-top: var(--space-1);
+    font-size: var(--step-0);
+    font-weight: 500;
   }
 
   .skills {
@@ -223,222 +370,13 @@ const projects = (await getCollection("projects", (p) => splitId(p.id).locale ==
     gap: var(--space-6) var(--space-5);
   }
 
-  dt {
+  .skills dt {
     font-weight: 600;
     margin-bottom: var(--space-2);
   }
 
-  dd {
+  .skills dd {
     color: var(--muted);
-  }
-
-  .tabs {
-    max-width: 48rem;
-  }
-
-  .switch {
-    position: relative;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-1);
-    padding: var(--space-1);
-    margin-bottom: var(--space-4);
-    background: var(--surface);
-    border: 1px solid var(--rule);
-    border-radius: var(--radius-frame);
-  }
-
-  /* One pill that slides under the checked label. */
-  .switch::before {
-    content: "";
-    position: absolute;
-    inset-block: var(--space-1);
-    left: var(--space-1);
-    width: calc(50% - 1.5 * var(--space-1));
-    border-radius: calc(var(--radius-frame) - 4px);
-    background: var(--paper);
-    transition: translate var(--dur-med) var(--ease-out-expo);
-  }
-
-  #tab-education:checked ~ .switch::before {
-    translate: calc(100% + var(--space-1)) 0;
-  }
-
-  .switch label {
-    position: relative;
-    padding: var(--space-2) var(--space-3);
-    white-space: nowrap;
-    border-radius: calc(var(--radius-frame) - 4px);
-    color: var(--muted);
-    text-align: center;
-    cursor: pointer;
-    transition: color var(--dur-fast) var(--ease);
-  }
-
-  .switch label:hover {
-    color: var(--ink);
-  }
-
-  #tab-work:checked ~ .switch [for="tab-work"],
-  #tab-education:checked ~ .switch [for="tab-education"] {
-    color: var(--ink);
-    font-weight: 600;
-  }
-
-  #tab-work:focus-visible ~ .switch [for="tab-work"],
-  #tab-education:focus-visible ~ .switch [for="tab-education"] {
-    outline: 2px solid var(--focus);
-    outline-offset: 2px;
-  }
-
-  .card {
-    padding: var(--space-4);
-    background: var(--surface);
-    border: 1px solid var(--rule);
-    border-radius: var(--radius-frame);
-  }
-
-  @media (max-width: 29.99rem) {
-    .switch {
-      font-size: var(--step--1);
-    }
-  }
-
-  @media (min-width: 40rem) {
-    .card {
-      padding: var(--space-5);
-    }
-  }
-
-  #tab-work:checked ~ .card .education,
-  #tab-education:checked ~ .card .work {
-    display: none;
-  }
-
-  .timeline {
-    position: relative;
-    margin: 0;
-    padding: 0 0 0 var(--space-5);
-    list-style: none;
-  }
-
-  /* The vertical line the dots sit on. */
-  .timeline::before {
-    content: "";
-    position: absolute;
-    inset-block: 0.5rem;
-    left: 0.3rem;
-    width: 1px;
-    background: var(--rule);
-  }
-
-  .timeline > li {
-    position: relative;
-  }
-
-  .timeline > li + li {
-    margin-top: var(--space-6);
-  }
-
-  .timeline > li::before {
-    content: "";
-    position: absolute;
-    top: 0.45em;
-    left: calc(-1 * var(--space-5));
-    width: 0.6rem;
-    height: 0.6rem;
-    border-radius: 50%;
-    background: var(--ink);
-  }
-
-  .timeline h3 {
-    font-size: var(--step-1);
-    font-weight: 600;
-  }
-
-  .meta {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 0 var(--space-4);
-    margin-top: var(--space-1);
-    color: var(--muted);
-  }
-
-  .period {
-    white-space: nowrap;
-    font-size: var(--step--1);
-    font-variant-numeric: tabular-nums;
-  }
-
-  .timeline ul {
-    margin: var(--space-2) 0 0;
-    padding-left: var(--space-5);
-    list-style: disc;
-  }
-
-  .timeline ul li + li {
-    margin-top: var(--space-1);
-  }
-
-  /*
-   * Motion: the shown panel rises in (switching tabs re-plays it, since the
-   * other panel goes display: none), the line draws down and the dots pop in.
-   */
-  @keyframes draw {
-    from {
-      scale: 1 0;
-    }
-  }
-
-  @keyframes pop {
-    from {
-      scale: 0;
-    }
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .timeline {
-      animation: rise var(--dur-med) var(--ease-out-expo) both;
-    }
-
-    .timeline::before {
-      transform-origin: top;
-      animation: draw var(--dur-slow) var(--ease-out-expo) both 150ms;
-    }
-
-    .timeline > li::before {
-      animation: pop var(--dur-med) var(--ease-out-expo) both;
-      animation-delay: calc(250ms + var(--n, 0) * 120ms);
-    }
-
-    .timeline > li:nth-child(2) {
-      --n: 1;
-    }
-    .timeline > li:nth-child(3) {
-      --n: 2;
-    }
-    .timeline > li:nth-child(4) {
-      --n: 3;
-    }
-    .timeline > li:nth-child(n + 5) {
-      --n: 4;
-    }
-  }
-
-  .languages {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    align-items: center;
-    gap: var(--space-2) var(--space-3);
-    margin-top: var(--space-5);
-  }
-
-  .language {
-    grid-column: 2;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4em;
   }
 
   .about {

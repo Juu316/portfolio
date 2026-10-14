@@ -1,0 +1,271 @@
+---
+/**
+ * Work and study on one year-by-year rail, newest first. Certificates follow
+ * when the owner has listed any; languages close the section.
+ */
+import Flag from "./Flag.astro";
+import { t, type Locale } from "../i18n/ui";
+import { certificates, education, experience, languages } from "../data/site";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+
+const entries = [
+  ...experience.map((entry) => ({ ...entry, kind: "work" as const })),
+  ...education.map((entry) => ({ ...entry, kind: "study" as const })),
+];
+// Newest year first; within a year, work before study (sort is stable).
+const years = [...new Set(entries.map((e) => e.start))]
+  .sort((a, b) => b - a)
+  .map((year) => ({
+    year,
+    entries: entries
+      .filter((e) => e.start === year)
+      .sort((a, b) => (a.kind === b.kind ? 0 : a.kind === "work" ? -1 : 1)),
+  }));
+---
+
+<section id="background" class="wrap block" aria-labelledby="background-title">
+  <h2 class="section-title" id="background-title">
+    {t(locale, "background")}
+  </h2>
+
+  <ol class="years">
+    {years.map((group) => (
+      <li class="year reveal">
+        <h3 class="year-label display">{group.year}</h3>
+        <ul class="entries">
+          {group.entries.map((entry) => (
+            <li class:list={["entry", entry.kind]}>
+              <p class="kind">{t(locale, entry.kind === "work" ? "kindWork" : "kindStudy")}</p>
+              <h4>{entry.org[locale]}</h4>
+              <p class="meta">
+                <span>{entry.role[locale]}</span>
+                <span class="period">
+                  {typeof entry.period === "string" ? entry.period : entry.period[locale]}
+                </span>
+              </p>
+              {entry.points && (
+                <ul class="points">
+                  {entry.points[locale].map((point) => (
+                    <li>{point}</li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          ))}
+        </ul>
+      </li>
+    ))}
+  </ol>
+
+  {certificates.length > 0 && (
+    <div class="certificates reveal">
+      <h3>{t(locale, "certificates")}</h3>
+      <ul>
+        {certificates.map((c) => (
+          <li>
+            {c.url ? <a href={c.url}>{c.name[locale]}</a> : c.name[locale]}
+            <span class="period">
+              {c.issuer}, {c.year}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+
+  <p class="languages reveal">
+    <strong>{t(locale, "languages")}:</strong>
+    {languages.map((language) => (
+      <span class="language">
+        <Flag code={language.flag} />
+        {language.text[locale]}
+      </span>
+    ))}
+  </p>
+</section>
+
+<style>
+  .years {
+    padding: 0;
+    list-style: none;
+  }
+
+  .year {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .year + .year {
+    margin-top: var(--space-6);
+  }
+
+  .year-label {
+    font-size: var(--step-3);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+  }
+
+  /* The rail the dots sit on, one segment per year so it reveals with it. */
+  .entries {
+    position: relative;
+    display: grid;
+    gap: var(--space-5);
+    padding: 0 0 0 var(--space-5);
+    list-style: none;
+  }
+
+  .entries::before {
+    content: "";
+    position: absolute;
+    inset-block: 0.5rem 0;
+    left: 0.3rem;
+    width: 1px;
+    background: var(--rule);
+  }
+
+  .entry {
+    position: relative;
+    max-width: 48rem;
+  }
+
+  .entry::before {
+    content: "";
+    position: absolute;
+    top: 0.45em;
+    left: calc(-1 * var(--space-5));
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background: var(--ink);
+  }
+
+  /* Study gets a hollow dot. */
+  .entry.study::before {
+    background: var(--paper);
+    box-shadow: inset 0 0 0 1.5px var(--muted);
+  }
+
+  .kind {
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+
+  h4 {
+    margin: 0;
+    font-size: var(--step-1);
+    font-weight: 600;
+    line-height: 1.25;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0 var(--space-4);
+    margin-top: var(--space-1);
+    color: var(--muted);
+  }
+
+  .period {
+    white-space: nowrap;
+    font-size: var(--step--1);
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+  }
+
+  .points {
+    margin: var(--space-2) 0 0;
+    padding-left: var(--space-5);
+  }
+
+  .points li + li {
+    margin-top: var(--space-1);
+  }
+
+  @media (min-width: 48rem) {
+    .year {
+      grid-template-columns: 8rem minmax(0, 1fr);
+      gap: var(--space-6);
+    }
+  }
+
+  .certificates {
+    margin-top: var(--space-7);
+  }
+
+  .certificates h3 {
+    font-size: var(--step-1);
+    margin-bottom: var(--space-3);
+  }
+
+  .certificates ul {
+    display: grid;
+    gap: var(--space-2);
+    padding: 0;
+    list-style: none;
+  }
+
+  .certificates li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-4);
+  }
+
+  .languages {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: var(--space-2) var(--space-3);
+    margin-top: var(--space-7);
+  }
+
+  .language {
+    grid-column: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+  }
+
+  /* As each year scrolls in, its rail draws down and the dots pop in after it. */
+  @keyframes draw {
+    from {
+      scale: 1 0;
+    }
+  }
+
+  @keyframes pop {
+    from {
+      scale: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .entries::before {
+        transform-origin: top;
+        animation: draw linear both;
+      }
+
+      .entry::before {
+        animation: pop linear both;
+      }
+
+      /* Separate rules: the minifier would fold the timeline into the shorthand. */
+      .year .entries::before {
+        animation-timeline: view();
+        animation-range: entry 10% cover 40%;
+      }
+
+      .entries .entry::before {
+        animation-timeline: view();
+        animation-range: entry 30% entry 90%;
+      }
+    }
+  }
+</style>

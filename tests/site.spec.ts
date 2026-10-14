@@ -134,6 +134,130 @@ test.describe("dark mode", () => {
   }
 });
 
+test.describe("light mode", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem("theme", "light"));
+  });
+  for (const path of [
+    "",
+    "en/",
+    "projects/b2c/",
+    "en/projects/shuren/",
+    "en/projects/orchuulga/",
+  ]) {
+    test(`/${path} has no contrast or other axe violations`, async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await page.goto(path);
+      await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+      await loadEverything(page);
+      const results = await new AxeBuilder({ page }).withTags(["wcag2aa", "wcag21aa"]).analyze();
+      expect(results.violations.map((v) => v.id)).toEqual([]);
+    });
+  }
+});
+
+test("the theme toggle switches to light and the choice survives a reload", async ({ page }) => {
+  await page.goto("en/");
+  const html = page.locator("html");
+  await expect(html).not.toHaveAttribute("data-theme", "light");
+  const toggle = page.getByRole("button", { name: "Switch to light mode" });
+  await toggle.click();
+  await expect(html).toHaveAttribute("data-theme", "light");
+  await expect(page.getByRole("button", { name: "Switch to dark mode" })).toBeVisible();
+
+  await page.reload();
+  await expect(html).toHaveAttribute("data-theme", "light");
+  await page.getByRole("button", { name: "Switch to dark mode" }).click();
+  await expect(html).not.toHaveAttribute("data-theme", "light");
+});
+
+test("header: section links, CV download and contact from a case study", async ({
+  page,
+}, testInfo) => {
+  await page.goto("en/projects/shuren/");
+  const header = page.locator(".site-header");
+  if (testInfo.project.name === "mobile") {
+    await header.locator(".menu summary").click();
+  }
+  const nav = header.getByRole("navigation", { name: "Main" });
+  for (const [name, hash] of [
+    ["Work", "work"],
+    ["Experience", "background"],
+    ["Expertise", "expertise"],
+    ["About", "about"],
+  ]) {
+    await expect(nav.getByRole("link", { name, exact: true })).toHaveAttribute(
+      "href",
+      `/portfolio/en/#${hash}`,
+    );
+  }
+  const cv = header.getByRole("link", { name: "Download CV" });
+  await expect(cv).toHaveAttribute("href", "/portfolio/resume.pdf");
+  await expect(cv).toHaveAttribute("download", "");
+  await expect(header.getByRole("link", { name: "Contact", exact: true })).toHaveAttribute(
+    "href",
+    "/portfolio/en/#contact",
+  );
+});
+
+test("mobile menu closes after picking a link", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "mobile", "the menu only exists on narrow screens");
+  await page.goto("en/");
+  const menu = page.locator(".menu");
+  await expect(menu.locator("summary")).toHaveAccessibleName("Menu");
+  await menu.locator("summary").click();
+  await expect(menu).toHaveAttribute("open", "");
+  await menu.getByRole("link", { name: "About" }).click();
+  await expect(menu).not.toHaveAttribute("open", "");
+  await expect(page).toHaveURL(/#about$/);
+});
+
+test("hero names the live sites and links the clients to their case studies", async ({ page }) => {
+  await page.goto("en/");
+  const statement = page.locator(".statement");
+  await expect(statement.getByRole("link", { name: "a tour operator" })).toHaveAttribute(
+    "href",
+    "/portfolio/en/projects/b2c/",
+  );
+  await expect(statement.getByRole("link", { name: "a jewelry shop" })).toHaveAttribute(
+    "href",
+    "/portfolio/en/projects/shuren/",
+  );
+  const terminal = page.locator(".terminal");
+  for (const domain of ["global-travel.mn", "shuren.mn", "orchuulga.mn"]) {
+    await expect(terminal.getByRole("link", { name: domain })).toHaveCount(1);
+  }
+});
+
+test("timeline lists work and study newest first; certificates stay hidden while empty", async ({
+  page,
+}) => {
+  await page.goto("en/");
+  const years = await page.locator("#background .year-label").allTextContents();
+  expect(years).toEqual([...years].sort().reverse());
+  expect(years[0]).toBe("2026");
+  await expect(page.locator("#background .certificates")).toHaveCount(0);
+});
+
+test("contact: copy buttons copy the email address and phone number", async ({
+  page,
+  context,
+  browserName,
+}) => {
+  test.skip(browserName !== "chromium", "clipboard permissions are Chromium-only");
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto("en/");
+  const contact = page.locator("#contact");
+  const buttons = contact.getByRole("button", { name: "Copy" });
+  await expect(buttons).toHaveCount(2);
+  await buttons.first().click();
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("iikii427@proton.me");
+  await expect(contact.locator("[data-copy-status]")).toHaveText("Email address copied");
+  await buttons.last().click();
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("+97680383316");
+  await expect(contact.locator('a[href="tel:+97680383316"]').first()).toBeVisible();
+});
+
 test("the language switch keeps you on the same page", async ({ page }) => {
   await page.goto("projects/shuren/");
   await page.getByRole("link", { name: "Англиар үзэх" }).click();
@@ -169,7 +293,8 @@ test("project index links to every case study in both languages", async ({ page 
 test("contact: mailto link and a form that posts to Web3Forms", async ({ page }) => {
   await page.goto("en/");
   const contact = page.locator("#contact");
-  await expect(contact.locator('a[href="mailto:iikii427@proton.me"]')).toHaveCount(1);
+  // The address itself and the "Email me" button.
+  await expect(contact.locator('a[href="mailto:iikii427@proton.me"]')).toHaveCount(2);
   await expect(contact.locator('a[href="https://github.com/Juu316"]')).toHaveCount(1);
 
   const form = contact.locator("form");

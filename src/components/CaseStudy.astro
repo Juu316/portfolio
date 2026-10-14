@@ -164,6 +164,10 @@ const nextSlug = splitId(next.id).slug;
       .cover :global(img) {
         transform-origin: top;
         animation: drift linear both;
+      }
+
+      /* Separate rule: the minifier would fold the timeline into the shorthand. */
+      .case .cover :global(img) {
         animation-timeline: view();
         animation-range: exit 0% exit 100%;
       }

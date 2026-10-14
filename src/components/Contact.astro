@@ -1,6 +1,6 @@
 ---
 import { localeUrl, t, type Locale } from "../i18n/ui";
-import { contactForm, person } from "../data/site";
+import { availability, contactForm, person, replyTime } from "../data/site";
 
 interface Props {
   locale: Locale;
@@ -13,8 +13,8 @@ const links = [
   { href: person.github, label: bare(person.github), rel: "me" },
   { href: person.instagram, label: bare(person.instagram), rel: "me noopener" },
   { href: person.facebook, label: bare(person.facebook), rel: "me noopener" },
-  { href: `tel:+976${person.phone}`, label: person.phone },
 ];
+const tel = `+976${person.phone}`;
 ---
 
 <section id="contact" class="wrap contact" aria-labelledby="contact-title">
@@ -24,9 +24,73 @@ const links = [
 
   <div class="grid">
     <div class="reveal">
-      <a class="email display" href={`mailto:${person.email}`}>
-        {person.email}
-      </a>
+      <div class="channels">
+        <div class="channel">
+          <p class="label">{t(locale, "email")}</p>
+          <a class="value display" href={`mailto:${person.email}`}>
+            {person.email}
+          </a>
+          <p class="actions">
+            <a class="btn-pill" href={`mailto:${person.email}`}>
+              {t(locale, "emailMe")}
+            </a>
+            <button
+              class="btn-pill copy"
+              type="button"
+              hidden
+              data-copy={person.email}
+              data-done={t(locale, "copiedEmail")}
+            >
+              {t(locale, "copy")}
+            </button>
+          </p>
+        </div>
+        <div class="channel">
+          <p class="label">{t(locale, "phone")}</p>
+          <a class="value display" href={`tel:${tel}`}>
+            {person.phoneDisplay}
+          </a>
+          <p class="actions">
+            <a class="btn-pill" href={`tel:${tel}`}>
+              {t(locale, "call")}
+            </a>
+            {person.viber && (
+              <a class="btn-pill" href={`viber://chat?number=%2B976${person.phone}`}>
+                {t(locale, "openViber")}
+              </a>
+            )}
+            <button
+              class="btn-pill copy"
+              type="button"
+              hidden
+              data-copy={tel}
+              data-done={t(locale, "copiedPhone")}
+            >
+              {t(locale, "copy")}
+            </button>
+          </p>
+        </div>
+      </div>
+
+      <dl class="facts">
+        <div>
+          <dt>{t(locale, "timezone")}</dt>
+          <dd>{t(locale, "locationValue")}</dd>
+        </div>
+        {replyTime && (
+          <div>
+            <dt>{t(locale, "replyTime")}</dt>
+            <dd>{replyTime[locale]}</dd>
+          </div>
+        )}
+        {availability && (
+          <div>
+            <dt>{t(locale, "availabilityLabel")}</dt>
+            <dd>{availability[locale]}</dd>
+          </div>
+        )}
+      </dl>
+
       <ul class="also">
         {links.map((link) => (
           <li>
@@ -36,6 +100,7 @@ const links = [
           </li>
         ))}
       </ul>
+      <p class="visually-hidden" aria-live="polite" data-copy-status></p>
     </div>
 
     {/* Plain HTML POST: Web3Forms emails the message and redirects to /thanks/. */}
@@ -60,6 +125,30 @@ const links = [
   </div>
 </section>
 
+<script>
+  // Copy buttons appear only where the clipboard API exists.
+  const status = document.querySelector<HTMLElement>("[data-copy-status]");
+  if (navigator.clipboard) {
+    for (const button of document.querySelectorAll<HTMLButtonElement>("[data-copy]")) {
+      const label = button.textContent ?? "";
+      button.hidden = false;
+      button.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(button.dataset.copy ?? "");
+        } catch {
+          return;
+        }
+        if (status) status.textContent = button.dataset.done ?? "";
+        button.textContent = "✓";
+        setTimeout(() => {
+          button.textContent = label;
+          if (status) status.textContent = "";
+        }, 2000);
+      });
+    }
+  }
+</script>
+
 <style>
   .contact {
     margin-top: var(--space-8);
@@ -76,15 +165,80 @@ const links = [
     }
   }
 
-  .email {
+  .channels {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  .channel + .channel {
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--rule);
+  }
+
+  .label {
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+
+  .value {
+    display: inline-block;
+    margin-top: var(--space-1);
     font-size: var(--step-2);
+    text-decoration: none;
     overflow-wrap: anywhere;
   }
 
-  .also {
-    display: grid;
+  .value:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
     gap: var(--space-2);
-    margin-top: var(--space-4);
+    margin-top: var(--space-3);
+    font-size: var(--step--1);
+  }
+
+  .actions button {
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .actions .copy {
+    min-width: 5.5rem;
+    justify-content: center;
+  }
+
+  .actions .copy[hidden] {
+    display: none;
+  }
+
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4) var(--space-7);
+    margin-top: var(--space-6);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--rule);
+    font-size: var(--step--1);
+  }
+
+  .facts dt {
+    color: var(--muted);
+  }
+
+  .facts dd {
+    margin-top: var(--space-1);
+    font-size: var(--step-0);
+  }
+
+  .also {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+    margin-top: var(--space-5);
     padding: 0;
     list-style: none;
     color: var(--muted);
@@ -132,7 +286,7 @@ const links = [
     display: none;
   }
 
-  button {
+  form button {
     justify-self: start;
     margin-top: var(--space-4);
     padding: var(--space-3) var(--space-6);
@@ -145,22 +299,22 @@ const links = [
     cursor: pointer;
   }
 
-  button {
+  form button {
     transition:
       opacity var(--dur-fast) var(--ease),
       transform var(--dur-fast) var(--ease);
   }
 
-  button:hover {
+  form button:hover {
     opacity: 0.88;
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    button:hover {
+    form button:hover {
       transform: translateY(-2px);
     }
 
-    button:active {
+    form button:active {
       transform: translateY(0);
     }
   }

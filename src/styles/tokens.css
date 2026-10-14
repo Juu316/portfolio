@@ -1,17 +1,21 @@
 /*
  * Design tokens. Components read these; they never hard-code colour, type
- * size or spacing. The site is dark only.
+ * size or spacing. Dark is the default; [data-theme="light"] on <html> swaps
+ * the colour set (see the theme script in Base.astro).
  */
 :root {
   color-scheme: dark;
 
-  /* Base: a deep, neutral night the projects bring their colour into. */
-  --paper: #12161f;
-  --surface: #1a1f2b;
-  --ink: #e7e9ee;
-  --muted: #9aa2b1;
-  --rule: #2a3140;
-  --focus: #e7e9ee;
+  /* Base: the night sky over the steppe, which the projects bring their colour into. */
+  --paper: #0c1226;
+  --surface: #151d38;
+  --ink: #edeae2;
+  --muted: #97a0bc;
+  --rule: #24305a;
+  --focus: #edeae2;
+  /* The "online" dot in the header and hero. Not a project accent. */
+  --signal: #5bd69b;
+  --shadow-float: 0 1px 0 0 rgb(255 255 255 / 0.05) inset, 0 1px 40px 0 rgb(0 0 0 / 0.55);
 
   /* Project accents: each project's real brand colour, lightened to AA on paper. */
   --accent-gtc: #4cc3f7;
@@ -20,8 +24,12 @@
   --accent: var(--ink);
 
   /* Type */
-  --font-display: "Golos Text", system-ui, sans-serif;
-  --font-text: "Golos Text", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Geologica", system-ui, sans-serif;
+  --font-text: "Geologica", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* System monospace, only for the hero terminal and inline code. No download. */
+  --font-code: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --weight-text: 380;
+  --weight-display: 750;
 
   --step--1: clamp(0.84rem, 0.82rem + 0.1vw, 0.9rem);
   --step-0: clamp(1rem, 0.96rem + 0.2vw, 1.0625rem);
@@ -54,6 +62,24 @@
   --dur-slow: 800ms;
   --vt-duration: 450ms;
   --stagger: 80ms;
+}
+
+/* Daylight: same roles, accents darkened until they pass AA on the light paper. */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --paper: #f2f4f9;
+  --surface: #ffffff;
+  --ink: #0c1226;
+  --muted: #4a5470;
+  --rule: #d3d9e8;
+  --focus: #0c1226;
+  --signal: #127547;
+  --shadow-float: 0 1px 0 0 rgb(255 255 255 / 0.6) inset, 0 8px 30px -6px rgb(12 18 38 / 0.18);
+
+  --accent-gtc: #0a6a9c;
+  --accent-shuren: #8f5338;
+  --accent-orchuulga: #0a7356;
 }
 
 [data-accent="gtc"] {
