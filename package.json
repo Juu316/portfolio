@@ -4,6 +4,7 @@
   "private": true,
   "description": "Developer portfolio of Usukh-Erdene Choijamts — Astro, static, bilingual (MN/EN)",
   "type": "module",
+  "packageManager": "pnpm@12.10.1",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
