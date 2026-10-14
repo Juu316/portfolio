@@ -72,24 +72,22 @@ const tel = `+976${person.phone}`;
         </div>
       </div>
 
-      <dl class="facts">
-        <div>
-          <dt>{t(locale, "timezone")}</dt>
-          <dd>{t(locale, "locationValue")}</dd>
-        </div>
-        {replyTime && (
-          <div>
-            <dt>{t(locale, "replyTime")}</dt>
-            <dd>{replyTime[locale]}</dd>
-          </div>
-        )}
-        {availability && (
-          <div>
-            <dt>{t(locale, "availabilityLabel")}</dt>
-            <dd>{availability[locale]}</dd>
-          </div>
-        )}
-      </dl>
+      {(replyTime || availability) && (
+        <dl class="facts">
+          {replyTime && (
+            <div>
+              <dt>{t(locale, "replyTime")}</dt>
+              <dd>{replyTime[locale]}</dd>
+            </div>
+          )}
+          {availability && (
+            <div>
+              <dt>{t(locale, "availabilityLabel")}</dt>
+              <dd>{availability[locale]}</dd>
+            </div>
+          )}
+        </dl>
+      )}
 
       <ul class="also">
         {links.map((link) => (
