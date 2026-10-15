@@ -49,6 +49,10 @@ const SHOTS = {
     { name: "home", url: "https://www.orchuulga.mn/", viewport: DESKTOP },
     { name: "home-mobile", url: "https://www.orchuulga.mn/", viewport: MOBILE },
   ],
+  degfim: [
+    { name: "home", url: "https://degfim.nova-shop.workers.dev/", viewport: DESKTOP },
+    { name: "home-mobile", url: "https://degfim.nova-shop.workers.dev/", viewport: MOBILE },
+  ],
   og: [
     { name: "home-mn", url: SITE, viewport: OG, locale: "mn-MN" },
     { name: "home-en", url: new URL("en/", SITE).href, viewport: OG, locale: "en-US" },

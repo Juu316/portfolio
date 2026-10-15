@@ -1,7 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
-const PROJECTS = ["b2c", "shuren", "orchuulga"];
+const PROJECTS = ["b2c", "shuren", "orchuulga", "degfim"];
 
 /** Every indexable page, in both locales. Paths are relative to the base. */
 const PAGES = ["", "en/", ...PROJECTS.flatMap((p) => [`projects/${p}/`, `en/projects/${p}/`])];
@@ -123,7 +123,13 @@ for (const path of PAGES) {
 
 test.describe("dark mode", () => {
   test.use({ colorScheme: "dark" });
-  for (const path of ["en/", "projects/b2c/", "en/projects/shuren/", "en/projects/orchuulga/"]) {
+  for (const path of [
+    "en/",
+    "projects/b2c/",
+    "en/projects/shuren/",
+    "en/projects/orchuulga/",
+    "en/projects/degfim/",
+  ]) {
     test(`/${path} has no contrast or other axe violations`, async ({ page }) => {
       await page.emulateMedia({ reducedMotion: "reduce" });
       await page.goto(path);
@@ -144,6 +150,7 @@ test.describe("light mode", () => {
     "projects/b2c/",
     "en/projects/shuren/",
     "en/projects/orchuulga/",
+    "en/projects/degfim/",
   ]) {
     test(`/${path} has no contrast or other axe violations`, async ({ page }) => {
       await page.emulateMedia({ reducedMotion: "reduce" });
@@ -224,7 +231,12 @@ test("hero names the live sites and links the clients to their case studies", as
     "/portfolio/en/projects/shuren/",
   );
   const terminal = page.locator(".terminal");
-  for (const domain of ["global-travel.mn", "shuren.mn", "orchuulga.mn"]) {
+  for (const domain of [
+    "global-travel.mn",
+    "shuren.mn",
+    "orchuulga.mn",
+    "degfim.nova-shop.workers.dev",
+  ]) {
     await expect(terminal.getByRole("link", { name: domain })).toHaveCount(1);
   }
 });
@@ -237,6 +249,15 @@ test("timeline lists work and study newest first; certificates stay hidden while
   expect(years).toEqual([...years].sort().reverse());
   expect(years[0]).toBe("2026");
   await expect(page.locator("#background .certificates")).toHaveCount(0);
+});
+
+test("expertise shows decorative logos, and text only where none exists", async ({ page }) => {
+  await page.goto("en/");
+  const skills = page.locator("#expertise dd");
+  await expect(
+    skills.filter({ hasText: "TypeScript" }).locator('svg[aria-hidden="true"]'),
+  ).toHaveCount(1);
+  await expect(skills.filter({ hasText: "AWS" }).locator("svg")).toHaveCount(0);
 });
 
 test("contact: copy buttons copy the email address and phone number", async ({

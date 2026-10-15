@@ -188,7 +188,8 @@ const items = projects.map((p) => ({
     .index:has(.row[data-accent="gtc"]:is(:hover, :focus-within)) .preview[data-for="gtc"],
     .index:has(.row[data-accent="shuren"]:is(:hover, :focus-within)) .preview[data-for="shuren"],
     .index:has(.row[data-accent="orchuulga"]:is(:hover, :focus-within))
-      .preview[data-for="orchuulga"] {
+      .preview[data-for="orchuulga"],
+    .index:has(.row[data-accent="degfim"]:is(:hover, :focus-within)) .preview[data-for="degfim"] {
       opacity: 1;
       scale: 1;
       view-transition-name: var(--vt);
@@ -203,6 +204,9 @@ const items = projects.map((p) => ({
     }
     .index:has(.row[data-accent="orchuulga"]:is(:hover, :focus-within)) .preview :global(img) {
       border-color: var(--accent-orchuulga);
+    }
+    .index:has(.row[data-accent="degfim"]:is(:hover, :focus-within)) .preview :global(img) {
+      border-color: var(--accent-degfim);
     }
   }
 

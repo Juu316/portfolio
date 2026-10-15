@@ -1,0 +1,39 @@
+---
+import type { Logo } from "../data/logos";
+
+interface Props {
+  logo: Logo;
+}
+
+const { logo } = Astro.props;
+const style = [
+  logo.dark && `--logo-dark: ${logo.dark}`,
+  logo.light && `--logo-light: ${logo.light}`,
+]
+  .filter(Boolean)
+  .join("; ");
+---
+
+<svg
+  class="logo"
+  viewBox="0 0 24 24"
+  aria-hidden="true"
+  focusable="false"
+  style={style || undefined}
+>
+  <path d={logo.path}></path>
+</svg>
+
+<style>
+  .logo {
+    flex-shrink: 0;
+    width: 1.1em;
+    height: 1.1em;
+    fill: currentColor;
+    color: var(--logo-dark, var(--ink));
+  }
+
+  :root[data-theme="light"] .logo {
+    color: var(--logo-light, var(--ink));
+  }
+</style>

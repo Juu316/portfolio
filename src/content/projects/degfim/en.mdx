@@ -1,0 +1,70 @@
+---
+title: "Degfim Dental Group"
+summary: "A one-page website for a Finnish-Mongolian dental clinic, prerendered and served from Cloudflare Workers — built and waiting for the clinic's review."
+client: "A Finnish-Mongolian dental clinic in Ulaanbaatar"
+role: "Sole developer, freelance"
+period: "Oct 2026"
+year: 2026
+order: 4
+url: https://degfim.nova-shop.workers.dev
+stack: [Nuxt 4, Vue 3, TypeScript, Cloudflare Workers]
+accent: degfim
+size: short
+cover: ../../../assets/projects/degfim/home.webp
+coverAlt: 'The Degfim homepage, headed "Финлянд чанарыг Монголдоо!", with the clinic''s phone number, opening hours and address.'
+---
+
+import Decision from "../../../components/Decision.astro";
+import Shot from "../../../components/Shot.astro";
+import mobile from "../../../assets/projects/degfim/home-mobile.webp";
+
+{/* src: role and status — owner, 2026-10-15: freelance, built alone, not yet handed over. */}
+
+## Context
+
+Degfim Dental Group is a Finnish-Mongolian dental clinic in Ulaanbaatar. Its website is one page:
+a hero with the phone number, opening hours and address, the services the clinic offers, a short
+section about the clinic, and contact details with a map.
+{/* src: degfim app/pages/index.vue, app/components/*.vue, README.md */}
+
+## What I did
+
+I built the site alone, as freelance work, in Nuxt 4. Every page is rendered to static HTML at build
+time and served by Cloudflare Workers.
+
+<Decision
+  locale="en"
+  title="One file for the clinic's details"
+  problem="Phone, address, hours, social links and services appear in several sections, and in the search metadata too. Copies drift apart when the clinic changes one of them."
+  tradeoff="There is no CMS. A change means editing one file and redeploying."
+>
+  All of the clinic's details live in one data file. The header, hero, services, contact section and
+  footer all read from it, so a new phone number or a new service is one edit.
+  {/* src: degfim app/data/clinic.ts */}
+</Decision>
+
+<Decision
+  locale="en"
+  title="Prerendered, with structured data from the same source"
+  problem="A clinic's site has to be found and has to load fast on a phone, but it does not change between visits."
+  tradeoff="Every content change is a rebuild and a redeploy."
+>
+  Nuxt prerenders the page and Cloudflare Workers serves it as a static asset. The page also carries
+  `Dentist` structured data — address, coordinates, opening hours — built from the same data file,
+  so what search engines read matches what visitors see.
+  {/* src: degfim nuxt.config.ts (nitro preset cloudflare_module, prerender), wrangler.jsonc, app/pages/index.vue */}
+</Decision>
+
+<Shot
+  src={mobile}
+  device="mobile"
+  alt="The Degfim homepage on a phone, with the headline, a call button and a card with opening hours and the address."
+  caption="The homepage on a phone: the call button and the clinic's hours and address on the first screen."
+/>
+
+## Outcome
+
+The site is built and deployed to a Cloudflare Workers preview address. It is not handed over yet:
+the services list and opening hours are waiting for the clinic to confirm them, and the site has no
+domain of its own yet.
+{/* src: degfim app/data/clinic.ts comments ("Placeholder list…", "Confirm with the clinic"); owner 2026-10-15 */}

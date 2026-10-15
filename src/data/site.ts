@@ -70,18 +70,19 @@ export const replyTime: Localized | null = null;
 export const about: Localized<string[]> = {
   mn: [
     "Pinecone Academy-г Full Stack Software Engineer мэргэжлээр төгссөн. 6 сарын сургалт, 2 сарын дадлагын хугацаанд React, Next.js, MongoDB, PostgreSQL дээр багийн болон хувийн олон төсөл хийсэн.",
-    "2025 оны 12-р сараас Мон Тай Сино Группт (GTC Mongolia) Full-stack хөгжүүлэгчээр ажиллаж байна. Тэнд өөр нэг хөгжүүлэгчтэй хамт компанийн аялал захиалга, цахим гэрээ, төлбөрийн системийг бүтээж, orchuulga.mn сайтыг ганцаараа шилжүүлсэн. Ажлаас гадуур үнэт эдлэлийн дэлгүүрийн вэбсайтыг гэрээгээр хийсэн.",
+    "2025 оны 12-р сараас Мон Тай Сино Группт (GTC Mongolia) Full-stack хөгжүүлэгчээр ажиллаж байна. Тэнд өөр нэг хөгжүүлэгчтэй хамт компанийн аялал захиалга, цахим гэрээ, төлбөрийн системийг бүтээж, orchuulga.mn сайтыг ганцаараа шилжүүлсэн. Ажлаас гадуур үнэт эдлэлийн дэлгүүр, шүдний эмнэлгийн вэбсайтыг гэрээгээр хийсэн.",
     "Байгууллагын дотоод систем, нүүр хуудсыг өндөр чанартай хийхийг зорьдог. Linux (Debian) ашигладаг.",
   ],
   en: [
     "I graduated from Pinecone Academy as a Full Stack Software Engineer. Over six months of training and a two-month internship I built team and solo projects in React, Next.js, MongoDB and PostgreSQL.",
-    "Since December 2025 I've been a full-stack developer at Mon Thai Sino Group (GTC Mongolia). There, another developer and I built the company's booking, e-contract and payment system, and I moved orchuulga.mn to a new stack on my own. Outside that job I built a jewelry shop's website as freelance work.",
+    "Since December 2025 I've been a full-stack developer at Mon Thai Sino Group (GTC Mongolia). There, another developer and I built the company's booking, e-contract and payment system, and I moved orchuulga.mn to a new stack on my own. Outside that job I built websites for a jewelry shop and a dental clinic as freelance work.",
     "I care about building internal systems and websites properly. I work on Linux (Debian).",
   ],
 };
 
 /** Repo-backed technologies, plus the ones listed in the owner's CV (2026-08-24)
- * and Java, Spring Boot and Go added by the owner (2026-10-10). */
+ * and Java, Spring Boot and Go added by the owner (2026-10-10), and AWS added by
+ * the owner (2026-10-15). */
 export const expertise: { group: Localized; items: string[] }[] = [
   {
     group: { mn: "Frontend", en: "Frontend" },
@@ -105,7 +106,7 @@ export const expertise: { group: Localized; items: string[] }[] = [
   },
   {
     group: { mn: "Дэд бүтэц", en: "Infrastructure" },
-    items: ["Cloudflare Workers, D1, R2", "Railway"],
+    items: ["AWS", "Cloudflare Workers, D1, R2", "Railway"],
   },
   {
     group: { mn: "Төлбөрийн систем", en: "Payments" },
@@ -134,6 +135,17 @@ type Entry = {
 
 /** src: owner CV 2026-08-24. */
 export const experience: Entry[] = [
+  {
+    start: 2026,
+    // src: owner, 2026-10-15 (freelance, built alone, not yet handed over).
+    period: "2026.10",
+    org: { mn: "Degfim шүдний эмнэлэг", en: "Degfim Dental Group" },
+    role: { mn: "Гэрээт хөгжүүлэгч", en: "Freelance developer" },
+    points: {
+      mn: ["Эмнэлгийн нэг хуудастай вэбсайт, ганцаараа."],
+      en: ["The clinic's one-page website, built alone."],
+    },
+  },
   {
     start: 2026,
     // src: owner CV 2026-10-10 ("Freelance Developer — Shuren Goyol jewelry shop").

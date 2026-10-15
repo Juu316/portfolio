@@ -4,6 +4,8 @@ import Base from "../layouts/Base.astro";
 import ProjectIndex from "./ProjectIndex.astro";
 import Timeline from "./Timeline.astro";
 import Contact from "./Contact.astro";
+import SkillLogo from "./SkillLogo.astro";
+import { logos } from "../data/logos";
 import { domainOf, localeUrl, splitId, t, type Locale } from "../i18n/ui";
 import {
   about,
@@ -143,7 +145,14 @@ const shipped = projects.map((p) => ({
         <div class="reveal">
           <dt>{group.group[locale]}</dt>
           {group.items.map((item) => (
-            <dd>{item}</dd>
+            <dd>
+              <span class="logos">
+                {logos[item]?.map((logo) => (
+                  <SkillLogo logo={logo} />
+                ))}
+              </span>
+              {item}
+            </dd>
           ))}
         </div>
       ))}
@@ -376,7 +385,17 @@ const shipped = projects.map((p) => ({
   }
 
   .skills dd {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
     color: var(--muted);
+  }
+
+  /* Holds the slot open for text-only items so the labels line up. */
+  .logos {
+    display: inline-flex;
+    gap: var(--space-1);
+    min-width: 1.1em;
   }
 
   .about {
