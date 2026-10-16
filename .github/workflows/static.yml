@@ -52,7 +52,9 @@ jobs:
         run: pnpm run build
         env:
           # Read-only use: the GitHub section's GraphQL query (src/data/github.ts).
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # GH_STATS_TOKEN is the owner's personal token (scope read:user), so the
+          # yearly totals include private contributions; the built-in token can't see them.
+          GITHUB_TOKEN: ${{ secrets.GH_STATS_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium

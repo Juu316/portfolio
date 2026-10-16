@@ -4,7 +4,10 @@
  * (src/data/github.ts) to look like the one on github.com: GitHub's greens,
  * month and weekday labels, a hover title per day, "Less … More" legend.
  * With a token, also the year's totals and the language mix of public repos.
- * Left out entirely when GitHub can't be read. No client JS.
+ * Left out entirely when GitHub can't be read.
+ * In the browser, the script below redraws the calendar from a public live API
+ * (same numbers as the profile) and shows GitHub's hover bubble per day. If the
+ * API fails, the build-time calendar stays, with a native title per day.
  */
 import { getGithub } from "../data/github";
 import { person } from "../data/site";
@@ -60,6 +63,15 @@ const weekdays = [1, 3, 5].map((row) => ({
 
 const num = (n: number) => n.toLocaleString(intl);
 const total = data && num(data.total);
+/** Text around the number, so the script can update the number alone. */
+const [totalBefore, totalAfter] = t(locale, "contributions", { count: "\0" }).split("\0");
+const api = `https://github-contributions-api.jogruber.de/v4/${login}?y=last`;
+/** Month names for the script, since browsers may lack Mongolian locale data. */
+const longFmt = new Intl.DateTimeFormat(intl, { month: "long", day: "numeric", timeZone: "UTC" });
+const eachMonth = (fn: (date: Date) => string) =>
+  Array.from({ length: 12 }, (_, m) => fn(new Date(Date.UTC(2023, m, 28)))).join("|");
+const tipDays = eachMonth((d) => longFmt.format(d).replace("28", "{d}"));
+const monthLabels = eachMonth((d) => monthFmt.format(d));
 
 /** Zero totals say nothing, so only non-zero ones are listed. */
 const stats = github?.stats
@@ -77,13 +89,27 @@ const languages = github?.languages ?? [];
 ---
 
 {data && (
-  <section id="activity" class="wrap block" aria-labelledby="activity-title">
+  <section
+    id="activity"
+    class="wrap block"
+    aria-labelledby="activity-title"
+    data-api={api}
+    data-intl={intl}
+    data-days={tipDays}
+    data-months={monthLabels}
+    data-label={t(locale, "contributions")}
+    data-none={t(locale, "dayNone")}
+    data-one={t(locale, "dayOne")}
+    data-many={t(locale, "dayContributions")}
+  >
     <h2 class="section-title" id="activity-title">
       {t(locale, "activity")}
     </h2>
     <p class="total reveal">
       <a href={person.github} rel="me">
-        {t(locale, "contributions", { count: total! })}
+        {totalBefore}
+        <span class="count">{total}</span>
+        {totalAfter}
       </a>
     </p>
     <div class="calendar reveal">
@@ -117,9 +143,11 @@ const languages = github?.languages ?? [];
               height={CELL}
               rx="2"
               class={`l${day.level}`}
+              data-date={day.date}
+              data-count={day.count}
             >
               <title>
-                  {t(locale, "dayContributions", {
+                  {t(locale, day.count === 0 ? "dayNone" : day.count === 1 ? "dayOne" : "dayContributions", {
                     count: String(day.count),
                     date: dayFmt.format(utc(day.date)),
                   })}
@@ -128,6 +156,7 @@ const languages = github?.languages ?? [];
           ))}
         </svg>
       </div>
+      <div class="tip" role="tooltip" hidden></div>
       <div class="foot">
         <a href="https://docs.github.com/articles/why-are-my-contributions-not-showing-up-on-my-profile">
           {t(locale, "howWeCount")}
@@ -177,6 +206,118 @@ const languages = github?.languages ?? [];
   </section>
 )}
 
+<script>
+  // Mirrors the geometry in the frontmatter.
+  const STEP = 13;
+  const LEFT = 30;
+  const TOP = 16;
+  const GAP = 3;
+
+  const section = document.querySelector<HTMLElement>("#activity");
+  const scroller = section?.querySelector<HTMLElement>(".scroller");
+  const svg = scroller?.querySelector("svg");
+  const tip = section?.querySelector<HTMLElement>(".tip");
+
+  if (section && scroller && svg && tip) {
+    const { api, intl, label, none, one, many, days, months } = section.dataset as Record<
+      string,
+      string
+    >;
+    const dayNames = days.split("|");
+    const monthNames = months.split("|");
+    const utc = (date: string) => new Date(`${date}T00:00:00Z`);
+    const suffix = ["th", "st", "nd", "rd"];
+
+    /** GitHub's wording: "No contributions on October 12th." */
+    const describe = (date: string, count: number) => {
+      const d = utc(date).getUTCDate();
+      const ordinal = intl.startsWith("en") ? suffix[(d - 20) % 10] || suffix[d] || "th" : "";
+      return (count === 0 ? none : count === 1 ? one : many)
+        .replace("{date}", dayNames[utc(date).getUTCMonth()].replace("{d}", d + ordinal))
+        .replace("{count}", count.toLocaleString(intl));
+    };
+
+    // The bubble replaces the native titles.
+    for (const title of svg.querySelectorAll("title")) title.remove();
+
+    const box = tip.parentElement!;
+    const hide = () => (tip.hidden = true);
+    svg.addEventListener("pointerover", (event) => {
+      const rect = event.target;
+      if (!(rect instanceof SVGRectElement)) return hide();
+      tip.textContent = describe(rect.dataset.date!, Number(rect.dataset.count));
+      tip.hidden = false;
+      const outer = box.getBoundingClientRect();
+      const cell = rect.getBoundingClientRect();
+      const x = cell.left + cell.width / 2 - outer.left;
+      const half = tip.offsetWidth / 2;
+      const left = Math.min(Math.max(x, half), outer.width - half);
+      tip.style.left = `${left}px`;
+      tip.style.top = `${cell.top - outer.top}px`;
+      tip.style.setProperty("--arrow", `${x - left}px`);
+    });
+    svg.addEventListener("pointerleave", hide);
+    scroller.addEventListener("scroll", hide, { passive: true });
+
+    interface Live {
+      total: { lastYear: number };
+      contributions: { date: string; count: number; level: number }[];
+    }
+
+    fetch(api, { signal: AbortSignal.timeout(8000) })
+      .then((res) => (res.ok ? (res.json() as Promise<Live>) : Promise.reject()))
+      .then(({ total, contributions: list }) => {
+        const cell = svg.querySelector("rect");
+        const month = svg.querySelector("text");
+        if (!list?.length || !cell || !month) return;
+        const offset = utc(list[0].date).getUTCDay();
+        const weeks = Math.ceil((offset + list.length) / 7);
+        const right = LEFT + weeks * STEP - GAP;
+        svg.setAttribute("viewBox", `0 0 ${right} ${TOP + 7 * STEP - GAP}`);
+        // Month labels sit at y=9; weekday labels stay.
+        for (const old of svg.querySelectorAll('rect, text[y="9"]')) old.remove();
+
+        // Same month-label rules as the build.
+        const months: { x: number; text: string }[] = [];
+        let last = -1;
+        list.forEach((day, i) => {
+          if (i && (offset + i) % 7) return;
+          const m = utc(day.date).getUTCMonth();
+          if (m === last) return;
+          last = m;
+          const x = LEFT + Math.floor((offset + i) / 7) * STEP;
+          if (months.length && x - months[months.length - 1].x < 3 * STEP) months.pop();
+          const text = monthNames[m];
+          if (x + text.length * 5.5 <= right) months.push({ x, text });
+        });
+        for (const { x, text } of months) {
+          const node = month.cloneNode() as SVGTextElement;
+          node.setAttribute("x", String(x));
+          node.setAttribute("y", "9");
+          node.textContent = text;
+          svg.append(node);
+        }
+
+        list.forEach((day, i) => {
+          const pos = offset + i;
+          const node = cell.cloneNode() as SVGRectElement;
+          node.setAttribute("x", String(LEFT + Math.floor(pos / 7) * STEP));
+          node.setAttribute("y", String(TOP + (pos % 7) * STEP));
+          node.setAttribute("class", `l${day.level}`);
+          node.dataset.date = day.date;
+          node.dataset.count = String(day.count);
+          svg.append(node);
+        });
+
+        const count = total.lastYear.toLocaleString(intl);
+        section.querySelector(".count")!.textContent = count;
+        scroller.setAttribute("aria-label", label.replace("{count}", count));
+        section.dataset.live = "";
+      })
+      .catch(() => {});
+  }
+</script>
+
 <style>
   /* GitHub's own calendar greens (owner's choice; not --signal). */
   :global(:root) {
@@ -185,6 +326,7 @@ const languages = github?.languages ?? [];
     --gh-2: #196c2e;
     --gh-3: #2ea043;
     --gh-4: #56d364;
+    --gh-tip: #3d444d;
   }
 
   :global(:root[data-theme="light"]) {
@@ -193,6 +335,7 @@ const languages = github?.languages ?? [];
     --gh-2: #4ac26b;
     --gh-3: #2da44e;
     --gh-4: #116329;
+    --gh-tip: #25292e;
   }
 
   .total {
@@ -204,6 +347,7 @@ const languages = github?.languages ?? [];
   }
 
   .calendar {
+    position: relative;
     padding: var(--space-4) var(--space-4) var(--space-3);
     border: 1px solid var(--rule);
     border-radius: 6px;
@@ -244,6 +388,34 @@ const languages = github?.languages ?? [];
   }
   .l4 {
     fill: var(--gh-4);
+  }
+
+  /* GitHub's day bubble: above the cell, arrow pointing down at it. */
+  .tip {
+    position: absolute;
+    z-index: 1;
+    padding: 0.5em 0.75em;
+    border-radius: 6px;
+    background: var(--gh-tip);
+    color: #fff;
+    font-size: 12px;
+    white-space: nowrap;
+    pointer-events: none;
+    transform: translate(-50%, calc(-100% - 8px));
+  }
+
+  .tip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: calc(50% + var(--arrow, 0px));
+    border: 6px solid transparent;
+    border-top-color: var(--gh-tip);
+    transform: translateX(-50%);
+  }
+
+  .tip[hidden] {
+    display: none;
   }
 
   .foot {

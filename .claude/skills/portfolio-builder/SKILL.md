@@ -68,10 +68,17 @@ type size or spacing.
 - **GitHub calendar** (`GithubActivity.astro`): owner asked for GitHub's own
   look, so it uses GitHub's calendar greens (`--gh-0..4`, scoped to the
   component), not `--signal`, and GitHub's language colours in the language
-  bar. Data is read at build time: GraphQL with `GITHUB_TOKEN` (CI passes the
-  built-in token; locally `GITHUB_TOKEN=$(gh auth token)`) for the calendar,
-  the year's totals and languages; without a token, only the calendar, from
-  the public `github.com/users/<login>/contributions` HTML.
+  bar. At build time the calendar comes from the public
+  `github.com/users/<login>/contributions` HTML (it counts private
+  contributions; the CI Actions token can't see them, so GraphQL undercounts),
+  with the GraphQL calendar as fallback. GraphQL with `GITHUB_TOKEN` (CI passes
+  the owner's `GH_STATS_TOKEN` secret, a classic token with only `read:user`,
+  else the built-in token; locally `GITHUB_TOKEN=$(gh auth token)`) adds the year's
+  totals and languages. In the browser, the component's script redraws the
+  calendar from `github-contributions-api.jogruber.de` (owner's choice; CORS
+  open) and shows GitHub's dark day bubble on hover ("3 contributions on
+  October 15th."). If that API fails, the build-time calendar stays. Tests mock
+  the API; never let them depend on it.
 - **Sky:** the page background is `SpaceBackground.astro`, chosen by the
   owner: a canvas port of Aceternity's "Shooting Stars and Stars Background"
   with a twinkling star field and many shooting stars at once. It pauses
@@ -124,12 +131,13 @@ type size or spacing.
 
 ## 5. Performance budget
 
-- No framework runtime on the client. Total client JS is at most 5 KB and
-  limited to progressive enhancement. The site works with JS off. Current
-  scripts: the sky, the crewmate cursor, the theme (pre-paint + toggle), the
-  menu close and the contact copy buttons — about 4.6 KB inline on the
-  homepage (2026-10-14), so there is little room left; measure the inline
-  `<script>` bytes in `dist/en/index.html` after each build.
+- No framework runtime on the client. Total client JS is at most 7 KB (owner
+  raised it from 5 KB for the live GitHub calendar) and limited to progressive
+  enhancement. The site works with JS off. Current scripts: the sky, the
+  crewmate cursor, the theme (pre-paint + toggle), the menu close, the contact
+  copy buttons and the live GitHub calendar with its day bubble — 6.9 KB
+  inline on the homepage (2026-10-16), so there is little room left; measure
+  the inline `<script>` bytes in `dist/en/index.html` after each build.
 - Images only through `astro:assets` (`<Picture>` AVIF/WebP) with explicit
   `widths`/`sizes`. The hero/LCP image gets `loading="eager"` + `fetchpriority="high"`.
 - Fonts are self-hosted via fontsource; preload only the Cyrillic and Latin

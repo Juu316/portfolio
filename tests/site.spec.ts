@@ -6,14 +6,28 @@ const PROJECTS = ["b2c", "shuren", "orchuulga", "degfim"];
 /** Every indexable page, in both locales. Paths are relative to the base. */
 const PAGES = ["", "en/", ...PROJECTS.flatMap((p) => [`projects/${p}/`, `en/projects/${p}/`])];
 
+const LIVE_API = "https://github-contributions-api.jogruber.de/**";
+const CORS = { "access-control-allow-origin": "*" };
+
+// The live calendar API is third-party; tests never depend on it being up.
+// Tests that need it register their own route, which takes precedence.
+test.beforeEach(async ({ page }) => {
+  await page.route(LIVE_API, (route) => route.fulfill({ status: 503, headers: CORS }));
+});
+
 /** Fails the test on console errors and on failed same-origin requests. */
 function watchForErrors(page: Page) {
   const errors: string[] = [];
   page.on("console", (msg) => {
+    // A down live-calendar API only leaves the build-time calendar in place.
+    if (msg.location().url.includes("github-contributions-api")) return;
     if (msg.type() === "error") errors.push(`console: ${msg.text()}`);
   });
   page.on("pageerror", (err) => errors.push(`pageerror: ${err.message}`));
-  page.on("requestfailed", (req) => errors.push(`request failed: ${req.url()}`));
+  page.on("requestfailed", (req) => {
+    if (!req.url().includes("github-contributions-api"))
+      errors.push(`request failed: ${req.url()}`);
+  });
   page.on("response", (res) => {
     if (res.status() >= 400 && res.url().startsWith("http://localhost")) {
       errors.push(`${res.status()}: ${res.url()}`);
@@ -274,7 +288,7 @@ test("GitHub activity: a GitHub-style calendar and a linked yearly total", async
     const calendar = activity.locator('.scroller > svg[aria-hidden="true"]');
     expect(await calendar.locator("rect").count()).toBeGreaterThanOrEqual(52 * 7);
     expect(await calendar.locator("text").count()).toBeGreaterThanOrEqual(10 + 3);
-    await expect(calendar.locator("rect title").first()).toHaveText(/\d/);
+    await expect(calendar.locator("rect").first()).toHaveAttribute("data-count", /^\d+$/);
     const link = activity.locator(".total a");
     await expect(link).toHaveAttribute("href", "https://github.com/Juu316");
     await expect(link).toHaveText(/\d/);
@@ -288,6 +302,57 @@ test("GitHub activity: a GitHub-style calendar and a linked yearly total", async
       expect(Math.abs(sum - 100)).toBeLessThan(1);
     }
   }
+});
+
+test("GitHub activity: redraws from the live API and shows GitHub's day bubble", async ({
+  page,
+}) => {
+  // 53 Sunday-aligned weeks, like the API's "last year".
+  const start = Date.UTC(2025, 9, 12);
+  const contributions = Array.from({ length: 53 * 7 }, (_, i) => ({
+    date: new Date(start + i * 864e5).toISOString().slice(0, 10),
+    count: i % 5,
+    level: i % 5,
+  }));
+  await page.route(LIVE_API, (route) =>
+    route.fulfill({ headers: CORS, json: { total: { lastYear: 4321 }, contributions } }),
+  );
+  await page.goto("en/");
+  const activity = page.locator("#activity");
+  test.skip((await activity.count()) === 0, "built without GitHub data");
+  await expect(activity).toHaveAttribute("data-live", "");
+  await expect(activity.locator(".total a")).toHaveText("4,321 contributions in the last year");
+  const cells = activity.locator(".scroller rect");
+  await expect(cells).toHaveCount(contributions.length);
+  await expect(activity.locator(".scroller title")).toHaveCount(0);
+
+  const tip = activity.locator(".tip");
+  await expect(tip).toBeHidden();
+  await activity.locator('rect[data-date="2026-10-15"]').scrollIntoViewIfNeeded();
+  await activity.locator('rect[data-date="2026-10-15"]').hover();
+  await expect(tip).toBeVisible();
+  // Day 368 of the fixture: 368 % 5 = 3.
+  await expect(tip).toHaveText("3 contributions on October 15th.");
+  await activity.locator('rect[data-date="2025-10-12"]').scrollIntoViewIfNeeded();
+  await activity.locator('rect[data-date="2025-10-12"]').hover();
+  await expect(tip).toHaveText("No contributions on October 12th.");
+  await activity.locator('rect[data-date="2025-10-13"]').hover();
+  await expect(tip).toHaveText("1 contribution on October 13th.");
+  await page.mouse.move(0, 0);
+  await expect(tip).toBeHidden();
+});
+
+test("GitHub activity: keeps the build-time calendar when the live API fails", async ({ page }) => {
+  await page.goto("en/");
+  const activity = page.locator("#activity");
+  test.skip((await activity.count()) === 0, "built without GitHub data");
+  await expect(activity.locator(".total a")).toHaveText(/\d/);
+  expect(await activity.locator(".scroller rect").count()).toBeGreaterThanOrEqual(52 * 7);
+  await expect(activity).not.toHaveAttribute("data-live");
+  const cell = activity.locator(".scroller rect").last();
+  await cell.scrollIntoViewIfNeeded();
+  await cell.hover();
+  await expect(activity.locator(".tip")).toHaveText(/contribution/);
 });
 
 test("contact: copy buttons copy the email address and phone number", async ({

@@ -1,13 +1,15 @@
 /**
  * GitHub data for the homepage, read at build time.
  *
+ * The calendar is read from the public HTML fragment that github.com profiles
+ * load, because it matches the profile: it counts private contributions,
+ * which the Actions token CI passes can't see. That markup is not an official
+ * API and can change, so the GraphQL calendar is the fallback.
  * With GITHUB_TOKEN set (CI passes the built-in Actions token; locally use
- * `GITHUB_TOKEN=$(gh auth token)`), one GraphQL call returns the contribution
- * calendar, the year's totals and the language mix of public repos.
- * Without it, or if the API fails, the calendar alone is read from the public
- * HTML fragment that github.com profiles load. That markup is not an official
- * API and can change; if both fail the section is left out. The build never
- * fails because of GitHub.
+ * `GITHUB_TOKEN=$(gh auth token)`), one GraphQL call also returns the year's
+ * totals and the language mix of public repos. If no calendar can be read the
+ * section is left out. The build never fails because of GitHub.
+ * In the browser, GithubActivity.astro then redraws the calendar from a live API.
  */
 
 export type Level = 0 | 1 | 2 | 3 | 4;
@@ -60,19 +62,28 @@ export function getGithub(login: string) {
 
 async function load(login: string): Promise<Github | null> {
   const token = process.env.GITHUB_TOKEN;
-  if (token) {
-    try {
-      return await fromApi(login, token);
-    } catch (err) {
-      console.warn(`[github] API failed, falling back to HTML: ${(err as Error).message}`);
-    }
+  const [html, api] = await Promise.allSettled([
+    scrapeCalendar(login),
+    token ? fromApi(login, token) : Promise.reject(new Error("no GITHUB_TOKEN")),
+  ]);
+  if (api.status === "rejected" && token) {
+    console.warn(`[github] API failed: ${(api.reason as Error).message}`);
   }
-  try {
-    return { calendar: await scrapeCalendar(login), stats: null, languages: null };
-  } catch (err) {
-    console.warn(`[github] contribution calendar skipped: ${(err as Error).message}`);
+  // The profile's HTML counts private contributions; the Actions token doesn't see them.
+  const calendar =
+    html.status === "fulfilled"
+      ? html.value
+      : api.status === "fulfilled"
+        ? api.value.calendar
+        : null;
+  if (!calendar) {
+    console.warn(
+      `[github] contribution calendar skipped: ${(html as PromiseRejectedResult).reason}`,
+    );
     return null;
   }
+  const extra = api.status === "fulfilled" ? api.value : null;
+  return { calendar, stats: extra?.stats ?? null, languages: extra?.languages ?? null };
 }
 
 const QUERY = `query ($login: String!) {
