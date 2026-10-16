@@ -307,6 +307,11 @@ a:hover {
     animation-delay: calc(var(--i, 0) * var(--stagger));
   }
 
+  /* Content swapped in by the language switch appears as is. */
+  [data-swap] .enter {
+    animation: none;
+  }
+
   .underline-grow {
     transition: background-size var(--dur-med) var(--ease-out-expo);
   }

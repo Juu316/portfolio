@@ -382,6 +382,48 @@ test("the language switch keeps you on the same page", async ({ page }) => {
   await expect(page).toHaveURL(/\/portfolio\/projects\/shuren\/$/);
 });
 
+test("the language switch swaps the page in place and keeps your place", async ({ page }) => {
+  // Click at the link's position: locator.click() scrolls the page first on mobile.
+  const clickInPlace = async (name: string) => {
+    const box = (await page.getByRole("link", { name }).boundingBox())!;
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  };
+  const titleTop = () =>
+    page.evaluate(() => document.getElementById("work-title")!.getBoundingClientRect().top);
+
+  await page.goto("en/");
+  await page.evaluate(() => {
+    document.getElementById("work")!.scrollIntoView({ behavior: "instant" });
+    (window as unknown as { marker: number }).marker = 1;
+  });
+  const before = await titleTop();
+  await clickInPlace("View in Mongolian");
+  await expect(page).toHaveURL(/\/portfolio\/$/);
+  await expect(page.locator("html")).toHaveAttribute("lang", "mn");
+  expect(await page.evaluate(() => (window as unknown as { marker?: number }).marker)).toBe(1);
+  expect(Math.abs((await titleTop()) - before)).toBeLessThan(2);
+
+  // Scripts still work on the swapped page.
+  await page.locator("[data-theme-toggle]").click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+
+  // Back swaps the English page in again, still without a reload.
+  await page.goBack();
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page).toHaveURL(/\/portfolio\/en\/$/);
+  expect(await page.evaluate(() => (window as unknown as { marker?: number }).marker)).toBe(1);
+
+  await page.goto("projects/shuren/");
+  await page.evaluate(() =>
+    scrollTo({ top: (document.body.scrollHeight - innerHeight) / 2, behavior: "instant" }),
+  );
+  const y = await page.evaluate(() => scrollY);
+  await clickInPlace("Англиар үзэх");
+  await expect(page).toHaveURL(/\/portfolio\/en\/projects\/shuren\/$/);
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  expect(Math.abs((await page.evaluate(() => scrollY)) - y)).toBeLessThan(y / 2);
+});
+
 test("keyboard: skip link comes first and moves focus to main", async ({ page }) => {
   await page.goto("en/");
   await page.keyboard.press("Tab");

@@ -163,44 +163,134 @@ const contact = `${home}#contact`;
 
 <script>
   // Theme: the inline script in Base.astro already applied the saved choice.
+  // Listeners are delegated because the language switch replaces the header.
   const root = document.documentElement;
-  const toggle = document.querySelector<HTMLButtonElement>("[data-theme-toggle]");
   const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+  const current = () => (root.dataset.theme === "light" ? "light" : "dark");
 
   function show(theme: "light" | "dark") {
     if (theme === "light") root.dataset.theme = "light";
     else delete root.dataset.theme;
     if (meta) meta.content = theme === "light" ? "#f2f4f9" : "#0c1226";
+    const toggle = document.querySelector<HTMLButtonElement>("[data-theme-toggle]");
     if (toggle) {
+      toggle.hidden = false;
       toggle.setAttribute(
         "aria-label",
         (theme === "light" ? toggle.dataset.labelDark : toggle.dataset.labelLight) ?? "",
       );
     }
   }
+  show(current());
+  document.addEventListener("lang:swap", () => show(current()));
 
-  if (toggle) {
-    toggle.hidden = false;
-    show(root.dataset.theme === "light" ? "light" : "dark");
-    toggle.addEventListener("click", () => {
-      const next = root.dataset.theme === "light" ? "dark" : "light";
+  document.addEventListener("click", (e) => {
+    const target = e.target as Element;
+    if (target.closest("[data-theme-toggle]")) {
+      const next = current() === "light" ? "dark" : "light";
       show(next);
       try {
         localStorage.setItem("theme", next);
       } catch {}
-    });
-  }
-
-  // Menu: close after picking a link, and on Escape.
-  const menu = document.querySelector<HTMLDetailsElement>(".menu");
-  menu?.addEventListener("click", (e) => {
-    if ((e.target as Element).closest("a")) menu.open = false;
+    }
+    // Menu: close after picking a link.
+    const menu = target.closest<HTMLDetailsElement>(".menu");
+    if (menu && target.closest("a")) menu.open = false;
+    // Language switch: swap the page in place (plain link without JS).
+    const link = target.closest<HTMLAnchorElement>(".lang a[hreflang]");
+    if (link && !e.button && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) {
+      e.preventDefault();
+      swap(link.href, true);
+    }
   });
   document.addEventListener("keydown", (e) => {
+    const menu = document.querySelector<HTMLDetailsElement>(".menu");
     if (e.key === "Escape" && menu?.open) {
       menu.open = false;
       menu.querySelector("summary")?.focus();
     }
+  });
+
+  // The other locale's page, fetched on hover or focus so the switch is instant.
+  const pages = new Map<string, Promise<string>>();
+  function load(url: string) {
+    let page = pages.get(url);
+    if (!page) {
+      page = fetch(url).then((res) => (res.ok ? res.text() : Promise.reject()));
+      page.catch(() => pages.delete(url));
+      pages.set(url, page);
+    }
+    return page;
+  }
+  function prefetch(e: Event) {
+    const link = (e.target as Element).closest?.<HTMLAnchorElement>(".lang a[hreflang]");
+    if (!link) return;
+    load(link.href).catch(() => {});
+    // Warm the other script's font subset too.
+    document.fonts?.load("1em Geologica", link.hreflang === "mn" ? "Өү" : "Aa");
+  }
+  document.addEventListener("pointerover", prefetch);
+  document.addEventListener("focusin", prefetch);
+
+  // Both locales render the same layout, so the element at the top of the
+  // viewport has the same position in the new page; keep it where it was.
+  const PARTS = [".skip-link", ".site-header", "#main", ".site-footer"];
+  const HEAD = 'meta[name="description"], meta[property^="og:"], link[rel="canonical"]';
+  let path = location.pathname;
+
+  async function swap(url: string, push: boolean) {
+    let doc: Document;
+    try {
+      doc = new DOMParser().parseFromString(await load(url), "text/html");
+    } catch {
+      location.href = url;
+      return;
+    }
+    const below = document.querySelector(".site-header")!.getBoundingClientRect().bottom + 8;
+    // Anchor: the first in-flow element below that line, or the innermost one
+    // it cuts through. Recorded as child indexes from <body>.
+    const find = (el: Element): Element | undefined => {
+      for (const child of el.children) {
+        const { top, bottom } = child.getBoundingClientRect();
+        if (bottom <= below || getComputedStyle(child).position == "fixed") continue;
+        if (top >= below || !child.children.length) return child;
+        const inner = find(child);
+        if (inner) return inner;
+      }
+    };
+    let anchor = find(document.body) ?? document.body;
+    const steps: number[] = [];
+    for (let el = anchor; el != document.body; el = el.parentElement!) {
+      steps.unshift([...el.parentElement!.children].indexOf(el));
+    }
+    const top = anchor.getBoundingClientRect().top;
+    const refocus = document.activeElement?.closest(".lang");
+
+    root.dataset.swap = "";
+    for (const part of PARTS) {
+      const next = doc.querySelector(part);
+      if (next) document.querySelector(part)?.replaceWith(next);
+    }
+    root.lang = doc.documentElement.lang;
+    document.title = doc.title;
+    for (const old of document.head.querySelectorAll(HEAD)) old.remove();
+    document.head.append(...doc.head.querySelectorAll(HEAD));
+
+    anchor = document.body;
+    for (const i of steps) {
+      const child = anchor.children[i];
+      if (!child) break;
+      anchor = child;
+    }
+    scrollBy({ top: anchor.getBoundingClientRect().top - top, behavior: "instant" });
+
+    if (push) history.pushState(null, "", url);
+    path = location.pathname;
+    document.dispatchEvent(new Event("lang:swap"));
+    if (refocus) document.querySelector<HTMLElement>(".lang [aria-current]")?.focus();
+  }
+  addEventListener("popstate", () => {
+    if (location.pathname !== path) swap(location.href, false);
   });
 </script>
 

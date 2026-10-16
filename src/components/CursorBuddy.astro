@@ -33,7 +33,7 @@
     !matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const STORAGE_KEY = "cursor-buddy";
-  const toggle = document.querySelector<HTMLButtonElement>("[data-cursor-toggle]");
+  let toggle = document.querySelector<HTMLButtonElement>("[data-cursor-toggle]");
 
   if (enabled) {
     let on = localStorage.getItem(STORAGE_KEY) !== "off";
@@ -104,7 +104,10 @@
     );
     addEventListener("scroll", wake, { passive: true });
 
-    if (toggle) {
+    // Bound again after the language switch replaces the header.
+    const bindToggle = () => {
+      toggle = document.querySelector<HTMLButtonElement>("[data-cursor-toggle]");
+      if (!toggle) return;
       syncToggle();
       toggle.hidden = false;
       toggle.addEventListener("click", () => {
@@ -118,6 +121,8 @@
         }
         syncToggle();
       });
-    }
+    };
+    bindToggle();
+    document.addEventListener("lang:swap", bindToggle);
   }
 </script>

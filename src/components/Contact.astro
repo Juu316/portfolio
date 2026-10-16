@@ -124,9 +124,11 @@ const tel = `+976${person.phone}`;
 </section>
 
 <script>
-  // Copy buttons appear only where the clipboard API exists.
-  const status = document.querySelector<HTMLElement>("[data-copy-status]");
-  if (navigator.clipboard) {
+  // Copy buttons appear only where the clipboard API exists. Bound again after
+  // the language switch replaces the page.
+  function init() {
+    const status = document.querySelector<HTMLElement>("[data-copy-status]");
+    if (!navigator.clipboard) return;
     for (const button of document.querySelectorAll<HTMLButtonElement>("[data-copy]")) {
       const label = button.textContent ?? "";
       button.hidden = false;
@@ -145,6 +147,8 @@ const tel = `+976${person.phone}`;
       });
     }
   }
+  init();
+  document.addEventListener("lang:swap", init);
 </script>
 
 <style>

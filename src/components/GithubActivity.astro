@@ -213,109 +213,118 @@ const languages = github?.languages ?? [];
   const TOP = 16;
   const GAP = 3;
 
-  const section = document.querySelector<HTMLElement>("#activity");
-  const scroller = section?.querySelector<HTMLElement>(".scroller");
-  const svg = scroller?.querySelector("svg");
-  const tip = section?.querySelector<HTMLElement>(".tip");
-
-  if (section && scroller && svg && tip) {
-    const { api, intl, label, none, one, many, days, months } = section.dataset as Record<
-      string,
-      string
-    >;
-    const dayNames = days.split("|");
-    const monthNames = months.split("|");
-    const utc = (date: string) => new Date(`${date}T00:00:00Z`);
-    const suffix = ["th", "st", "nd", "rd"];
-
-    /** GitHub's wording: "No contributions on October 12th." */
-    const describe = (date: string, count: number) => {
-      const d = utc(date).getUTCDate();
-      const ordinal = intl.startsWith("en") ? suffix[(d - 20) % 10] || suffix[d] || "th" : "";
-      return (count === 0 ? none : count === 1 ? one : many)
-        .replace("{date}", dayNames[utc(date).getUTCMonth()].replace("{d}", d + ordinal))
-        .replace("{count}", count.toLocaleString(intl));
-    };
-
-    // The bubble replaces the native titles.
-    for (const title of svg.querySelectorAll("title")) title.remove();
-
-    const box = tip.parentElement!;
-    const hide = () => (tip.hidden = true);
-    svg.addEventListener("pointerover", (event) => {
-      const rect = event.target;
-      if (!(rect instanceof SVGRectElement)) return hide();
-      tip.textContent = describe(rect.dataset.date!, Number(rect.dataset.count));
-      tip.hidden = false;
-      const outer = box.getBoundingClientRect();
-      const cell = rect.getBoundingClientRect();
-      const x = cell.left + cell.width / 2 - outer.left;
-      const half = tip.offsetWidth / 2;
-      const left = Math.min(Math.max(x, half), outer.width - half);
-      tip.style.left = `${left}px`;
-      tip.style.top = `${cell.top - outer.top}px`;
-      tip.style.setProperty("--arrow", `${x - left}px`);
-    });
-    svg.addEventListener("pointerleave", hide);
-    scroller.addEventListener("scroll", hide, { passive: true });
-
-    interface Live {
-      total: { lastYear: number };
-      contributions: { date: string; count: number; level: number }[];
-    }
-
-    fetch(api, { signal: AbortSignal.timeout(8000) })
-      .then((res) => (res.ok ? (res.json() as Promise<Live>) : Promise.reject()))
-      .then(({ total, contributions: list }) => {
-        const cell = svg.querySelector("rect");
-        const month = svg.querySelector("text");
-        if (!list?.length || !cell || !month) return;
-        const offset = utc(list[0].date).getUTCDay();
-        const weeks = Math.ceil((offset + list.length) / 7);
-        const right = LEFT + weeks * STEP - GAP;
-        svg.setAttribute("viewBox", `0 0 ${right} ${TOP + 7 * STEP - GAP}`);
-        // Month labels sit at y=9; weekday labels stay.
-        for (const old of svg.querySelectorAll('rect, text[y="9"]')) old.remove();
-
-        // Same month-label rules as the build.
-        const months: { x: number; text: string }[] = [];
-        let last = -1;
-        list.forEach((day, i) => {
-          if (i && (offset + i) % 7) return;
-          const m = utc(day.date).getUTCMonth();
-          if (m === last) return;
-          last = m;
-          const x = LEFT + Math.floor((offset + i) / 7) * STEP;
-          if (months.length && x - months[months.length - 1].x < 3 * STEP) months.pop();
-          const text = monthNames[m];
-          if (x + text.length * 5.5 <= right) months.push({ x, text });
-        });
-        for (const { x, text } of months) {
-          const node = month.cloneNode() as SVGTextElement;
-          node.setAttribute("x", String(x));
-          node.setAttribute("y", "9");
-          node.textContent = text;
-          svg.append(node);
-        }
-
-        list.forEach((day, i) => {
-          const pos = offset + i;
-          const node = cell.cloneNode() as SVGRectElement;
-          node.setAttribute("x", String(LEFT + Math.floor(pos / 7) * STEP));
-          node.setAttribute("y", String(TOP + (pos % 7) * STEP));
-          node.setAttribute("class", `l${day.level}`);
-          node.dataset.date = day.date;
-          node.dataset.count = String(day.count);
-          svg.append(node);
-        });
-
-        const count = total.lastYear.toLocaleString(intl);
-        section.querySelector(".count")!.textContent = count;
-        scroller.setAttribute("aria-label", label.replace("{count}", count));
-        section.dataset.live = "";
-      })
-      .catch(() => {});
+  interface Live {
+    total: { lastYear: number };
+    contributions: { date: string; count: number; level: number }[];
   }
+
+  // Fetched once; the language switch replaces the section and redraws from it.
+  let live: Promise<Live> | undefined;
+
+  function init() {
+    const section = document.querySelector<HTMLElement>("#activity");
+    const scroller = section?.querySelector<HTMLElement>(".scroller");
+    const svg = scroller?.querySelector("svg");
+    const tip = section?.querySelector<HTMLElement>(".tip");
+
+    if (section && scroller && svg && tip) {
+      const { api, intl, label, none, one, many, days, months } = section.dataset as Record<
+        string,
+        string
+      >;
+      const dayNames = days.split("|");
+      const monthNames = months.split("|");
+      const utc = (date: string) => new Date(`${date}T00:00:00Z`);
+      const suffix = ["th", "st", "nd", "rd"];
+
+      /** GitHub's wording: "No contributions on October 12th." */
+      const describe = (date: string, count: number) => {
+        const d = utc(date).getUTCDate();
+        const ordinal = intl.startsWith("en") ? suffix[(d - 20) % 10] || suffix[d] || "th" : "";
+        return (count === 0 ? none : count === 1 ? one : many)
+          .replace("{date}", dayNames[utc(date).getUTCMonth()].replace("{d}", d + ordinal))
+          .replace("{count}", count.toLocaleString(intl));
+      };
+
+      // The bubble replaces the native titles.
+      for (const title of svg.querySelectorAll("title")) title.remove();
+
+      const box = tip.parentElement!;
+      const hide = () => (tip.hidden = true);
+      svg.addEventListener("pointerover", (event) => {
+        const rect = event.target;
+        if (!(rect instanceof SVGRectElement)) return hide();
+        tip.textContent = describe(rect.dataset.date!, Number(rect.dataset.count));
+        tip.hidden = false;
+        const outer = box.getBoundingClientRect();
+        const cell = rect.getBoundingClientRect();
+        const x = cell.left + cell.width / 2 - outer.left;
+        const half = tip.offsetWidth / 2;
+        const left = Math.min(Math.max(x, half), outer.width - half);
+        tip.style.left = `${left}px`;
+        tip.style.top = `${cell.top - outer.top}px`;
+        tip.style.setProperty("--arrow", `${x - left}px`);
+      });
+      svg.addEventListener("pointerleave", hide);
+      scroller.addEventListener("scroll", hide, { passive: true });
+
+      live ??= fetch(api, { signal: AbortSignal.timeout(8000) }).then((res) =>
+        res.ok ? (res.json() as Promise<Live>) : Promise.reject(),
+      );
+      live
+        .then(({ total, contributions: list }) => {
+          const cell = svg.querySelector("rect");
+          const month = svg.querySelector("text");
+          if (!list?.length || !cell || !month) return;
+          const offset = utc(list[0].date).getUTCDay();
+          const weeks = Math.ceil((offset + list.length) / 7);
+          const right = LEFT + weeks * STEP - GAP;
+          svg.setAttribute("viewBox", `0 0 ${right} ${TOP + 7 * STEP - GAP}`);
+          // Month labels sit at y=9; weekday labels stay.
+          for (const old of svg.querySelectorAll('rect, text[y="9"]')) old.remove();
+
+          // Same month-label rules as the build.
+          const months: { x: number; text: string }[] = [];
+          let last = -1;
+          list.forEach((day, i) => {
+            if (i && (offset + i) % 7) return;
+            const m = utc(day.date).getUTCMonth();
+            if (m === last) return;
+            last = m;
+            const x = LEFT + Math.floor((offset + i) / 7) * STEP;
+            if (months.length && x - months[months.length - 1].x < 3 * STEP) months.pop();
+            const text = monthNames[m];
+            if (x + text.length * 5.5 <= right) months.push({ x, text });
+          });
+          for (const { x, text } of months) {
+            const node = month.cloneNode() as SVGTextElement;
+            node.setAttribute("x", String(x));
+            node.setAttribute("y", "9");
+            node.textContent = text;
+            svg.append(node);
+          }
+
+          list.forEach((day, i) => {
+            const pos = offset + i;
+            const node = cell.cloneNode() as SVGRectElement;
+            node.setAttribute("x", String(LEFT + Math.floor(pos / 7) * STEP));
+            node.setAttribute("y", String(TOP + (pos % 7) * STEP));
+            node.setAttribute("class", `l${day.level}`);
+            node.dataset.date = day.date;
+            node.dataset.count = String(day.count);
+            svg.append(node);
+          });
+
+          const count = total.lastYear.toLocaleString(intl);
+          section.querySelector(".count")!.textContent = count;
+          scroller.setAttribute("aria-label", label.replace("{count}", count));
+          section.dataset.live = "";
+        })
+        .catch(() => {});
+    }
+  }
+  init();
+  document.addEventListener("lang:swap", init);
 </script>
 
 <style>

@@ -131,13 +131,17 @@ type size or spacing.
 
 ## 5. Performance budget
 
-- No framework runtime on the client. Total client JS is at most 7 KB (owner
-  raised it from 5 KB for the live GitHub calendar) and limited to progressive
-  enhancement. The site works with JS off. Current scripts: the sky, the
-  crewmate cursor, the theme (pre-paint + toggle), the menu close, the contact
-  copy buttons and the live GitHub calendar with its day bubble — 6.9 KB
-  inline on the homepage (2026-10-16), so there is little room left; measure
-  the inline `<script>` bytes in `dist/en/index.html` after each build.
+- No framework runtime on the client. Total client JS is at most 9 KB (owner
+  raised it from 5 KB for the live GitHub calendar, then for the language
+  switch) and limited to progressive enhancement. The site works with JS off.
+  Current scripts: the sky, the crewmate cursor, the theme (pre-paint +
+  toggle), the menu close, the in-place language switch (fetches the other
+  locale's page and swaps header, main and footer without a reload; scripts
+  that bind to swapped elements re-run on the `lang:swap` event), the contact
+  copy buttons and the live GitHub calendar with its day bubble — 8.8 KB
+  (9027 bytes) inline on the homepage (2026-10-16), so there is little room
+  left; measure the inline `<script>`
+  bytes in `dist/en/index.html` after each build.
 - Images only through `astro:assets` (`<Picture>` AVIF/WebP) with explicit
   `widths`/`sizes`. The hero/LCP image gets `loading="eager"` + `fetchpriority="high"`.
 - Fonts are self-hosted via fontsource; preload only the Cyrillic and Latin
