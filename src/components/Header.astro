@@ -226,9 +226,12 @@ const contact = `${home}#contact`;
     const link = (e.target as Element).closest?.<HTMLAnchorElement>(".lang a[hreflang]");
     if (!link) return;
     load(link.href).catch(() => {});
-    // Warm the other script's font subset too.
-    document.fonts?.load("1em Geologica", link.hreflang === "mn" ? "Өү" : "Aa");
+    font(link.hreflang);
   }
+  // The other script's font subsets: Mongolian needs both Cyrillic files
+  // (Ө and Ү sit in cyrillic-ext), English the Latin one.
+  const font = (lang: string) =>
+    document.fonts?.load("1em Geologica", lang == "mn" ? "аӨ" : "a").catch(() => {});
   document.addEventListener("pointerover", prefetch);
   document.addEventListener("focusin", prefetch);
 
@@ -246,6 +249,9 @@ const contact = `${home}#contact`;
       location.href = url;
       return;
     }
+    // Swap with the new script's font in place, so the text doesn't reflow
+    // afterwards; never wait more than 300 ms for it.
+    await Promise.race([font(doc.documentElement.lang), new Promise((r) => setTimeout(r, 300))]);
     const below = document.querySelector(".site-header")!.getBoundingClientRect().bottom + 8;
     // Anchor: the first in-flow element below that line, or the innermost one
     // it cuts through. Recorded as child indexes from <body>.
@@ -282,7 +288,11 @@ const contact = `${home}#contact`;
       if (!child) break;
       anchor = child;
     }
-    scrollBy({ top: anchor.getBoundingClientRect().top - top, behavior: "instant" });
+    const settle = () =>
+      scrollBy({ top: anchor.getBoundingClientRect().top - top, behavior: "instant" });
+    settle();
+    // A font that arrived late moved the text; put the anchor back once.
+    document.fonts?.ready.then(settle);
 
     if (push) history.pushState(null, "", url);
     path = location.pathname;
