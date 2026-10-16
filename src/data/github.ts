@@ -10,6 +10,7 @@
  * totals and the language mix of public repos. If no calendar can be read the
  * section is left out. The build never fails because of GitHub.
  * In the browser, GithubActivity.astro then redraws the calendar from a live API.
+ * 
  */
 
 export type Level = 0 | 1 | 2 | 3 | 4;
