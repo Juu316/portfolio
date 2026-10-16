@@ -53,6 +53,10 @@ const SHOTS = {
     { name: "home", url: "https://degfim.nova-shop.workers.dev/", viewport: DESKTOP },
     { name: "home-mobile", url: "https://degfim.nova-shop.workers.dev/", viewport: MOBILE },
   ],
+  movie: [
+    { name: "home", url: "https://movie-web-app-vert.vercel.app/", viewport: DESKTOP },
+    { name: "home-mobile", url: "https://movie-web-app-vert.vercel.app/", viewport: MOBILE },
+  ],
   og: [
     { name: "home-mn", url: SITE, viewport: OG, locale: "mn-MN" },
     { name: "home-en", url: new URL("en/", SITE).href, viewport: OG, locale: "en-US" },

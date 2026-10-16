@@ -1,0 +1,86 @@
+---
+title: "Magixx"
+summary: "TMDB API дээр ажилладаг кино, цуврал, анимэ үзэх вэб апп — гуравдагч талын API-тай ажиллаж сурах зорилгоор Pinecone Academy-д хийсэн сургалтын төсөл."
+client: "Pinecone Academy"
+role: "Ганцаараа хийсэн"
+period: "2025"
+year: 2025
+order: 5
+url: https://movie-web-app-vert.vercel.app
+stack: [Next.js, React 19, TypeScript, Tailwind CSS, TMDB API, Vercel]
+accent: movie
+kind: personal
+size: short
+cover: ../../../assets/projects/movie/home.webp
+coverAlt: "Magixx-ийн нүүр хуудас — Movies, Anime, Genre цэс, хайлтын талбартай толгой, одоо гарч буй киног постер, үнэлгээ, гарсан огноотой нь харуулсан том слайдер."
+---
+
+import Decision from "../../../components/Decision.astro";
+import Shot from "../../../components/Shot.astro";
+import mobile from "../../../assets/projects/movie/home-mobile.webp";
+
+{/* src: study project — owner, 2026-10-16 ("a project I did when I was studying in Pinecone… to practice API"). */}
+
+## Танилцуулга
+
+Magixx нь [TMDB](https://www.themoviedb.org)-ийн өгөгдлөөр кино, цуврал, анимэ үзэх боломж олгодог.
+Кино өөрийг нь биш, зөвхөн мэдээллийг харуулдаг: одоо гарч буй, удахгүй гарах, алдартай, өндөр
+үнэлгээтэй бүтээлийн слайдерууд, олон төрлөөр шүүдэг ангилал, шууд санал болгодог кино болон
+цувралын хайлт, бүтээл бүрийн жүжигчид, трейлер, төстэй бүтээлүүдтэй дэлгэрэнгүй хуудас.
+{/* src: movie-web-app README.md, src/app/** */}
+
+## Миний хийсэн ажил
+
+Энэ бол захиалгат ажил биш, Pinecone Academy-д хийсэн миний хувийн төсөл. Өөрийн хяналтгүй REST
+API-тай ажиллаж сурахын тулд ганцаараа бүтээсэн: нэвтрэлт, хуудаслалт, кэш, бусдын өгөгдлийн
+загварын дутагдал.
+{/* src: movie-web-app git shortlog (all commits by the owner's accounts) */}
+
+<Decision
+  locale="mn"
+  title="API токен сервер дээр үлддэг"
+  problem="TMDB-ийн хүсэлтэд унших эрхийн токен хэрэгтэй. Хөтчөөс шууд TMDB руу хандвал тэр токен зочин бүрийн network таб дээр харагдана."
+  tradeoff="Хайлтын шууд санал эхлээд миний сервер рүү очдог тул санал авах хүсэлт бүрт нэг алхам нэмэгддэг."
+>
+  TMDB руу хийх бүх хүсэлт зөвхөн сервер дээр ажилладаг нэг модулиар дамждаг. Хуудсууд өгөгдлөө
+  сервер дээр татдаг, хайлтын талбар нь мөн сайтын жижиг `/api/search` замаас асуудаг тул хөтөч
+  TMDB-тэй хэзээ ч шууд холбогддоггүй.
+  {/* src: movie-web-app src/lib/tmdb.ts ("server-only"), src/app/api/search/route.ts */}
+</Decision>
+
+<Decision
+  locale="mn"
+  title="Анимэг төрөл болон хэлээр нь"
+  problem="TMDB-д анимэ гэсэн төрөл байхгүй. Анимэ бусад бүх хүүхэлдэйн кино, цувралтай холилдсон байдаг."
+  tradeoff="Зөвхөн Япон бүтээл тооцогддог тул өөр оронд хийсэн анимэ маягийн цувралууд орхигддог."
+>
+  Анимэ хэсэг TMDB-ийн discover endpoint-оос Animation төрлийн, эх хэл нь япон бүтээлүүдийг асуудаг.
+  Зөвхөн үнэлгээгээр эрэмбэлэхэд ганц 10/10 саналтай бүтээлүүд тэргүүлж байсан тул өндөр үнэлгээтэй
+  жагсаалтад дор хаяж 200 санал шаарддаг.
+  {/* src: movie-web-app src/lib/tmdb.ts getAnime() (with_genres=16, with_original_language=ja, vote_count.gte=200) */}
+</Decision>
+
+<Decision
+  locale="mn"
+  title="Дэлгэрэнгүй хуудсанд нэг хүсэлт, кэштэй"
+  problem="Дэлгэрэнгүй хуудсанд бүтээл, жүжигчид, видео, төстэй бүтээлүүд хэрэгтэй: дөрвөн endpoint, дөрвөн удаагийн хүсэлт."
+  tradeoff="Өгөгдөл нэг цаг хүртэл хоцорсон байж болно."
+>
+  Дэлгэрэнгүй хуудас дөрвүүлэнг нь `append_to_response`-оор нэг хүсэлтээр авдаг. Хариуг кэшилдэг:
+  жагсаалтыг нэг цаг, төрлүүдийг нэг өдөр, хайлтыг арван минут. TMDB 500-аас дээш хуудасны дугаарыг
+  хүлээж авдаггүй тул URL дахь хуудасны дугаарыг тэр хязгаарт багтаадаг.
+  {/* src: movie-web-app src/lib/tmdb.ts getDetails(), tmdb() revalidate values, MAX_PAGE, parsePage() */}
+</Decision>
+
+<Shot
+  src={mobile}
+  device="mobile"
+  alt="Magixx-ийн нүүр хуудас утсан дээр — одоо гарч буй киноны слайдер, Upcoming мөрийн эхний постерууд."
+  caption="Нүүр хуудас утсан дээр: одоо гарч буй киноны слайдер, дараа нь бүтээлүүдийн мөрүүд."
+/>
+
+## Үр дүн
+
+Апп Vercel дээр байршсан. Энэ бол сургалтын төсөл: хэрэглэгч гэхээр хэрэглэгчгүй, API-тай хэрхэн
+ажилладгаа харуулах зорилгоор энд байгаа.
+{/* src: live URL supplied by the owner, 2026-10-16 */}

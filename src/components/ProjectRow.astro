@@ -1,0 +1,164 @@
+---
+import { Picture } from "astro:assets";
+import type { CollectionEntry } from "astro:content";
+import { domainOf, localeUrl, splitId, t, type Locale } from "../i18n/ui";
+
+interface Props {
+  locale: Locale;
+  project: CollectionEntry<"projects">;
+  /** The first row on the page carries the LCP image. */
+  eager?: boolean;
+}
+
+/* One project in a homepage list: small screenshot, text, and two actions. */
+const { locale, project, eager = false } = Astro.props;
+const p = project.data;
+const slug = splitId(project.id).slug;
+const href = localeUrl(locale, `projects/${slug}/`);
+---
+
+<li class="row reveal" data-accent={p.accent}>
+  {/* Decorative duplicate of the title link, so it stays out of the tab order. */}
+  <a
+    class="thumb"
+    href={href}
+    tabindex="-1"
+    aria-hidden="true"
+    style={`view-transition-name: cover-${slug}`}
+  >
+    <Picture
+      src={p.cover}
+      alt=""
+      widths={[320, 480, 640]}
+      sizes="(min-width: 48rem) 16rem, 92vw"
+      formats={["avif", "webp"]}
+      fallbackFormat="webp"
+      loading={eager ? "eager" : "lazy"}
+      fetchpriority={eager ? "high" : "auto"}
+    />
+  </a>
+
+  <div class="body">
+    {/* Morphs into the case study's <h1> on navigation. */}
+    <a class="name display" href={href} style={`view-transition-name: title-${slug}`}>
+      {p.title}
+    </a>
+    <p class="summary">{p.summary}</p>
+    <p class="meta">
+      {p.kind === "personal" ? `${t(locale, "studyProject")}, ${p.client}, ${p.period}` : p.period}
+    </p>
+    <p class="actions">
+      <a class="btn-pill" href={p.url} target="_blank" rel="noopener">
+        {/* Lucide "external-link". */}
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path d="M15 3h6v6"></path>
+          <path d="M10 14 21 3"></path>
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+        </svg>
+        {t(locale, "visitSite", { domain: domainOf(p.url) })}
+      </a>
+      <a class="btn-pill primary" href={href}>
+        {t(locale, "readCaseStudy")}
+      </a>
+    </p>
+  </div>
+</li>
+
+<style>
+  .row {
+    display: grid;
+    gap: var(--space-4) var(--space-6);
+    padding-block: var(--space-6);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  @media (min-width: 48rem) {
+    .row {
+      grid-template-columns: 16rem minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+
+  .thumb {
+    display: block;
+    max-width: 24rem;
+  }
+
+  .thumb :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-frame);
+    transition: border-color var(--dur-fast) var(--ease);
+  }
+
+  .row:hover .thumb :global(img),
+  .row:focus-within .thumb :global(img) {
+    border-color: var(--accent);
+  }
+
+  .body {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .name {
+    justify-self: start;
+    font-size: var(--step-2);
+    line-height: 1.1;
+    color: var(--ink);
+    text-decoration: none;
+    transition:
+      color var(--dur-fast) var(--ease),
+      translate var(--dur-med) var(--ease-out-expo);
+  }
+
+  .name:hover,
+  .name:focus-visible {
+    color: var(--accent);
+    translate: 6px 0;
+  }
+
+  .summary {
+    max-width: 60ch;
+    color: var(--muted);
+  }
+
+  .meta {
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+  }
+
+  .actions .btn-pill:not(.primary) svg {
+    color: var(--accent);
+  }
+
+  /* Long Mongolian labels may need to wrap on narrow phones. */
+  .actions .btn-pill {
+    white-space: normal;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .name,
+    .thumb :global(img) {
+      transition: none;
+    }
+  }
+</style>

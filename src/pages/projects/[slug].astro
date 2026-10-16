@@ -7,9 +7,14 @@ export async function getStaticPaths() {
   const entries = (await getCollection("projects", (p) => splitId(p.id).locale === "mn")).sort(
     (a, b) => a.data.order - b.data.order,
   );
-  return entries.map((entry, i) => ({
+  // Client case studies lead into each other; personal ones lead back into client work.
+  const clients = entries.filter((e) => e.data.kind === "client");
+  return entries.map((entry) => ({
     params: { slug: splitId(entry.id).slug },
-    props: { entry, next: entries[(i + 1) % entries.length]! },
+    props: {
+      entry,
+      next: clients[(clients.indexOf(entry) + 1) % clients.length]!,
+    },
   }));
 }
 

@@ -1,0 +1,85 @@
+---
+title: "Magixx"
+summary: "A movie, TV and anime browser on the TMDB API — a study project from Pinecone Academy, built to practise working with a third-party API."
+client: "Pinecone Academy"
+role: "Solo developer"
+period: "2025"
+year: 2025
+order: 5
+url: https://movie-web-app-vert.vercel.app
+stack: [Next.js, React 19, TypeScript, Tailwind CSS, TMDB API, Vercel]
+accent: movie
+kind: personal
+size: short
+cover: ../../../assets/projects/movie/home.webp
+coverAlt: "The Magixx homepage: a header with Movies, Anime, Genre and a search field, and a large slider showing a now-playing film with its poster, rating and release date."
+---
+
+import Decision from "../../../components/Decision.astro";
+import Shot from "../../../components/Shot.astro";
+import mobile from "../../../assets/projects/movie/home-mobile.webp";
+
+{/* src: study project — owner, 2026-10-16 ("a project I did when I was studying in Pinecone… to practice API"). */}
+
+## Context
+
+Magixx lets you browse movies, TV series and anime with data from [TMDB](https://www.themoviedb.org).
+It shows information only, not the films themselves: sliders for now playing, upcoming, popular and
+top rated titles, categories with a multi-genre filter, search across movies and TV with live
+suggestions, and a details page for each title with its cast, trailer and similar titles.
+{/* src: movie-web-app README.md, src/app/** */}
+
+## What I did
+
+This is my own project from Pinecone Academy, not client work. I built it alone to practise working
+with a REST API I don't control: authentication, pagination, caching and the gaps in someone else's
+data model.
+{/* src: movie-web-app git shortlog (all commits by the owner's accounts) */}
+
+<Decision
+  locale="en"
+  title="The API token stays on the server"
+  problem="TMDB requests need a read access token. Calling TMDB from the browser would put that token in every visitor's network tab."
+  tradeoff="Live search suggestions go through my own server first, which adds a hop to each suggestion request."
+>
+  Every TMDB call goes through one server-only module. Pages fetch their data on the server, and the
+  search box asks a small `/api/search` route on the same site, so the browser never talks to TMDB.
+  {/* src: movie-web-app src/lib/tmdb.ts ("server-only"), src/app/api/search/route.ts */}
+</Decision>
+
+<Decision
+  locale="en"
+  title="Anime from a genre and a language"
+  problem="TMDB has no anime type. Anime sits among all the other animated movies and series."
+  tradeoff="Only Japanese titles count, so anime-style shows made elsewhere are left out."
+>
+  The anime section asks TMDB's discover endpoint for the Animation genre with Japanese as the
+  original language. Sorting by rating alone put titles with a single 10/10 vote on top, so top
+  rated also needs at least 200 votes.
+  {/* src: movie-web-app src/lib/tmdb.ts getAnime() (with_genres=16, with_original_language=ja, vote_count.gte=200) */}
+</Decision>
+
+<Decision
+  locale="en"
+  title="One request per details page, cached"
+  problem="A details page needs the title, its cast, its videos and similar titles: four endpoints, and four round trips."
+  tradeoff="Data can be up to an hour old."
+>
+  The details page asks for all four in one request with `append_to_response`. Responses are cached:
+  lists for an hour, genres for a day, search for ten minutes. TMDB rejects page numbers above 500,
+  so page numbers from the URL are clamped to that range.
+  {/* src: movie-web-app src/lib/tmdb.ts getDetails(), tmdb() revalidate values, MAX_PAGE, parsePage() */}
+</Decision>
+
+<Shot
+  src={mobile}
+  device="mobile"
+  alt="The Magixx homepage on a phone, with the now-playing slider and the first posters of the Upcoming row."
+  caption="The homepage on a phone: the now-playing slider, then rows of titles."
+/>
+
+## Outcome
+
+The app is deployed on Vercel. It is a study project: it has no users to speak of, and it is here to
+show how I work with an API.
+{/* src: live URL supplied by the owner, 2026-10-16 */}

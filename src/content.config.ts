@@ -24,7 +24,9 @@ const projects = defineCollection({
       url: z.url(),
       stack: z.array(z.string()).min(1),
       /** Key into the accent tokens in src/styles/tokens.css. */
-      accent: z.enum(["gtc", "shuren", "orchuulga", "degfim"]),
+      accent: z.enum(["gtc", "shuren", "orchuulga", "degfim", "movie"]),
+      /** Client work goes in the main index; personal work in its own section. */
+      kind: z.enum(["client", "personal"]).default("client"),
       size: z.enum(["full", "short"]),
       cover: image(),
       coverAlt: z.string(),

@@ -1,7 +1,7 @@
 ---
-import { Picture } from "astro:assets";
 import type { CollectionEntry } from "astro:content";
-import { domainOf, localeUrl, splitId, t, type Locale } from "../i18n/ui";
+import ProjectRow from "./ProjectRow.astro";
+import { t, type Locale } from "../i18n/ui";
 
 interface Props {
   locale: Locale;
@@ -9,11 +9,6 @@ interface Props {
 }
 
 const { locale, projects } = Astro.props;
-const items = projects.map((p) => ({
-  ...p.data,
-  slug: splitId(p.id).slug,
-  href: localeUrl(locale, `projects/${splitId(p.id).slug}/`),
-}));
 ---
 
 <section id="work" class="wrap" aria-labelledby="work-title">
@@ -21,199 +16,16 @@ const items = projects.map((p) => ({
     {t(locale, "selectedWork")}
   </h2>
 
-  <div class="index">
-    <ul class="rows">
-      {items.map((p) => (
-        <li class="row reveal" data-accent={p.accent} style={`--vt: cover-${p.slug}`}>
-          <a class="row-link" href={p.href}>
-            {/* Morphs into the case study's <h1> on navigation. */}
-            <span class="name display" style={`view-transition-name: title-${p.slug}`}>
-              {p.title}
-            </span>
-            <span class="summary">{p.summary}</span>
-            <span class="meta">
-              <span>{p.period}</span>
-              <span>{domainOf(p.url)}</span>
-            </span>
-          </a>
-          {/* Narrow screens: the screenshot sits in the row. Decorative —
-                the link text already names the project. */}
-          <div class="row-shot">
-            <Picture
-              src={p.cover}
-              alt=""
-              widths={[480, 800, 1200]}
-              sizes="92vw"
-              formats={["avif", "webp"]}
-              fallbackFormat="webp"
-              loading="lazy"
-            />
-          </div>
-        </li>
-      ))}
-    </ul>
-
-    {/* Wide screens: one frame that follows hover and keyboard focus. */}
-    <div class="previews" aria-hidden="true">
-      {items.map((p, i) => (
-        <div class="preview" data-for={p.accent} style={`--vt: cover-${p.slug}`}>
-          <Picture
-            src={p.cover}
-            alt=""
-            widths={[640, 960, 1280]}
-            sizes="(min-width: 76rem) 640px, 50vw"
-            formats={["avif", "webp"]}
-            fallbackFormat="webp"
-            loading={i === 0 ? "eager" : "lazy"}
-            fetchpriority={i === 0 ? "high" : "auto"}
-          />
-        </div>
-      ))}
-    </div>
-  </div>
+  <ul class="rows">
+    {projects.map((p, i) => (
+      <ProjectRow locale={locale} project={p} eager={i === 0} />
+    ))}
+  </ul>
 </section>
 
 <style>
-  .index {
-    display: grid;
-    gap: var(--space-6);
-  }
-
   .rows {
     padding: 0;
     list-style: none;
-  }
-
-  .row {
-    border-bottom: 1px solid var(--rule);
-  }
-
-  .row-link {
-    display: grid;
-    gap: var(--space-2);
-    padding-block: var(--space-6);
-    text-decoration: none;
-  }
-
-  .name {
-    font-size: var(--step-3);
-    line-height: 1.05;
-    color: var(--ink);
-    transition:
-      color var(--dur-fast) var(--ease),
-      translate var(--dur-med) var(--ease-out-expo);
-  }
-
-  .row-link:hover .name,
-  .row-link:focus-visible .name {
-    color: var(--accent);
-    translate: 6px 0;
-  }
-
-  .summary {
-    max-width: 46ch;
-    color: var(--muted);
-  }
-
-  .meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-5);
-    font-size: var(--step--1);
-    color: var(--muted);
-  }
-
-  .meta span + span {
-    color: var(--accent);
-  }
-
-  .row-shot {
-    margin-bottom: var(--space-6);
-    /* Shared with the case-study cover; hidden (so not captured) on wide screens. */
-    view-transition-name: var(--vt);
-  }
-
-  .row-shot :global(img),
-  .preview :global(img) {
-    width: 100%;
-    border: 1px solid var(--rule);
-    border-radius: var(--radius-frame);
-  }
-
-  .previews {
-    display: none;
-  }
-
-  @media (min-width: 60rem) {
-    .index {
-      grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
-      gap: var(--space-7);
-      align-items: start;
-    }
-
-    .row-shot {
-      display: none;
-    }
-
-    .previews {
-      display: grid;
-      position: sticky;
-      top: var(--space-6);
-      margin-top: var(--space-6);
-    }
-
-    /* All previews share one cell; only one is visible at a time. */
-    .preview {
-      grid-area: 1 / 1;
-      opacity: 0;
-      scale: 0.97;
-      transition:
-        opacity 260ms var(--ease),
-        scale var(--dur-med) var(--ease-out-expo);
-    }
-
-    /* Only the visible preview carries the shared cover name. */
-    .preview:first-child {
-      opacity: 1;
-      scale: 1;
-      view-transition-name: var(--vt);
-    }
-
-    .index:has(.row:is(:hover, :focus-within)) .preview:first-child {
-      opacity: 0;
-      scale: 0.97;
-      view-transition-name: none;
-    }
-
-    .index:has(.row[data-accent="gtc"]:is(:hover, :focus-within)) .preview[data-for="gtc"],
-    .index:has(.row[data-accent="shuren"]:is(:hover, :focus-within)) .preview[data-for="shuren"],
-    .index:has(.row[data-accent="orchuulga"]:is(:hover, :focus-within))
-      .preview[data-for="orchuulga"],
-    .index:has(.row[data-accent="degfim"]:is(:hover, :focus-within)) .preview[data-for="degfim"] {
-      opacity: 1;
-      scale: 1;
-      view-transition-name: var(--vt);
-    }
-
-    /* The page around the index takes on the active project's colour. */
-    .index:has(.row[data-accent="gtc"]:is(:hover, :focus-within)) .preview :global(img) {
-      border-color: var(--accent-gtc);
-    }
-    .index:has(.row[data-accent="shuren"]:is(:hover, :focus-within)) .preview :global(img) {
-      border-color: var(--accent-shuren);
-    }
-    .index:has(.row[data-accent="orchuulga"]:is(:hover, :focus-within)) .preview :global(img) {
-      border-color: var(--accent-orchuulga);
-    }
-    .index:has(.row[data-accent="degfim"]:is(:hover, :focus-within)) .preview :global(img) {
-      border-color: var(--accent-degfim);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .name,
-    .preview {
-      transition: none;
-    }
   }
 </style>

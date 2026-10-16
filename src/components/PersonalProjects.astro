@@ -1,0 +1,32 @@
+---
+import type { CollectionEntry } from "astro:content";
+import ProjectRow from "./ProjectRow.astro";
+import { t, type Locale } from "../i18n/ui";
+
+interface Props {
+  locale: Locale;
+  projects: CollectionEntry<"projects">[];
+}
+
+/* Own work, kept apart from client work; same rows as the client index. */
+const { locale, projects } = Astro.props;
+---
+
+<section id="personal" class="wrap block" aria-labelledby="personal-title">
+  <h2 class="section-title" id="personal-title">
+    {t(locale, "personalWork")}
+  </h2>
+
+  <ul class="rows">
+    {projects.map((p) => (
+      <ProjectRow locale={locale} project={p} />
+    ))}
+  </ul>
+</section>
+
+<style>
+  .rows {
+    padding: 0;
+    list-style: none;
+  }
+</style>

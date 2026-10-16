@@ -2,9 +2,15 @@ import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
 const PROJECTS = ["b2c", "shuren", "orchuulga", "degfim"];
+/** Own work, listed apart from client work. */
+const PERSONAL = ["movie"];
 
 /** Every indexable page, in both locales. Paths are relative to the base. */
-const PAGES = ["", "en/", ...PROJECTS.flatMap((p) => [`projects/${p}/`, `en/projects/${p}/`])];
+const PAGES = [
+  "",
+  "en/",
+  ...[...PROJECTS, ...PERSONAL].flatMap((p) => [`projects/${p}/`, `en/projects/${p}/`]),
+];
 
 const LIVE_API = "https://github-contributions-api.jogruber.de/**";
 const CORS = { "access-control-allow-origin": "*" };
@@ -143,6 +149,7 @@ test.describe("dark mode", () => {
     "en/projects/shuren/",
     "en/projects/orchuulga/",
     "en/projects/degfim/",
+    "en/projects/movie/",
   ]) {
     test(`/${path} has no contrast or other axe violations`, async ({ page }) => {
       await page.emulateMedia({ reducedMotion: "reduce" });
@@ -165,6 +172,7 @@ test.describe("light mode", () => {
     "en/projects/shuren/",
     "en/projects/orchuulga/",
     "en/projects/degfim/",
+    "en/projects/movie/",
   ]) {
     test(`/${path} has no contrast or other axe violations`, async ({ page }) => {
       await page.emulateMedia({ reducedMotion: "reduce" });
@@ -257,6 +265,10 @@ test("hero names the live sites and links the clients to their case studies", as
       new RegExp(`^https?://(www\\.)?${domain.replace(/\./g, "\\.")}`),
     );
   }
+  // Study projects are not shipped client work.
+  await expect(terminal.getByRole("link", { name: "movie-web-app-vert.vercel.app" })).toHaveCount(
+    0,
+  );
 });
 
 test("timeline lists work and study newest first; certificates stay hidden while empty", async ({
@@ -440,11 +452,33 @@ test("project index links to every case study in both languages", async ({ page 
     ["en/", "en/"],
   ] as const) {
     await page.goto(home);
+    // Each row links to its case study from the thumbnail, the title and the button.
     for (const slug of PROJECTS) {
       await expect(
         page.locator(`#work a[href="/portfolio/${prefix}projects/${slug}/"]`),
-      ).toHaveCount(1);
+      ).toHaveCount(3);
     }
+    for (const slug of PERSONAL) {
+      await expect(page.locator(`#work a[href*="projects/${slug}/"]`)).toHaveCount(0);
+      await expect(
+        page.locator(`#personal a[href="/portfolio/${prefix}projects/${slug}/"]`),
+      ).toHaveCount(3);
+    }
+  }
+});
+
+test("every project row shows its screenshot and opens the live site in a new tab", async ({
+  page,
+}) => {
+  await page.goto("en/");
+  const rows = page.locator("#work .row, #personal .row");
+  await expect(rows).toHaveCount(PROJECTS.length + PERSONAL.length);
+  for (const row of await rows.all()) {
+    await expect(row.locator(".thumb img")).toHaveCount(1);
+    const live = row.locator('a.btn-pill[target="_blank"]');
+    await expect(live).toHaveCount(1);
+    await expect(live).toHaveAttribute("href", /^https:\/\//);
+    await expect(row.getByRole("link", { name: "Read the case study" })).toHaveCount(1);
   }
 });
 

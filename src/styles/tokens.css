@@ -22,6 +22,7 @@
   --accent-shuren: #d4a38a;
   --accent-orchuulga: #3cd3a9;
   --accent-degfim: #5c9ce6;
+  --accent-movie: #ffcc00;
   --accent: var(--ink);
 
   /* Type */
@@ -82,6 +83,7 @@
   --accent-shuren: #8f5338;
   --accent-orchuulga: #0a7356;
   --accent-degfim: #1d64b0;
+  --accent-movie: #8a6100;
 }
 
 [data-accent="gtc"] {
@@ -95,4 +97,7 @@
 }
 [data-accent="degfim"] {
   --accent: var(--accent-degfim);
+}
+[data-accent="movie"] {
+  --accent: var(--accent-movie);
 }

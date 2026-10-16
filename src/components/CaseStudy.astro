@@ -39,7 +39,7 @@ const nextSlug = splitId(next.id).slug;
 
       <dl class="facts enter" style="--i: 2">
         <div>
-          <dt>{t(locale, "client")}</dt>
+          <dt>{t(locale, p.kind === "personal" ? "studyProject" : "client")}</dt>
           <dd>{p.client}</dd>
         </div>
         <div>

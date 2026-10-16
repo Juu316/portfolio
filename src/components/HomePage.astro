@@ -2,6 +2,7 @@
 import { getCollection } from "astro:content";
 import Base from "../layouts/Base.astro";
 import ProjectIndex from "./ProjectIndex.astro";
+import PersonalProjects from "./PersonalProjects.astro";
 import Timeline from "./Timeline.astro";
 import Contact from "./Contact.astro";
 import GithubActivity from "./GithubActivity.astro";
@@ -23,9 +24,12 @@ interface Props {
 }
 
 const { locale } = Astro.props;
-const projects = (await getCollection("projects", (p) => splitId(p.id).locale === locale)).sort(
+const all = (await getCollection("projects", (p) => splitId(p.id).locale === locale)).sort(
   (a, b) => a.data.order - b.data.order,
 );
+/* Client work fills the index, the terminal and the live-site count; own work gets its own section. */
+const projects = all.filter((p) => p.data.kind === "client");
+const personal = all.filter((p) => p.data.kind === "personal");
 const now = experience.find((entry) => entry.current);
 const shipped = projects.map((p) => ({
   domain: domainOf(p.data.url),
@@ -127,6 +131,8 @@ const shipped = projects.map((p) => ({
   </div>
 
   <ProjectIndex locale={locale} projects={projects} />
+
+  {personal.length > 0 && <PersonalProjects locale={locale} projects={personal} />}
 
   <Timeline locale={locale} />
 
