@@ -4,6 +4,7 @@ import Base from "../layouts/Base.astro";
 import ProjectIndex from "./ProjectIndex.astro";
 import Timeline from "./Timeline.astro";
 import Contact from "./Contact.astro";
+import GithubActivity from "./GithubActivity.astro";
 import SkillLogo from "./SkillLogo.astro";
 import { logos } from "../data/logos";
 import { domainOf, localeUrl, splitId, t, type Locale } from "../i18n/ui";
@@ -29,18 +30,19 @@ const now = experience.find((entry) => entry.current);
 const shipped = projects.map((p) => ({
   domain: domainOf(p.data.url),
   accent: p.data.accent,
-  href: localeUrl(locale, `projects/${splitId(p.id).slug}/`),
+  href: p.data.url,
 }));
 ---
 
 <Base locale={locale} description={statementText(locale)}>
   <div class="hero wrap">
     <section class="intro" aria-labelledby="hero-name">
-      <p class="status enter" style="--i: 0">
-        <span class="dot" aria-hidden="true"></span>
-        {t(locale, "locationValue")}
-        {availability && <span class="available">{availability[locale]}</span>}
-      </p>
+      {availability && (
+        <p class="status enter" style="--i: 0">
+          <span class="dot" aria-hidden="true"></span>
+          <span class="available">{availability[locale]}</span>
+        </p>
+      )}
       <h1 id="hero-name" class="enter" style="--i: 1">
         {person.name[locale]}
         <span class="role">{person.role[locale]}</span>
@@ -55,14 +57,6 @@ const shipped = projects.map((p) => ({
             </a>
           ),
         )}
-      </p>
-      <p class="ctas enter" style="--i: 3">
-        <a class="btn-pill primary" href="#work">
-          {t(locale, "work")}
-        </a>
-        <a class="underline-grow" href="#contact">
-          {t(locale, "contact")}
-        </a>
       </p>
     </section>
 
@@ -117,7 +111,7 @@ const shipped = projects.map((p) => ({
     <dl class="facts enter" style="--i: 4">
       <div>
         <dt>{t(locale, "location")}</dt>
-        <dd>{t(locale, "locationValue")}</dd>
+        <dd>{person.location[locale]}</dd>
       </div>
       {now && (
         <div>
@@ -158,6 +152,8 @@ const shipped = projects.map((p) => ({
       ))}
     </dl>
   </section>
+
+  <GithubActivity locale={locale} />
 
   <section id="about" class="wrap block" aria-labelledby="about-title">
     <h2 class="section-title" id="about-title">
@@ -247,22 +243,6 @@ const shipped = projects.map((p) => ({
 
   .statement a:hover {
     color: var(--accent);
-  }
-
-  .ctas {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-3) var(--space-5);
-    margin-top: var(--space-6);
-  }
-
-  .ctas .btn-pill {
-    padding: var(--space-3) var(--space-5);
-  }
-
-  .ctas .underline-grow {
-    font-weight: 500;
   }
 
   .terminal {

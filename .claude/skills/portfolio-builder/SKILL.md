@@ -55,15 +55,23 @@ type size or spacing.
   before paint; the header button flips it. Without JS the site is dark.
 - **Header:** a floating bar after ihzorig.vercel.app's: brand dot + short
   name, section links, EN|MN segmented switch, theme and crewmate toggles,
-  "Download CV" and "Contact" pill buttons. It is bare at the top and turns
+  "View CV" (opens the PDF in a new tab) and "Contact" pill buttons. It is bare at the top and turns
   into a glass pill over the first 80px of scroll (CSS scroll timeline).
   Below 72rem the links, CV and contact move into a `<details>` menu.
 - **Do not add:** all-caps eyebrows, 01/02/03 markers on content that isn't a
   sequence, gradient washes on content (the site sky is the one exception),
   glass panels other than the header bar, identical card grids, `→` appended
   to links, or a mono font for labels. Borders and radii only on screenshot
-  frames, the hero terminal, form fields and pill buttons. Never copy text,
+  frames, the hero terminal, form fields, pill buttons and the GitHub
+  calendar box. Never copy text,
   photos or invented metrics from a reference site.
+- **GitHub calendar** (`GithubActivity.astro`): owner asked for GitHub's own
+  look, so it uses GitHub's calendar greens (`--gh-0..4`, scoped to the
+  component), not `--signal`, and GitHub's language colours in the language
+  bar. Data is read at build time: GraphQL with `GITHUB_TOKEN` (CI passes the
+  built-in token; locally `GITHUB_TOKEN=$(gh auth token)`) for the calendar,
+  the year's totals and languages; without a token, only the calendar, from
+  the public `github.com/users/<login>/contributions` HTML.
 - **Sky:** the page background is `SpaceBackground.astro`, chosen by the
   owner: a canvas port of Aceternity's "Shooting Stars and Stars Background"
   with a twinkling star field and many shooting stars at once. It pauses

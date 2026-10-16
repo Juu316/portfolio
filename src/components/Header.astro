@@ -105,8 +105,8 @@ const contact = `${home}#contact`;
         </svg>
       </button>
 
-      <a class="btn-pill wide" href={cv} download>
-        {/* Lucide "download". */}
+      <a class="btn-pill wide" href={cv} target="_blank" rel="noopener">
+        {/* Lucide "external-link". */}
         <svg
           viewBox="0 0 24 24"
           fill="none"
@@ -117,11 +117,11 @@ const contact = `${home}#contact`;
           aria-hidden="true"
           focusable="false"
         >
-          <path d="M12 15V3"></path>
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-          <path d="m7 10 5 5 5-5"></path>
+          <path d="M15 3h6v6"></path>
+          <path d="M10 14 21 3"></path>
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
         </svg>
-        {t(locale, "downloadCv")}
+        {t(locale, "viewResume")}
       </a>
       <a class="btn-pill primary wide" href={contact}>
         {t(locale, "contact")}
@@ -148,8 +148,8 @@ const contact = `${home}#contact`;
             </ul>
           </nav>
           <div class="panel-actions">
-            <a class="btn-pill" href={cv} download>
-              {t(locale, "downloadCv")}
+            <a class="btn-pill" href={cv} target="_blank" rel="noopener">
+              {t(locale, "viewResume")}
             </a>
             <a class="btn-pill primary" href={contact}>
               {t(locale, "contact")}

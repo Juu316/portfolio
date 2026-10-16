@@ -8,6 +8,9 @@ on:
   push:
     branches: ["main"]
   pull_request:
+  # Daily rebuild so the GitHub activity calendar stays current.
+  schedule:
+    - cron: "0 3 * * *"
   # Lets you re-deploy by hand from the Actions tab.
   workflow_dispatch:
 
@@ -47,6 +50,9 @@ jobs:
 
       - name: Build site
         run: pnpm run build
+        env:
+          # Read-only use: the GitHub section's GraphQL query (src/data/github.ts).
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium

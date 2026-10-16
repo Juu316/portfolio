@@ -1,0 +1,348 @@
+---
+/**
+ * The GitHub contribution calendar, drawn at build time from public data
+ * (src/data/github.ts) to look like the one on github.com: GitHub's greens,
+ * month and weekday labels, a hover title per day, "Less … More" legend.
+ * With a token, also the year's totals and the language mix of public repos.
+ * Left out entirely when GitHub can't be read. No client JS.
+ */
+import { getGithub } from "../data/github";
+import { person } from "../data/site";
+import { t, type Locale } from "../i18n/ui";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const login = new URL(person.github).pathname.split("/").filter(Boolean).pop()!;
+const github = await getGithub(login);
+const data = github?.calendar;
+
+const intl = locale === "mn" ? "mn-MN" : "en-US";
+const monthFmt = new Intl.DateTimeFormat(intl, { month: "short", timeZone: "UTC" });
+const dayFmt = new Intl.DateTimeFormat(intl, { month: "short", day: "numeric", timeZone: "UTC" });
+const weekdayFmt = new Intl.DateTimeFormat(intl, { weekday: "short", timeZone: "UTC" });
+const utc = (date: string) => new Date(`${date}T00:00:00Z`);
+
+/** GitHub's geometry: 10px squares, 3px apart, labels in the margins. */
+const CELL = 10;
+const GAP = 3;
+const STEP = CELL + GAP;
+const LEFT = 30;
+const TOP = 16;
+
+/** A month label over the first week that starts in a new month, as GitHub does. */
+const months: { x: number; label: string }[] = [];
+if (data) {
+  let last = -1;
+  for (let week = 0; week < data.weeks; week++) {
+    const first = data.days.filter((d) => d.week === week).sort((a, b) => a.weekday - b.weekday)[0];
+    if (!first) continue;
+    const month = utc(first.date).getUTCMonth();
+    if (month === last) continue;
+    last = month;
+    const x = LEFT + week * STEP;
+    // Skip a label that would crowd the previous one (a partial first week).
+    if (months.length && x - months[months.length - 1].x < 3 * STEP) months.pop();
+    const label = monthFmt.format(utc(first.date));
+    // Skip a label that would run past the right edge (about 5.5 units per character).
+    if (x + label.length * 5.5 > LEFT + data.weeks * STEP - GAP) continue;
+    months.push({ x, label });
+  }
+}
+
+/** Mon, Wed, Fri, like GitHub. 2023-01-01 was a Sunday. */
+const weekdays = [1, 3, 5].map((row) => ({
+  y: TOP + row * STEP + CELL - 1,
+  label: weekdayFmt.format(new Date(Date.UTC(2023, 0, 1 + row))),
+}));
+
+const num = (n: number) => n.toLocaleString(intl);
+const total = data && num(data.total);
+
+/** Zero totals say nothing, so only non-zero ones are listed. */
+const stats = github?.stats
+  ? (
+      [
+        ["statCommits", github.stats.commits],
+        ["statPRs", github.stats.pullRequests],
+        ["statIssues", github.stats.issues],
+        ["statReviews", github.stats.reviews],
+        ["statPrivate", github.stats.private],
+      ] as const
+    ).filter(([, n]) => n > 0)
+  : [];
+const languages = github?.languages ?? [];
+---
+
+{data && (
+  <section id="activity" class="wrap block" aria-labelledby="activity-title">
+    <h2 class="section-title" id="activity-title">
+      {t(locale, "activity")}
+    </h2>
+    <p class="total reveal">
+      <a href={person.github} rel="me">
+        {t(locale, "contributions", { count: total! })}
+      </a>
+    </p>
+    <div class="calendar reveal">
+      {/* Focusable so keyboard users can scroll it on phones. */}
+      <div
+        class="scroller"
+        tabindex="0"
+        role="region"
+        aria-label={t(locale, "contributions", { count: total! })}
+      >
+        <svg
+          viewBox={`0 0 ${LEFT + data.weeks * STEP - GAP} ${TOP + 7 * STEP - GAP}`}
+          aria-hidden="true"
+          focusable="false"
+        >
+          {months.map((m) => (
+            <text x={m.x} y="9">
+              {m.label}
+            </text>
+          ))}
+          {weekdays.map((d) => (
+            <text x="0" y={d.y}>
+              {d.label}
+            </text>
+          ))}
+          {data.days.map((day) => (
+            <rect
+              x={LEFT + day.week * STEP}
+              y={TOP + day.weekday * STEP}
+              width={CELL}
+              height={CELL}
+              rx="2"
+              class={`l${day.level}`}
+            >
+              <title>
+                  {t(locale, "dayContributions", {
+                    count: String(day.count),
+                    date: dayFmt.format(utc(day.date)),
+                  })}
+                </title>
+            </rect>
+          ))}
+        </svg>
+      </div>
+      <div class="foot">
+        <a href="https://docs.github.com/articles/why-are-my-contributions-not-showing-up-on-my-profile">
+          {t(locale, "howWeCount")}
+        </a>
+        <span class="legend" aria-hidden="true">
+          {t(locale, "less")}
+          {[0, 1, 2, 3, 4].map((level) => (
+            <svg viewBox={`0 0 ${CELL} ${CELL}`}>
+              <rect width={CELL} height={CELL} rx="2" class={`l${level}`} />
+            </svg>
+          ))}
+          {t(locale, "more")}
+        </span>
+      </div>
+    </div>
+
+    {stats.length > 0 && (
+      <dl class="stats reveal">
+        {stats.map(([key, n]) => (
+          <div>
+            <dt>{t(locale, key)}</dt>
+            <dd>{num(n)}</dd>
+          </div>
+        ))}
+      </dl>
+    )}
+
+    {languages.length > 0 && (
+      <div class="languages reveal">
+        <h3>{t(locale, "languagesTitle")}</h3>
+        <p class="note">{t(locale, "languagesNote")}</p>
+        <div class="bar" aria-hidden="true">
+          {languages.map((l) => (
+            <span style={`--lang: ${l.color}; flex-grow: ${l.percent}`} />
+          ))}
+        </div>
+        <ul>
+          {languages.map((l) => (
+            <li style={`--lang: ${l.color}`}>
+              <span class="swatch" aria-hidden="true" />
+              {l.name || t(locale, "other")} <span class="pct">{l.percent.toFixed(1)}%</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+  </section>
+)}
+
+<style>
+  /* GitHub's own calendar greens (owner's choice; not --signal). */
+  :global(:root) {
+    --gh-0: #151b23;
+    --gh-1: #033a16;
+    --gh-2: #196c2e;
+    --gh-3: #2ea043;
+    --gh-4: #56d364;
+  }
+
+  :global(:root[data-theme="light"]) {
+    --gh-0: #eff2f5;
+    --gh-1: #aceebb;
+    --gh-2: #4ac26b;
+    --gh-3: #2da44e;
+    --gh-4: #116329;
+  }
+
+  .total {
+    margin-bottom: var(--space-3);
+  }
+
+  .total a {
+    color: var(--ink);
+  }
+
+  .calendar {
+    padding: var(--space-4) var(--space-4) var(--space-3);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+  }
+
+  /* Phones scroll the year sideways, starting at the most recent weeks. */
+  .scroller {
+    display: flex;
+    flex-direction: row-reverse;
+    overflow-x: auto;
+  }
+
+  .scroller svg {
+    flex: none;
+    display: block;
+    width: 100%;
+    min-width: 46rem;
+    height: auto;
+  }
+
+  text {
+    fill: var(--muted);
+    font-size: 9px;
+  }
+
+  .l0 {
+    fill: var(--gh-0);
+    stroke: color-mix(in srgb, var(--ink) 6%, transparent);
+  }
+  .l1 {
+    fill: var(--gh-1);
+  }
+  .l2 {
+    fill: var(--gh-2);
+  }
+  .l3 {
+    fill: var(--gh-3);
+  }
+  .l4 {
+    fill: var(--gh-4);
+  }
+
+  .foot {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-2) var(--space-5);
+    margin-top: var(--space-3);
+    font-size: var(--step--1);
+    color: var(--muted);
+  }
+
+  .foot a {
+    color: var(--muted);
+  }
+
+  .legend {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .legend svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  /* Same pattern as the hero facts. */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: var(--space-5);
+    margin-top: var(--space-6);
+    font-size: var(--step--1);
+  }
+
+  .stats dt {
+    color: var(--muted);
+  }
+
+  .stats dd {
+    margin-top: var(--space-1);
+    font-size: var(--step-1);
+    font-weight: 600;
+  }
+
+  .languages {
+    margin-top: var(--space-6);
+  }
+
+  .languages h3 {
+    font-size: var(--step-0);
+    font-weight: 600;
+  }
+
+  .note {
+    color: var(--muted);
+    font-size: var(--step--1);
+  }
+
+  /* GitHub's language bar: one row of slices, 2px apart. */
+  .bar {
+    display: flex;
+    gap: 2px;
+    height: 8px;
+    margin-block: var(--space-3);
+    overflow: hidden;
+    border-radius: 6px;
+  }
+
+  .bar span {
+    min-width: 2px;
+    background: var(--lang);
+  }
+
+  .languages ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+    padding: 0;
+    list-style: none;
+    font-size: var(--step--1);
+  }
+
+  .languages li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .swatch {
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background: var(--lang);
+  }
+
+  .pct {
+    color: var(--muted);
+  }
+</style>

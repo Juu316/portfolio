@@ -178,9 +178,7 @@ test("the theme toggle switches to light and the choice survives a reload", asyn
   await expect(html).not.toHaveAttribute("data-theme", "light");
 });
 
-test("header: section links, CV download and contact from a case study", async ({
-  page,
-}, testInfo) => {
+test("header: section links, CV view and contact from a case study", async ({ page }, testInfo) => {
   await page.goto("en/projects/shuren/");
   const header = page.locator(".site-header");
   if (testInfo.project.name === "mobile") {
@@ -198,9 +196,10 @@ test("header: section links, CV download and contact from a case study", async (
       `/portfolio/en/#${hash}`,
     );
   }
-  const cv = header.getByRole("link", { name: "Download CV" });
+  const cv = header.getByRole("link", { name: "View resume" });
   await expect(cv).toHaveAttribute("href", "/portfolio/resume.pdf");
-  await expect(cv).toHaveAttribute("download", "");
+  await expect(cv).toHaveAttribute("target", "_blank");
+  await expect(cv).not.toHaveAttribute("download");
   await expect(header.getByRole("link", { name: "Contact", exact: true })).toHaveAttribute(
     "href",
     "/portfolio/en/#contact",
@@ -237,7 +236,12 @@ test("hero names the live sites and links the clients to their case studies", as
     "orchuulga.mn",
     "degfim.nova-shop.workers.dev",
   ]) {
-    await expect(terminal.getByRole("link", { name: domain })).toHaveCount(1);
+    const link = terminal.getByRole("link", { name: domain });
+    await expect(link).toHaveCount(1);
+    await expect(link).toHaveAttribute(
+      "href",
+      new RegExp(`^https?://(www\\.)?${domain.replace(/\./g, "\\.")}`),
+    );
   }
 });
 
@@ -257,7 +261,33 @@ test("expertise shows decorative logos, and text only where none exists", async 
   await expect(
     skills.filter({ hasText: "TypeScript" }).locator('svg[aria-hidden="true"]'),
   ).toHaveCount(1);
-  await expect(skills.filter({ hasText: "AWS" }).locator("svg")).toHaveCount(0);
+  await expect(skills.filter({ hasText: "AWS" }).locator('svg[aria-hidden="true"]')).toHaveCount(1);
+  await expect(skills.filter({ hasText: "Playwright" }).locator("svg")).toHaveCount(0);
+});
+
+test("GitHub activity: a GitHub-style calendar and a linked yearly total", async ({ page }) => {
+  for (const path of ["", "en/"]) {
+    await page.goto(path);
+    const activity = page.locator("#activity");
+    // The section is left out when GitHub can't be read at build time.
+    if ((await activity.count()) === 0) continue;
+    const calendar = activity.locator('.scroller > svg[aria-hidden="true"]');
+    expect(await calendar.locator("rect").count()).toBeGreaterThanOrEqual(52 * 7);
+    expect(await calendar.locator("text").count()).toBeGreaterThanOrEqual(10 + 3);
+    await expect(calendar.locator("rect title").first()).toHaveText(/\d/);
+    const link = activity.locator(".total a");
+    await expect(link).toHaveAttribute("href", "https://github.com/Juu316");
+    await expect(link).toHaveText(/\d/);
+
+    // Only built with a GitHub token.
+    const stats = activity.locator(".stats dd");
+    for (const value of await stats.allTextContents()) expect(value).toMatch(/^[\d,\s]+$/);
+    const percents = await activity.locator(".languages .pct").allTextContents();
+    if (percents.length) {
+      const sum = percents.reduce((n, p) => n + parseFloat(p), 0);
+      expect(Math.abs(sum - 100)).toBeLessThan(1);
+    }
+  }
 });
 
 test("contact: copy buttons copy the email address and phone number", async ({
