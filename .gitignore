@@ -16,7 +16,6 @@ Thumbs.db
 # Logs and reports
 *.log
 npm-debug.log*
-pnpm-debug.log*
 yarn-error.log*
 .lighthouseci/
 lighthouse-*.json

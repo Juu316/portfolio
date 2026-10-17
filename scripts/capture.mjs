@@ -2,17 +2,17 @@
  * Captures the project screenshots used on the site, straight from the live
  * products, so every image on the portfolio is the real thing.
  *
- *   pnpm run capture            all shots
- *   pnpm run capture -- shuren  one project
+ *   bun run capture            all shots
+ *   bun run capture -- shuren  one project
  *
  * Output: src/assets/projects/<project>/<name>.webp at 2x density, near-lossless
  * so astro:assets has a clean master to resize into AVIF/WebP at build time.
  *
- *   pnpm run capture -- og      the portfolio's own link-preview image
+ *   bun run capture -- og      the portfolio's own link-preview image
  *
  * "og" shoots this site at the 1200×630 Open Graph ratio into src/assets/og/.
  * It uses the deployed site; set CAPTURE_BASE to shoot a local preview instead,
- * e.g. CAPTURE_BASE=http://localhost:4321/portfolio/ pnpm run capture -- og
+ * e.g. CAPTURE_BASE=http://localhost:4321/portfolio/ bun run capture -- og
  *
  * Re-run after a project's design changes, then review every image before
  * committing — live sites can show placeholder products, test data or

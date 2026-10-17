@@ -149,7 +149,7 @@ type size or spacing.
 
 ## 6. Screenshots
 
-- Capture with `pnpm run capture [project]`. The output goes to
+- Capture with `bun run capture [project]`. The output goes to
   `src/assets/projects/<slug>/`.
 - Review every new image. Reject anything that shows placeholder products
   (Shuren has a "test" item at 100₮), placeholder phone numbers, personal data
@@ -160,10 +160,10 @@ type size or spacing.
 Run each of these and report the real output:
 
 ```
-pnpm run check      # astro check (types + .astro diagnostics)
-pnpm run build
-pnpm run lint       # prettier --check
-pnpm test           # Playwright: routes, links, axe, overflow, keyboard, SEO
+bun run check      # astro check (types + .astro diagnostics)
+bun run build
+bun run lint       # prettier --check
+bun run test       # Playwright: routes, links, axe, overflow, keyboard, SEO
 ```
 
 Then screenshot the homepage and one case study at 390 and 1440 and look at

@@ -1,0 +1,5 @@
+[install]
+# Only install versions published at least a day ago (pnpm's default, kept from before the move to bun).
+minimumReleaseAge = 86400
+# Already pinned in the lockfile and reviewed; exempt as pnpm-workspace.yaml did.
+minimumReleaseAgeExcludes = ["prettier-plugin-astro"]

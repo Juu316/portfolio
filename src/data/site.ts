@@ -24,6 +24,8 @@ export const person = {
   github: "https://github.com/Juu316",
   instagram: "https://www.instagram.com/uujuu316/",
   facebook: "https://www.facebook.com/uujuu316",
+  // src: owner, 2026-10-17.
+  telegram: "https://t.me/Juu0726",
   phone: "80383316",
   /** Shown as written; `phone` above is what tel: links and copy use. */
   phoneDisplay: "+976 8038 3316",
