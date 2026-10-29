@@ -1,9 +1,9 @@
 ---
 /**
- * A floating bar: transparent over the top of the page, a glass pill once
- * you scroll (CSS scroll timeline; browsers without it always show the
- * pill). Below desktop width the section links, CV and contact move into a
- * <details> menu, so it opens without JavaScript.
+ * A plain bar on the ground: wordmark, section links, language, theme and
+ * crewmate toggles, the CV and the one action. Below desktop width the
+ * section links, CV and contact move into a <details> menu, so it opens
+ * without JavaScript.
  */
 import { LOCALES, localeUrl, t, type Locale } from "../i18n/ui";
 import { person } from "../data/site";
@@ -29,7 +29,6 @@ const contact = `${home}#contact`;
 <header class="site-header">
   <div class="bar">
     <a class="brand" href={home} aria-label={`${person.name[locale]}, ${t(locale, "homeLabel")}`}>
-      <span class="dot" aria-hidden="true"></span>
       {person.shortName[locale]}
     </a>
 
@@ -105,7 +104,7 @@ const contact = `${home}#contact`;
         </svg>
       </button>
 
-      <a class="btn-pill wide" href={cv} target="_blank" rel="noopener">
+      <a class="btn wide" href={cv} target="_blank" rel="noopener">
         {/* Lucide "external-link". */}
         <svg
           viewBox="0 0 24 24"
@@ -123,7 +122,7 @@ const contact = `${home}#contact`;
         </svg>
         {t(locale, "viewResume")}
       </a>
-      <a class="btn-pill primary wide" href={contact}>
+      <a class="btn lime wide" href={contact}>
         {t(locale, "contact")}
       </a>
 
@@ -148,10 +147,10 @@ const contact = `${home}#contact`;
             </ul>
           </nav>
           <div class="panel-actions">
-            <a class="btn-pill" href={cv} target="_blank" rel="noopener">
+            <a class="btn" href={cv} target="_blank" rel="noopener">
               {t(locale, "viewResume")}
             </a>
-            <a class="btn-pill primary" href={contact}>
+            <a class="btn lime" href={contact}>
               {t(locale, "contact")}
             </a>
           </div>
@@ -171,7 +170,7 @@ const contact = `${home}#contact`;
   function show(theme: "light" | "dark") {
     if (theme === "light") root.dataset.theme = "light";
     else delete root.dataset.theme;
-    if (meta) meta.content = theme === "light" ? "#f2f4f9" : "#0c1226";
+    if (meta) meta.content = theme === "light" ? "#dde6d7" : "#0f1f10";
     const toggle = document.querySelector<HTMLButtonElement>("[data-theme-toggle]");
     if (toggle) {
       toggle.hidden = false;
@@ -231,7 +230,7 @@ const contact = `${home}#contact`;
   // The other script's font subsets: Mongolian needs both Cyrillic files
   // (Ө and Ү sit in cyrillic-ext), English the Latin one.
   const font = (lang: string) =>
-    document.fonts?.load("1em Geologica", lang == "mn" ? "аӨ" : "a").catch(() => {});
+    document.fonts?.load("1em Onest", lang == "mn" ? "аӨ" : "a").catch(() => {});
   document.addEventListener("pointerover", prefetch);
   document.addEventListener("focusin", prefetch);
 
@@ -309,7 +308,7 @@ const contact = `${home}#contact`;
     position: sticky;
     top: 0;
     z-index: 5;
-    padding: var(--space-3) var(--gutter) 0;
+    background: var(--ground);
     font-size: var(--step--1);
     view-transition-name: site-header;
   }
@@ -319,55 +318,17 @@ const contact = `${home}#contact`;
     display: flex;
     align-items: center;
     gap: var(--space-4);
-    max-width: var(--wrap);
+    width: min(100% - 2 * var(--gutter), var(--wrap));
     margin-inline: auto;
-    padding: var(--space-2) var(--space-2) var(--space-2) var(--space-5);
-    border: 1px solid var(--rule);
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--paper) 72%, transparent);
-    backdrop-filter: blur(18px) saturate(1.4);
-    -webkit-backdrop-filter: blur(18px) saturate(1.4);
-    box-shadow: var(--shadow-float);
-  }
-
-  /* Over the top of the page the bar is bare; the pill fills in over the first 80px of scroll. */
-  @keyframes glass {
-    from {
-      border-color: transparent;
-      background-color: transparent;
-      backdrop-filter: none;
-      box-shadow: none;
-    }
-  }
-
-  @supports (animation-timeline: scroll()) {
-    .bar {
-      animation: glass linear both;
-    }
-
-    /* Separate rule: the minifier would fold the timeline into the shorthand. */
-    .site-header .bar {
-      animation-timeline: scroll(root);
-      animation-range: 0 80px;
-    }
+    padding-block: var(--space-3);
   }
 
   .brand {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    font-weight: 600;
+    font-weight: var(--weight-display);
     font-size: var(--step-0);
+    letter-spacing: -0.01em;
     white-space: nowrap;
     text-decoration: none;
-  }
-
-  .dot {
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 50%;
-    background: var(--signal);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--signal) 25%, transparent);
   }
 
   ul {
@@ -379,14 +340,15 @@ const contact = `${home}#contact`;
 
   .links a,
   .panel nav a {
-    color: var(--muted);
-    text-decoration: none;
-    transition: color var(--dur-fast) var(--ease);
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 0.3em;
+    transition: text-decoration-color var(--dur-fast) var(--ease);
   }
 
   .links a:hover,
   .panel nav a:hover {
-    color: var(--ink);
+    text-decoration-color: currentColor;
   }
 
   .tools {
@@ -396,50 +358,42 @@ const contact = `${home}#contact`;
     margin-left: auto;
   }
 
-  /* EN | MN: two links in one track, the current one filled. */
+  /* MN | EN: two links on one filled strip, the current one inked. */
   .lang {
     display: inline-flex;
-    padding: 3px;
-    border: 1px solid var(--rule);
-    border-radius: 999px;
+    background: var(--surface);
   }
 
   .lang a {
-    padding: 0.2rem 0.6rem;
-    border-radius: 999px;
-    color: var(--muted);
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
+    display: inline-grid;
+    place-items: center;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    font-weight: var(--weight-strong);
     text-decoration: none;
   }
 
-  .lang a:hover {
-    color: var(--ink);
-  }
-
   .lang [aria-current] {
-    background: var(--surface);
-    color: var(--ink);
-    box-shadow: 0 0 0 1px var(--rule);
+    background: var(--ink);
+    color: var(--ground);
   }
 
   .icon-btn {
     display: inline-grid;
     place-items: center;
-    width: 2.25rem;
-    height: 2.25rem;
+    width: 2.75rem;
+    height: 2.75rem;
     padding: 0;
-    border: 1px solid var(--rule);
-    border-radius: 50%;
-    background: none;
-    color: var(--muted);
+    border: 0;
+    background: var(--surface);
+    color: var(--ink);
     cursor: pointer;
-    transition: color var(--dur-fast) var(--ease);
+    transition: background-color var(--dur-fast) var(--ease);
   }
 
-  .icon-btn:hover {
-    color: var(--ink);
+  .icon-btn:hover,
+  .lang a:not([aria-current]):hover {
+    background: color-mix(in srgb, var(--surface) 70%, var(--ink));
   }
 
   .icon-btn[hidden] {
@@ -471,12 +425,8 @@ const contact = `${home}#contact`;
     stroke: none;
   }
 
-  .buddy-toggle[aria-pressed="true"] {
-    color: var(--ink);
-  }
-
   .visor {
-    fill: var(--paper);
+    fill: var(--surface);
     stroke: currentColor;
     stroke-width: 1.5;
   }
@@ -490,7 +440,7 @@ const contact = `${home}#contact`;
   }
 
   .strike .halo {
-    stroke: var(--paper);
+    stroke: var(--surface);
     stroke-width: 5;
   }
 
@@ -516,18 +466,32 @@ const contact = `${home}#contact`;
     display: block;
   }
 
+  /* The menu is a sheet laid over the page. */
   .panel {
     position: absolute;
-    top: calc(100% + var(--space-2));
+    top: 100%;
     inset-inline: 0;
     display: grid;
     gap: var(--space-5);
     padding: var(--space-5);
-    border: 1px solid var(--rule);
-    border-radius: 1.25rem;
-    background: var(--surface);
-    box-shadow: var(--shadow-float);
+    background: var(--sheet);
+    color: var(--sheet-ink);
+    font-size: var(--step-1);
+  }
+
+  .panel :focus-visible {
+    outline-color: var(--sheet-ink);
+  }
+
+  .panel .btn {
+    background: var(--sheet-ink);
+    color: var(--sheet);
     font-size: var(--step-0);
+  }
+
+  .panel .btn.lime {
+    background: var(--lime);
+    color: var(--lime-ink);
   }
 
   .panel ul {
@@ -557,7 +521,7 @@ const contact = `${home}#contact`;
       display: flex;
     }
 
-    .btn-pill.wide {
+    .btn.wide {
       display: inline-flex;
     }
 
@@ -566,18 +530,28 @@ const contact = `${home}#contact`;
     }
 
     .links {
-      margin-left: var(--space-5);
+      margin-left: var(--space-6);
     }
   }
 
   @media (max-width: 29.99rem) {
     .bar {
       gap: var(--space-2);
-      padding-left: var(--space-4);
+    }
+
+    .tools {
+      gap: var(--space-1);
     }
 
     .brand {
       font-size: var(--step--1);
+    }
+
+    .icon-btn,
+    .lang a {
+      width: 2.5rem;
+      min-width: 2.5rem;
+      height: 2.75rem;
     }
   }
 </style>

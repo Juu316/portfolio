@@ -112,7 +112,8 @@ const languages = github?.languages ?? [];
         {totalAfter}
       </a>
     </p>
-    <div class="calendar reveal">
+    {/* GitHub's own calendar, drawn the way GitHub draws it (owner's choice). */}
+    <div class="calendar reveal" data-ui>
       {/* Focusable so keyboard users can scroll it on phones. */}
       <div
         class="scroller"
@@ -336,6 +337,9 @@ const languages = github?.languages ?? [];
     --gh-3: #2ea043;
     --gh-4: #56d364;
     --gh-tip: #3d444d;
+    --gh-bg: #0d1117;
+    --gh-border: #3d444d;
+    --gh-text: #9198a1;
   }
 
   :global(:root[data-theme="light"]) {
@@ -345,21 +349,28 @@ const languages = github?.languages ?? [];
     --gh-3: #2da44e;
     --gh-4: #116329;
     --gh-tip: #25292e;
+    --gh-bg: #ffffff;
+    --gh-border: #d1d9e0;
+    --gh-text: #59636e;
   }
 
   .total {
-    margin-bottom: var(--space-3);
+    margin-block: var(--space-4) var(--space-5);
+    font-size: var(--step-1);
+    font-weight: var(--weight-strong);
   }
 
   .total a {
     color: var(--ink);
   }
 
+  /* GitHub's box: its own background, border and radius, as on github.com. */
   .calendar {
     position: relative;
     padding: var(--space-4) var(--space-4) var(--space-3);
-    border: 1px solid var(--rule);
+    border: 1px solid var(--gh-border);
     border-radius: 6px;
+    background: var(--gh-bg);
   }
 
   /* Phones scroll the year sideways, starting at the most recent weeks. */
@@ -378,13 +389,13 @@ const languages = github?.languages ?? [];
   }
 
   text {
-    fill: var(--muted);
+    fill: var(--gh-text);
     font-size: 9px;
   }
 
   .l0 {
     fill: var(--gh-0);
-    stroke: color-mix(in srgb, var(--ink) 6%, transparent);
+    stroke: color-mix(in srgb, var(--gh-text) 12%, transparent);
   }
   .l1 {
     fill: var(--gh-1);
@@ -435,11 +446,11 @@ const languages = github?.languages ?? [];
     gap: var(--space-2) var(--space-5);
     margin-top: var(--space-3);
     font-size: var(--step--1);
-    color: var(--muted);
+    color: var(--gh-text);
   }
 
   .foot a {
-    color: var(--muted);
+    color: var(--gh-text);
   }
 
   .legend {
@@ -453,13 +464,21 @@ const languages = github?.languages ?? [];
     height: 10px;
   }
 
-  /* Same pattern as the hero facts. */
+  /* The year's totals, each on its own filled block. */
   .stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
-    gap: var(--space-5);
+    gap: 6px;
     margin-top: var(--space-6);
     font-size: var(--step--1);
+  }
+
+  .stats > div {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    padding: var(--space-4);
+    background: var(--surface);
   }
 
   .stats dt {
@@ -467,9 +486,9 @@ const languages = github?.languages ?? [];
   }
 
   .stats dd {
-    margin-top: var(--space-1);
     font-size: var(--step-1);
-    font-weight: 600;
+    font-weight: var(--weight-display);
+    font-variant-numeric: tabular-nums;
   }
 
   .languages {
@@ -478,7 +497,7 @@ const languages = github?.languages ?? [];
 
   .languages h3 {
     font-size: var(--step-0);
-    font-weight: 600;
+    letter-spacing: 0;
   }
 
   .note {

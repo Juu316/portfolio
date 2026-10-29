@@ -1,5 +1,5 @@
 ---
-/** A screenshot from the live product, framed, with a caption that says what it shows. */
+/** A screenshot from the live product, on a tone-step mat, with a caption that says what it shows. */
 import type { ImageMetadata } from "astro";
 import { Picture } from "astro:assets";
 
@@ -13,7 +13,7 @@ interface Props {
 
 const { src, alt, caption, device = "desktop" } = Astro.props;
 const sizes =
-  device === "mobile" ? "(min-width: 48rem) 320px, 80vw" : "(min-width: 76rem) 1216px, 92vw";
+  device === "mobile" ? "(min-width: 48rem) 320px, 80vw" : "(min-width: 90rem) 1100px, 92vw";
 const widths = device === "mobile" ? [320, 480, 640] : [640, 960, 1280, 1920];
 ---
 
@@ -32,8 +32,13 @@ const widths = device === "mobile" ? [320, 480, 640] : [640, 960, 1280, 1920];
 <style>
   .shot :global(img) {
     width: 100%;
-    border: 1px solid var(--rule);
-    border-radius: var(--radius-frame);
+  }
+
+  /* The mat keeps a white page apart from the white sheet it sits on. */
+  .shot :global(picture) {
+    display: block;
+    padding: var(--space-3);
+    background: var(--sheet-2);
   }
 
   .mobile {
@@ -43,7 +48,7 @@ const widths = device === "mobile" ? [320, 480, 640] : [640, 960, 1280, 1920];
   figcaption {
     margin-top: var(--space-3);
     font-size: var(--step--1);
-    color: var(--muted);
+    color: var(--sheet-muted);
     max-width: var(--measure);
   }
 </style>

@@ -8,7 +8,7 @@ interface Props {
   projects: CollectionEntry<"projects">[];
 }
 
-/* Own work, kept apart from client work; same rows as the client index. */
+/* Own work, kept apart from client work and printed as a ticket. */
 const { locale, projects } = Astro.props;
 ---
 
@@ -19,13 +19,16 @@ const { locale, projects } = Astro.props;
 
   <ul class="rows">
     {projects.map((p) => (
-      <ProjectRow locale={locale} project={p} />
+      <ProjectRow locale={locale} project={p} variant="ticket" />
     ))}
   </ul>
 </section>
 
 <style>
   .rows {
+    display: grid;
+    gap: var(--space-6);
+    margin-top: var(--space-6);
     padding: 0;
     list-style: none;
   }

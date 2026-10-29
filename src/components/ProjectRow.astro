@@ -2,72 +2,96 @@
 import { Picture } from "astro:assets";
 import type { CollectionEntry } from "astro:content";
 import { domainOf, localeUrl, splitId, t, type Locale } from "../i18n/ui";
+import { notches } from "../lib/edges";
 
 interface Props {
   locale: Locale;
   project: CollectionEntry<"projects">;
-  /** The first row on the page carries the LCP image. */
-  eager?: boolean;
+  /** Position in its list; folders stack by it. */
+  index?: number;
+  /** Client work is filed as a folder; own work is printed as a ticket. */
+  variant?: "folder" | "ticket";
 }
 
-/* One project in a homepage list: small screenshot, text, and two actions. */
-const { locale, project, eager = false } = Astro.props;
+const { locale, project, index = 0, variant = "folder" } = Astro.props;
 const p = project.data;
 const slug = splitId(project.id).slug;
 const href = localeUrl(locale, `projects/${slug}/`);
+const domain = domainOf(p.url);
+const meta = p.kind === "personal" ? `${t(locale, "studyProject")}, ${p.client}` : p.client;
 ---
 
-<li class="row reveal" data-accent={p.accent}>
-  {/* Decorative duplicate of the title link, so it stays out of the tab order. */}
-  <a
-    class="thumb"
-    href={href}
-    tabindex="-1"
-    aria-hidden="true"
-    style={`view-transition-name: cover-${slug}`}
-  >
-    <Picture
-      src={p.cover}
-      alt=""
-      widths={[320, 480, 640]}
-      sizes="(min-width: 48rem) 16rem, 92vw"
-      formats={["avif", "webp"]}
-      fallbackFormat="webp"
-      loading={eager ? "eager" : "lazy"}
-      fetchpriority={eager ? "high" : "auto"}
-    />
-  </a>
-
-  <div class="body">
-    {/* Morphs into the case study's <h1> on navigation. */}
-    <a class="name display" href={href} style={`view-transition-name: title-${slug}`}>
-      {p.title}
-    </a>
-    <p class="summary">{p.summary}</p>
-    <p class="meta">
-      {p.kind === "personal" ? `${t(locale, "studyProject")}, ${p.client}, ${p.period}` : p.period}
-    </p>
-    <p class="actions">
-      <a class="btn-pill" href={p.url} target="_blank" rel="noopener">
-        {/* Lucide "external-link". */}
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-          focusable="false"
-        >
-          <path d="M15 3h6v6"></path>
-          <path d="M10 14 21 3"></path>
-          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-        </svg>
-        {t(locale, "visitSite", { domain: domainOf(p.url) })}
+<li
+  class:list={["row", variant]}
+  data-accent={p.accent}
+  style={
+    variant === "folder"
+      ? `--i: ${index}`
+      : `--clip-wide: ${notches("vertical", 70, 16)}; --clip-narrow: ${notches("horizontal", 62, 16)}`
+  }
+>
+  {variant === "folder" && (
+    <p class="tab">
+      {/* Morphs into the case study's <h1> on navigation. */}
+      <a class="name display" href={href} style={`view-transition-name: title-${slug}`}>
+        {p.title}
       </a>
-      <a class="btn-pill primary" href={href}>
+    </p>
+  )}
+
+  <div class="band">
+    {variant === "folder" && <p class="category">{p.client}</p>}
+
+    {/* Decorative duplicate of the title link, so it stays out of the tab order. */}
+    <a
+      class="thumb"
+      href={href}
+      tabindex="-1"
+      aria-hidden="true"
+      style={`view-transition-name: cover-${slug}`}
+    >
+      <Picture
+        src={p.cover}
+        alt=""
+        widths={[480, 640, 960, 1280]}
+        sizes="(min-width: 64rem) 50vw, 92vw"
+        formats={["avif", "webp"]}
+        fallbackFormat="webp"
+        loading="lazy"
+      />
+    </a>
+
+    <div class="body">
+      {variant === "ticket" && (
+        <a class="name display" href={href} style={`view-transition-name: title-${slug}`}>
+          {p.title}
+        </a>
+      )}
+      <p class="summary">{p.summary}</p>
+      <dl class="meta">
+        {variant === "ticket" && (
+          <div>
+            <dt class="visually-hidden">{t(locale, "client")}</dt>
+            <dd>{meta}</dd>
+          </div>
+        )}
+        <div>
+          <dt class="visually-hidden">{t(locale, "role")}</dt>
+          <dd>{p.role}</dd>
+        </div>
+        <div>
+          <dt class="visually-hidden">{t(locale, "period")}</dt>
+          <dd>{p.period}</dd>
+        </div>
+      </dl>
+    </div>
+
+    <p class="actions">
+      <a class="btn" href={href}>
         {t(locale, "readCaseStudy")}
+      </a>
+      <a class="visit" href={p.url} target="_blank" rel="noopener">
+        {t(locale, "visitSite", { domain })}
       </a>
     </p>
   </div>
@@ -75,90 +99,199 @@ const href = localeUrl(locale, `projects/${slug}/`);
 
 <style>
   .row {
-    display: grid;
-    gap: var(--space-4) var(--space-6);
-    padding-block: var(--space-6);
-    border-bottom: 1px solid var(--rule);
+    color: var(--sheet-ink);
   }
 
-  @media (min-width: 48rem) {
-    .row {
-      grid-template-columns: 16rem minmax(0, 1fr);
-      align-items: start;
-    }
-  }
-
-  .thumb {
-    display: block;
-    max-width: 24rem;
-  }
-
-  .thumb :global(img) {
-    display: block;
-    width: 100%;
-    height: auto;
-    border: 1px solid var(--rule);
-    border-radius: var(--radius-frame);
-    transition: border-color var(--dur-fast) var(--ease);
-  }
-
-  .row:hover .thumb :global(img),
-  .row:focus-within .thumb :global(img) {
-    border-color: var(--accent);
-  }
-
-  .body {
-    display: grid;
-    gap: var(--space-2);
+  .row :focus-visible {
+    outline-color: var(--sheet-ink);
   }
 
   .name {
-    justify-self: start;
-    font-size: var(--step-2);
-    line-height: 1.1;
-    color: var(--ink);
+    color: inherit;
     text-decoration: none;
-    transition:
-      color var(--dur-fast) var(--ease),
-      translate var(--dur-med) var(--ease-out-expo);
-  }
-
-  .name:hover,
-  .name:focus-visible {
-    color: var(--accent);
-    translate: 6px 0;
   }
 
   .summary {
-    max-width: 60ch;
-    color: var(--muted);
+    max-width: 52ch;
   }
 
   .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-5);
     font-size: var(--step--1);
-    color: var(--muted);
+    font-weight: var(--weight-strong);
   }
 
   .actions {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-3);
-    margin-top: var(--space-3);
+    align-items: center;
+    gap: var(--space-3) var(--space-5);
   }
 
-  .actions .btn-pill:not(.primary) svg {
+  .row .btn {
+    background: var(--sheet-ink);
     color: var(--accent);
   }
 
-  /* Long Mongolian labels may need to wrap on narrow phones. */
-  .actions .btn-pill {
-    white-space: normal;
+  .visit {
+    display: inline-block;
+    padding-block: var(--space-2);
+    font-weight: var(--weight-strong);
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .name,
+  .thumb {
+    display: block;
+    overflow: hidden;
+  }
+
+  .thumb :global(img) {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    object-position: 0 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
     .thumb :global(img) {
-      transition: none;
+      transition: scale var(--dur-slow) var(--ease-out-expo);
+    }
+
+    .row:hover .thumb :global(img),
+    .row:focus-within .thumb :global(img) {
+      scale: 1.04;
+    }
+  }
+
+  /*
+   * Folder: a tab with shouldered corners rises from the band's top-left.
+   * On wide screens the folders stick in a pile as the page scrolls, each
+   * leaving a 64px strip (its tab and the band's top) above the next.
+   */
+  .tab {
+    display: flex;
+  }
+
+  .tab .name {
+    display: block;
+    min-width: 12.5rem;
+    padding: 10px 2rem 6px;
+    background: var(--accent);
+    clip-path: polygon(0 100%, 14px 0, calc(100% - 14px) 0, 100% 100%);
+    font-size: var(--step-1);
+    line-height: 1.1;
+  }
+
+  .tab .name:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+  }
+
+  .folder .band {
+    position: relative;
+    display: grid;
+    gap: var(--space-5);
+    padding: var(--space-5);
+    background: var(--accent);
+  }
+
+  .category {
+    font-size: var(--step--1);
+    font-weight: var(--weight-strong);
+  }
+
+  .folder .body {
+    display: grid;
+    align-content: start;
+    gap: var(--space-4);
+  }
+
+  @media (min-width: 64rem) {
+    .folder {
+      position: sticky;
+      top: calc(4.5rem + var(--i) * 64px);
+    }
+
+    .folder .band {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      grid-template-rows: auto 1fr auto;
+      column-gap: var(--space-5);
+      min-height: min(80svh, 46rem);
+      padding: var(--space-5) var(--space-6) var(--space-6);
+    }
+
+    .category {
+      grid-column: 1 / -1;
+      justify-self: end;
+    }
+
+    .folder .thumb {
+      grid-column: 1 / 8;
+      grid-row: 2 / 4;
+      align-self: start;
+    }
+
+    .folder .body {
+      grid-column: 9 / 13;
+      grid-row: 2;
+    }
+
+    .folder .actions {
+      grid-column: 9 / 13;
+      grid-row: 3;
+    }
+  }
+
+  /*
+   * Ticket: one filled card about 2.2:1, the stub cut off by two notches
+   * and a perforation of round dots.
+   */
+  .ticket .band {
+    display: grid;
+    gap: var(--space-5);
+    padding: var(--space-5);
+    background: var(--accent);
+    clip-path: var(--clip-narrow);
+  }
+
+  .ticket .body {
+    display: grid;
+    align-content: start;
+    gap: var(--space-4);
+  }
+
+  .ticket .name {
+    font-size: var(--step-2);
+  }
+
+  .ticket .actions {
+    padding-top: var(--space-6);
+    border-top: var(--perf) dotted var(--ground);
+  }
+
+  @media (min-width: 64rem) {
+    .ticket .band {
+      grid-template-columns: 5fr 4fr 3fr;
+      align-items: stretch;
+      gap: var(--space-6);
+      aspect-ratio: 2.2 / 1;
+      padding: var(--space-6);
+      clip-path: var(--clip-wide);
+    }
+
+    .ticket .thumb {
+      align-self: center;
+    }
+
+    .ticket .actions {
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      margin-block: calc(-1 * var(--space-6));
+      padding: var(--space-6) 0 var(--space-6) var(--space-6);
+      border-top: 0;
+      border-left: var(--perf) dotted var(--ground);
     }
   }
 </style>

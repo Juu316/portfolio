@@ -36,15 +36,16 @@ const { title, problem, tradeoff, locale } = Astro.props;
 </article>
 
 <style>
+  /* Each decision is a slip clipped into the write-up: a filled block, one tone down. */
   .decision {
     margin-top: var(--space-7);
-    padding-top: var(--space-5);
-    border-top: 2px solid var(--accent);
+    padding: var(--space-6) var(--space-5);
+    background: var(--sheet-2);
   }
 
   h3 {
     font-size: var(--step-1);
-    margin-bottom: var(--space-4);
+    margin-bottom: var(--space-5);
   }
 
   dl {
@@ -53,9 +54,8 @@ const { title, problem, tradeoff, locale } = Astro.props;
   }
 
   dt {
-    font-size: var(--step--1);
-    font-weight: 600;
-    color: var(--accent);
+    font-weight: var(--weight-display);
+    color: var(--accent-text);
   }
 
   dd {
@@ -63,6 +63,10 @@ const { title, problem, tradeoff, locale } = Astro.props;
   }
 
   @media (min-width: 48rem) {
+    .decision {
+      padding: var(--space-6);
+    }
+
     dl > div {
       display: grid;
       grid-template-columns: 8rem 1fr;

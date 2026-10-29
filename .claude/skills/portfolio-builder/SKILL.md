@@ -30,44 +30,61 @@ outranks everything below it.
 
 ## 2. Design system
 
+Redesigned on 2026-10-29 with the taste skill (`design-taste-frontend`,
+direction "The page is the object", seed 40748748). The owner chose that the
+taste skill's house rules win over the previous design (glass pill header,
+hero terminal, shooting-star sky, hairline rules). The working files live in
+`.taste-skill/` (git-ignored).
+
 Tokens live in `src/styles/tokens.css`; components never hard-code colour,
 type size or spacing.
 
-- **Palette:** dark by default, light on request. Dark: paper `#0C1226`,
-  surface `#151D38`, ink `#EDEAE2`, muted `#97A0BC`, rule `#24305A`. Light
-  (`:root[data-theme="light"]`): paper `#F2F4F9`, surface `#FFFFFF`, ink
-  `#0C1226`, muted `#4A5470`, rule `#D3D9E8`. `--signal` (green) is the
-  "online" dot only, never a project colour.
-- **Project accents** are the projects' real brand colours, adjusted until
-  they pass WCAG AA on each paper. Dark: GTC `#4CC3F7`, Shuren `#D4A38A`,
-  Orchuulga `#3CD3A9`. Light: GTC `#0A6A9C`, Shuren `#8F5338`, Orchuulga
-  `#0A7356`. An accent appears only inside its project's context
-  (`--accent` set on the element), including the client links in the hero
-  sentence and the domains in the hero terminal.
-- **Type:** Geologica for everything, self-hosted from the `-shrp-` files
-  (weight + sharpness axes). Body at weight 380 with `"SHRP" 0`; `.display`
-  (names, project titles, the hero sentence) at 750 with `"SHRP" 100`. It
-  covers Mongolian Cyrillic including Ө/Ү (Golos Text was the previous face;
-  Unbounded was dropped because it lacks them). Mongolian is the root locale,
-  so check every heading in Cyrillic first. The system monospace
-  (`--font-code`) is for the hero terminal and inline code only.
+- **Idea:** the systems that "have to be right" are paperwork, so the page
+  is printed stationery on a forest-green ground: the hero is a striped card,
+  client work is a pile of folders, own work is a ticket, the timeline is a
+  till receipt, About is a letter with a tear-off strip, Contact is a coupon
+  and the footer is the back of a postcard. Shaped edges come from
+  `src/lib/edges.ts` (`teeth`, `scallops`, `notches`, as `clip-path`);
+  perforations are 5px round dots (`--perf`) in the ground colour.
+- **Palette** ("Forest and lime"): dark ground `#0F1F10`, ink `#FFFFFF`,
+  muted `#A7B1A7`, surface `#1A321B`; sheets `#FFFFFF` with ink `#0F1F10`,
+  soft ink `#4A574B`, tone step `#E8EEE5`; field `#000000`; lime `#C6F19D`
+  only on small squares (the main action, the stamp mount, selection).
+  Light (`:root[data-theme="light"]`): ground `#DDE6D7`, ink `#0F1F10`,
+  muted `#3F4D40`, surface `#CBD8C4`, field `#0F1F10`.
+- **Project accents** are the clients' real brand colours. `--accent` is the
+  fill of the project's folder, tab, ticket and case-study band, always with
+  dark ink: GTC `#4CC3F7`, Shuren `#D4A38A`, Orchuulga `#3CD3A9`, Degfim
+  `#5C9CE6`, movie `#FFCC00`. `--accent-text` is the AA version on white:
+  `#0A6A9C`, `#8F5338`, `#0A7356`, `#1D64B0`, `#8A6100`. Shuren's colour
+  trips the inspector's terracotta rule; it is the client's brand, so run
+  `inspect.mjs` with `--allow palette-terracotta`.
+- **Type:** Onest for everything, self-hosted from fontsource (latin,
+  cyrillic, cyrillic-ext; Ө and Ү are in cyrillic-ext). The dealt face,
+  General Sans, has no Cyrillic, so it was replaced. Text 400, emphasis 500,
+  display 700 at -0.02em, leading 0.95. Five sizes only: `--step--1` to
+  `--step-2` plus the giant Expertise word (sized in container units).
+  Mongolian is the root locale, so check every heading in Cyrillic first.
+  The system monospace is for code in case studies only.
 - **Theme:** `Base.astro` applies the saved choice (`localStorage.theme`)
   before paint; the header button flips it. Without JS the site is dark.
-- **Header:** a floating bar after ihzorig.vercel.app's: brand dot + short
-  name, section links, EN|MN segmented switch, theme and crewmate toggles,
-  "View CV" (opens the PDF in a new tab) and "Contact" pill buttons. It is bare at the top and turns
-  into a glass pill over the first 80px of scroll (CSS scroll timeline).
-  Below 72rem the links, CV and contact move into a `<details>` menu.
-- **Do not add:** all-caps eyebrows, 01/02/03 markers on content that isn't a
-  sequence, gradient washes on content (the site sky is the one exception),
-  glass panels other than the header bar, identical card grids, `→` appended
-  to links, or a mono font for labels. Borders and radii only on screenshot
-  frames, the hero terminal, form fields, pill buttons and the GitHub
-  calendar box. Never copy text,
-  photos or invented metrics from a reference site.
+- **Header:** a plain bar on the ground: wordmark, section links, MN|EN, theme
+  and crewmate toggles, "View CV" (opens the PDF in a new tab) and the lime
+  "Contact" button. Below 72rem the links, CV and contact move into a
+  `<details>` menu that opens as a white sheet. No glass, no pill.
+- **Buttons:** one shape, square and flat. `.btn` takes the ink of what it
+  sits on; `.btn.lime` is the main action.
+- **Do not add** (the taste house rules, measured by `inspect.mjs`):
+  eyebrows or small labels above headings, all-caps tracked labels, 01/02/03
+  numbering, thin rules or 1px outlined boxes, gradients, shadows on things
+  at rest, glass, rows of identical cards, `→` appended to links, monospace
+  outside code, a styled accent word in a headline, more than two lines in
+  any headline. The GitHub calendar box is a `data-ui` fragment and keeps
+  GitHub's own border and radius. Never copy text, photos or invented
+  metrics from a reference site.
 - **GitHub calendar** (`GithubActivity.astro`): owner asked for GitHub's own
-  look, so it uses GitHub's calendar greens (`--gh-0..4`, scoped to the
-  component), not `--signal`, and GitHub's language colours in the language
+  look, so it uses GitHub's calendar greens and box colours (`--gh-*`,
+  scoped to the component) and GitHub's language colours in the language
   bar. At build time the calendar comes from the public
   `github.com/users/<login>/contributions` HTML (it counts private
   contributions; the CI Actions token can't see them, so GraphQL undercounts),
@@ -78,26 +95,24 @@ type size or spacing.
   calendar from `github-contributions-api.jogruber.de` (owner's choice; CORS
   open) and shows GitHub's dark day bubble on hover ("3 contributions on
   October 15th."). If that API fails, the build-time calendar stays. Tests mock
-  the API; never let them depend on it.
-- **Sky:** the page background is `SpaceBackground.astro`, chosen by the
-  owner: a canvas port of Aceternity's "Shooting Stars and Stars Background"
-  with a twinkling star field and many shooting stars at once. It pauses
-  when the tab is hidden, draws a still star field with no shooting stars
-  under reduced motion, and leaves the plain paper colour without JS. In light
-  mode the canvas is hidden and its loop stops.
-- **Motion:** chosen by the owner, CSS-only (no client JS added), all of it
-  behind `prefers-reduced-motion: no-preference` (the header's glass fade is
-  a state change, not motion, and runs for everyone):
-  - the sky;
+  the API; never let them depend on it. It is the page's one live thing.
+- **Pictures:** the clients' own screenshots, plus one found photograph: the
+  footer stamp, "2024-10-18 Ulaanbaatar 1" by Alexkom000 (CC BY 4.0, Wikimedia
+  Commons), credited in the footer imprint. A found picture never stands in
+  for a client's product.
+- **Motion:** CSS-only (no client JS added), all of it behind
+  `prefers-reduced-motion: no-preference`:
+  - the hero picture crossfades through the client homepages (24s cycle;
+    reduced motion shows the first one only);
   - cross-document view transitions (`@view-transition` in `global.css`),
     with each project's title and cover morphing between the index and its
     case study (`title-<slug>` / `cover-<slug>`; names must stay unique per
     page);
   - a staggered entrance on load (`.enter` + `--i`);
-  - scroll reveals via `animation-timeline: view()` (`.reveal`), and the
-    timeline rail drawing in;
-  - interaction feedback: the project-index crossfade, the mobile menu
-    panel, hover underlines and nudges; the hero terminal's blinking caret.
+  - scroll reveals via `animation-timeline: view()` (`.reveal`); not on the
+    work heading, which the language-switch test uses as its anchor;
+  - folders stick into a pile on wide screens (`position: sticky`);
+  - interaction feedback: button lift, screenshot zoom on hover, underlines.
   - **Minifier trap:** write `animation-timeline` and `animation-range` in a
     separate, more specific rule from the `animation` shorthand (see
     `.reveal` in `global.css`). In one rule the minifier folds the timeline
@@ -134,13 +149,13 @@ type size or spacing.
 - No framework runtime on the client. Total client JS is at most 9 KB (owner
   raised it from 5 KB for the live GitHub calendar, then for the language
   switch) and limited to progressive enhancement. The site works with JS off.
-  Current scripts: the sky, the crewmate cursor, the theme (pre-paint +
+  Current scripts: the crewmate cursor, the theme (pre-paint +
   toggle), the menu close, the in-place language switch (fetches the other
   locale's page and swaps header, main and footer without a reload; scripts
   that bind to swapped elements re-run on the `lang:swap` event), the contact
-  copy buttons and the live GitHub calendar with its day bubble — 8.8 KB
-  (9027 bytes) inline on the homepage (2026-10-16), so there is little room
-  left; measure the inline `<script>`
+  copy buttons and the live GitHub calendar with its day bubble — 7.2 KB
+  (7377 bytes) inline on the homepage (2026-10-29, after the sky was
+  removed); measure the inline `<script>`
   bytes in `dist/en/index.html` after each build.
 - Images only through `astro:assets` (`<Picture>` AVIF/WebP) with explicit
   `widths`/`sizes`. The hero/LCP image gets `loading="eager"` + `fetchpriority="high"`.
@@ -167,4 +182,6 @@ pnpm test           # Playwright: routes, links, axe, overflow, keyboard, SEO
 ```
 
 Then screenshot the homepage and one case study at 390 and 1440 and look at
-them before claiming a visual change is finished.
+them before claiming a visual change is finished. For visual changes also run
+the taste inspector on the built site (`pnpm build && pnpm preview`):
+`node ~/.agents/skills/design-taste-frontend/scripts/inspect.mjs <url> --allow palette-terracotta`.

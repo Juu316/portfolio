@@ -14,11 +14,15 @@ const { locale, title, body, path } = Astro.props;
 
 <Base locale={locale} title={t(locale, title)} description={t(locale, body)} path={path} noindex>
   <section class="wrap message">
-    <h1 class="display">{t(locale, title)}</h1>
-    <p>{t(locale, body)}</p>
-    <p>
-      <a href={localeUrl(locale)}>{t(locale, "backHome")}</a>
-    </p>
+    <div class="slip sheet">
+      <h1 class="display">{t(locale, title)}</h1>
+      <p>{t(locale, body)}</p>
+      <p>
+        <a class="btn" href={localeUrl(locale)}>
+          {t(locale, "backHome")}
+        </a>
+      </p>
+    </div>
   </section>
 </Base>
 
@@ -27,12 +31,17 @@ const { locale, title, body, path } = Astro.props;
     padding-block: var(--space-8);
   }
 
+  .slip {
+    max-width: 40rem;
+    margin-inline: auto;
+    padding: var(--space-7) var(--space-6);
+  }
+
   h1 {
-    font-size: var(--step-3);
+    font-size: var(--step-2);
   }
 
   p {
-    margin-top: var(--space-4);
-    max-width: var(--measure);
+    margin-top: var(--space-5);
   }
 </style>

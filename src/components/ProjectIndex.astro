@@ -8,24 +8,34 @@ interface Props {
   projects: CollectionEntry<"projects">[];
 }
 
+/* Client work, filed as a pile of folders in each project's colour. */
 const { locale, projects } = Astro.props;
 ---
 
-<section id="work" class="wrap" aria-labelledby="work-title">
+<section id="work" class="wrap block" aria-labelledby="work-title">
   <h2 class="section-title" id="work-title">
     {t(locale, "selectedWork")}
   </h2>
 
   <ul class="rows">
     {projects.map((p, i) => (
-      <ProjectRow locale={locale} project={p} eager={i === 0} />
+      <ProjectRow locale={locale} project={p} index={i} />
     ))}
   </ul>
 </section>
 
 <style>
   .rows {
+    display: grid;
+    gap: var(--space-5);
+    margin-top: var(--space-6);
     padding: 0;
     list-style: none;
+  }
+
+  @media (min-width: 64rem) {
+    .rows {
+      gap: 0;
+    }
   }
 </style>

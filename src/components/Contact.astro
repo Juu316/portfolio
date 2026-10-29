@@ -1,6 +1,7 @@
 ---
 import { localeUrl, t, type Locale } from "../i18n/ui";
 import { availability, contactForm, person, replyTime } from "../data/site";
+import { notches } from "../lib/edges";
 
 interface Props {
   locale: Locale;
@@ -15,31 +16,35 @@ const links = [
   { href: person.facebook, label: bare(person.facebook), rel: "me noopener" },
 ];
 const tel = `+976${person.phone}`;
+/* The coupon's two notches: top and bottom on wide screens, the sides on a phone. */
+const clip = `--clip-wide: ${notches("vertical", 46, 14)}; --clip-narrow: ${notches("horizontal", 50, 14)}`;
 ---
 
-<section id="contact" class="wrap contact" aria-labelledby="contact-title">
-  <h2 class="section-title" id="contact-title">
-    {t(locale, "contact")}
-  </h2>
+{/* A coupon to cut out: the ways to reach me on the left of the perforation, the form on the right. */}
+<section id="contact" class="wrap block contact" aria-labelledby="contact-title">
+  <div class="coupon reveal" style={clip}>
+    <div class="reach">
+      <h2 class="section-title" id="contact-title">
+        {t(locale, "contact")}
+      </h2>
 
-  <div class="grid">
-    <div class="reveal">
       <div class="channels">
         <div class="channel">
           <p class="label">{t(locale, "email")}</p>
-          <a class="value display" href={`mailto:${person.email}`}>
+          <a class="value" href={`mailto:${person.email}`}>
             {person.email}
           </a>
           <p class="actions">
-            <a class="btn-pill" href={`mailto:${person.email}`}>
+            <a class="btn" href={`mailto:${person.email}`}>
               {t(locale, "emailMe")}
             </a>
             <button
-              class="btn-pill copy"
+              class="btn copy"
               type="button"
               hidden
               data-copy={person.email}
               data-done={t(locale, "copiedEmail")}
+              data-copied={t(locale, "copied")}
             >
               {t(locale, "copy")}
             </button>
@@ -47,24 +52,25 @@ const tel = `+976${person.phone}`;
         </div>
         <div class="channel">
           <p class="label">{t(locale, "phone")}</p>
-          <a class="value display" href={`tel:${tel}`}>
+          <a class="value" href={`tel:${tel}`}>
             {person.phoneDisplay}
           </a>
           <p class="actions">
-            <a class="btn-pill" href={`tel:${tel}`}>
+            <a class="btn" href={`tel:${tel}`}>
               {t(locale, "call")}
             </a>
             {person.viber && (
-              <a class="btn-pill" href={`viber://chat?number=%2B976${person.phone}`}>
+              <a class="btn" href={`viber://chat?number=%2B976${person.phone}`}>
                 {t(locale, "openViber")}
               </a>
             )}
             <button
-              class="btn-pill copy"
+              class="btn copy"
               type="button"
               hidden
               data-copy={tel}
               data-done={t(locale, "copiedPhone")}
+              data-copied={t(locale, "copied")}
             >
               {t(locale, "copy")}
             </button>
@@ -102,23 +108,52 @@ const tel = `+976${person.phone}`;
     </div>
 
     {/* Plain HTML POST: Web3Forms emails the message and redirects to /thanks/. */}
-    <form class="reveal" method="POST" action={contactForm.action} aria-labelledby="form-title">
+    <form method="POST" action={contactForm.action} aria-labelledby="form-title">
       <h3 id="form-title">{t(locale, "formHeading")}</h3>
       <input type="hidden" name="access_key" value={contactForm.accessKey} />
       <input type="hidden" name="subject" value={contactForm.subject[locale]} />
       <input type="hidden" name="redirect" value={thanks.href} />
       <input type="checkbox" name="botcheck" class="botcheck" tabindex="-1" aria-hidden="true" />
 
-      <label for="cf-name">{t(locale, "fieldName")}</label>
-      <input id="cf-name" name="name" type="text" autocomplete="name" required />
+      <label class="visually-hidden" for="cf-name">
+        {t(locale, "fieldName")}
+      </label>
+      <input
+        id="cf-name"
+        name="name"
+        type="text"
+        autocomplete="name"
+        placeholder={t(locale, "fieldName")}
+        required
+      />
 
-      <label for="cf-email">{t(locale, "fieldEmail")}</label>
-      <input id="cf-email" name="email" type="email" autocomplete="email" required />
+      <label class="visually-hidden" for="cf-email">
+        {t(locale, "fieldEmail")}
+      </label>
+      <input
+        id="cf-email"
+        name="email"
+        type="email"
+        autocomplete="email"
+        placeholder={t(locale, "fieldEmail")}
+        required
+      />
 
-      <label for="cf-message">{t(locale, "fieldMessage")}</label>
-      <textarea id="cf-message" name="message" rows="5" required minlength="10"></textarea>
+      <label class="visually-hidden" for="cf-message">
+        {t(locale, "fieldMessage")}
+      </label>
+      <textarea
+        id="cf-message"
+        name="message"
+        rows="5"
+        placeholder={t(locale, "fieldMessage")}
+        required
+        minlength="10"
+      ></textarea>
 
-      <button type="submit">{t(locale, "send")}</button>
+      <button class="btn lime" type="submit">
+        {t(locale, "send")}
+      </button>
     </form>
   </div>
 </section>
@@ -139,7 +174,7 @@ const tel = `+976${person.phone}`;
           return;
         }
         if (status) status.textContent = button.dataset.done ?? "";
-        button.textContent = "✓";
+        button.textContent = button.dataset.copied ?? label;
         setTimeout(() => {
           button.textContent = label;
           if (status) status.textContent = "";
@@ -152,40 +187,62 @@ const tel = `+976${person.phone}`;
 </script>
 
 <style>
-  .contact {
-    margin-top: var(--space-8);
-  }
-
-  .grid {
+  /* The coupon: one filled card in the field colour, notched and perforated. */
+  .coupon {
     display: grid;
-    gap: var(--space-7);
+    background: var(--field);
+    color: var(--field-ink);
+    clip-path: var(--clip-narrow);
   }
 
-  @media (min-width: 60rem) {
-    .grid {
-      grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  .coupon :focus-visible {
+    outline-color: var(--lime);
+  }
+
+  .reach,
+  form {
+    padding: var(--space-6) var(--space-5);
+  }
+
+  /* The perforation between the two halves: round dots in the ground colour. */
+  form {
+    border-top: var(--perf) dotted var(--ground);
+  }
+
+  @media (min-width: 64rem) {
+    .coupon {
+      grid-template-columns: 46fr 54fr;
+      clip-path: var(--clip-wide);
+    }
+
+    .reach,
+    form {
+      padding: var(--space-7);
+    }
+
+    form {
+      border-top: 0;
+      border-left: var(--perf) dotted var(--ground);
     }
   }
 
   .channels {
     display: grid;
     gap: var(--space-6);
-  }
-
-  .channel + .channel {
-    padding-top: var(--space-6);
-    border-top: 1px solid var(--rule);
+    margin-top: var(--space-6);
   }
 
   .label {
     font-size: var(--step--1);
-    color: var(--muted);
+    color: var(--field-muted);
   }
 
   .value {
     display: inline-block;
     margin-top: var(--space-1);
-    font-size: var(--step-2);
+    font-size: var(--step-1);
+    font-weight: var(--weight-display);
+    letter-spacing: -0.01em;
     text-decoration: none;
     overflow-wrap: anywhere;
   }
@@ -200,17 +257,15 @@ const tel = `+976${person.phone}`;
     flex-wrap: wrap;
     gap: var(--space-2);
     margin-top: var(--space-3);
-    font-size: var(--step--1);
   }
 
-  .actions button {
-    font: inherit;
-    cursor: pointer;
+  .coupon .btn:not(.lime) {
+    background: var(--field-ink);
+    color: var(--field);
   }
 
   .actions .copy {
-    min-width: 5.5rem;
-    justify-content: center;
+    min-width: 6rem;
   }
 
   .actions .copy[hidden] {
@@ -222,61 +277,52 @@ const tel = `+976${person.phone}`;
     flex-wrap: wrap;
     gap: var(--space-4) var(--space-7);
     margin-top: var(--space-6);
-    padding-top: var(--space-5);
-    border-top: 1px solid var(--rule);
-    font-size: var(--step--1);
-  }
-
-  .facts dt {
-    color: var(--muted);
   }
 
   .facts dd {
     margin-top: var(--space-1);
-    font-size: var(--step-0);
   }
 
   .also {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2) var(--space-5);
-    margin-top: var(--space-5);
+    margin-top: var(--space-6);
     padding: 0;
     list-style: none;
-    color: var(--muted);
+  }
+
+  .also a {
+    display: inline-block;
+    padding-block: var(--space-1);
   }
 
   form {
     display: grid;
-    gap: var(--space-2);
-    max-width: 36rem;
+    align-content: start;
+    gap: 10px;
   }
 
   h3 {
-    font-size: var(--step-0);
-    margin-bottom: var(--space-3);
-  }
-
-  label {
-    margin-top: var(--space-3);
-    font-size: var(--step--1);
-    font-weight: 600;
+    font-size: var(--step-1);
+    margin-bottom: var(--space-4);
   }
 
   input,
   textarea {
     width: 100%;
-    padding: var(--space-3);
+    min-height: 52px;
+    padding: var(--space-3) var(--space-4);
     font: inherit;
-    color: var(--ink);
-    background: var(--surface);
-    border: 1px solid var(--rule);
-    border-radius: 6px;
+    color: var(--field-ink);
+    background: color-mix(in srgb, var(--field) 82%, var(--field-ink));
+    border: 0;
   }
 
-  input:focus-visible,
-  textarea:focus-visible {
-    border-color: var(--ink);
+  input::placeholder,
+  textarea::placeholder {
+    color: color-mix(in srgb, var(--field-ink) 72%, var(--field));
+    opacity: 1;
   }
 
   textarea {
@@ -288,36 +334,8 @@ const tel = `+976${person.phone}`;
     display: none;
   }
 
-  form button {
-    justify-self: start;
-    margin-top: var(--space-4);
-    padding: var(--space-3) var(--space-6);
-    font: inherit;
-    font-weight: 600;
-    color: var(--paper);
-    background: var(--ink);
-    border: 0;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-
-  form button {
-    transition:
-      opacity var(--dur-fast) var(--ease),
-      transform var(--dur-fast) var(--ease);
-  }
-
-  form button:hover {
-    opacity: 0.88;
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    form button:hover {
-      transform: translateY(-2px);
-    }
-
-    form button:active {
-      transform: translateY(0);
-    }
+  form .btn {
+    min-height: 56px;
+    margin-top: var(--space-2);
   }
 </style>

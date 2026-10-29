@@ -33,3 +33,6 @@ test-results/
 
 # Personal Claude Code settings (project skills in .claude/skills are shared)
 .claude/settings.local.json
+
+# taste skill working files
+.taste-skill/

@@ -30,6 +30,9 @@ const projects = defineCollection({
       size: z.enum(["full", "short"]),
       cover: image(),
       coverAlt: z.string(),
+      /** A phone screenshot, shown beside the cover in the homepage hero. */
+      coverMobile: image().optional(),
+      coverMobileAlt: z.string().optional(),
     }),
 });
 

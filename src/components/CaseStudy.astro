@@ -24,70 +24,73 @@ const nextSlug = splitId(next.id).slug;
   path={`projects/${slug}/`}
   ogImage={p.cover}
 >
-  <article class="case" data-accent={p.accent}>
-    <header class="wrap head">
+  {/* The case study is the project's folder, opened: tab, band, then the papers inside. */}
+  <article class="case wrap" data-accent={p.accent}>
+    <header class="head">
       <p class="back enter" style="--i: 0">
         <a href={`${localeUrl(locale)}#work`}>{t(locale, "allProjects")}</a>
       </p>
-      {/* The title and cover morph from the project index (view transitions). */}
-      <h1 class="display" style={`view-transition-name: title-${slug}`}>
-        {p.title}
-      </h1>
-      <p class="summary enter" style="--i: 1">
-        {p.summary}
-      </p>
+      <div class="tab">
+        {/* The title and cover morph from the project index (view transitions). */}
+        <h1 class="display" style={`view-transition-name: title-${slug}`}>
+          {p.title}
+        </h1>
+      </div>
+      <div class="band">
+        <p class="summary enter" style="--i: 1">
+          {p.summary}
+        </p>
 
-      <dl class="facts enter" style="--i: 2">
-        <div>
-          <dt>{t(locale, p.kind === "personal" ? "studyProject" : "client")}</dt>
-          <dd>{p.client}</dd>
-        </div>
-        <div>
-          <dt>{t(locale, "role")}</dt>
-          <dd>{p.role}</dd>
-        </div>
-        <div>
-          <dt>{t(locale, "period")}</dt>
-          <dd>{p.period}</dd>
-        </div>
-        <div>
-          <dt>{t(locale, "liveSite")}</dt>
-          <dd>
-            <a href={p.url}>{domain}</a>
-          </dd>
-        </div>
-        <div class="stack">
-          <dt>{t(locale, "stack")}</dt>
-          <dd>{p.stack.join(", ")}</dd>
-        </div>
-      </dl>
+        <figure class="cover" style={`view-transition-name: cover-${slug}`}>
+          <Picture
+            src={p.cover}
+            alt={p.coverAlt}
+            widths={[640, 960, 1280, 1920]}
+            sizes="(min-width: 90rem) 1376px, 92vw"
+            formats={["avif", "webp"]}
+            fallbackFormat="webp"
+            loading="eager"
+            fetchpriority="high"
+          />
+        </figure>
+        <dl class="facts enter" style="--i: 2">
+          <div>
+            <dt>{t(locale, p.kind === "personal" ? "studyProject" : "client")}</dt>
+            <dd>{p.client}</dd>
+          </div>
+          <div>
+            <dt>{t(locale, "role")}</dt>
+            <dd>{p.role}</dd>
+          </div>
+          <div>
+            <dt>{t(locale, "period")}</dt>
+            <dd>{p.period}</dd>
+          </div>
+          <div>
+            <dt>{t(locale, "liveSite")}</dt>
+            <dd>
+              <a href={p.url}>{domain}</a>
+            </dd>
+          </div>
+          <div class="stack">
+            <dt>{t(locale, "stack")}</dt>
+            <dd>{p.stack.join(", ")}</dd>
+          </div>
+        </dl>
+      </div>
     </header>
 
-    <figure class="wrap cover" style={`view-transition-name: cover-${slug}`}>
-      <Picture
-        src={p.cover}
-        alt={p.coverAlt}
-        widths={[640, 960, 1280, 1920]}
-        sizes="(min-width: 76rem) 1216px, 92vw"
-        formats={["avif", "webp"]}
-        fallbackFormat="webp"
-        loading="eager"
-        fetchpriority="high"
-      />
-    </figure>
-
-    <div class="wrap body">
+    <div class="body sheet">
       <div class="prose">
         <Content />
       </div>
     </div>
 
-    <nav class="wrap next reveal" aria-label={t(locale, "nextProject")}>
+    <nav class="next reveal" aria-label={t(locale, "nextProject")} data-accent={next.data.accent}>
       <p>{t(locale, "nextProject")}</p>
       <a
         class="display"
         href={localeUrl(locale, `projects/${nextSlug}/`)}
-        data-accent={next.data.accent}
         style={`view-transition-name: title-${nextSlug}`}
       >
         {next.data.title}
@@ -98,35 +101,67 @@ const nextSlug = splitId(next.id).slug;
 
 <style>
   .head {
-    padding-block: var(--space-7) var(--space-6);
+    padding-top: var(--space-6);
+    color: var(--sheet-ink);
   }
 
+  .head :focus-visible,
+  .next :focus-visible {
+    outline-color: var(--sheet-ink);
+  }
+
+  /* On the band's inner margin, so the page's left and right edges match. */
   .back {
-    font-size: var(--step--1);
-    color: var(--muted);
+    margin-bottom: var(--space-6);
+    padding-inline: var(--space-5);
+    color: var(--ink);
+  }
+
+  @media (min-width: 64rem) {
+    .back {
+      padding-inline: var(--space-7);
+    }
+  }
+
+  .back :focus-visible {
+    outline-color: var(--focus);
+  }
+
+  .back a {
+    display: inline-block;
+    padding-block: var(--space-2);
+  }
+
+  /* The folder's tab with its shouldered corners. */
+  .tab {
+    display: flex;
   }
 
   h1 {
-    margin-top: var(--space-6);
-    font-size: var(--step-4);
-    line-height: 1;
-    color: var(--accent);
+    padding: var(--space-4) var(--space-7) var(--space-3);
+    background: var(--accent);
+    clip-path: polygon(0 100%, 18px 0, calc(100% - 18px) 0, 100% 100%);
+    font-size: var(--step-2);
+  }
+
+  .band {
+    display: grid;
+    gap: var(--space-6);
+    padding: var(--space-6) var(--space-5);
+    background: var(--accent);
   }
 
   .summary {
-    margin-top: var(--space-4);
-    max-width: 52ch;
+    max-width: 40ch;
     font-size: var(--step-1);
-    line-height: 1.45;
+    font-weight: var(--weight-strong);
+    line-height: 1.3;
   }
 
   .facts {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
     gap: var(--space-5);
-    margin-top: var(--space-7);
-    padding-top: var(--space-5);
-    border-top: 1px solid var(--rule);
     font-size: var(--step--1);
   }
 
@@ -135,7 +170,7 @@ const nextSlug = splitId(next.id).slug;
   }
 
   dt {
-    color: var(--muted);
+    font-weight: var(--weight-display);
   }
 
   dd {
@@ -144,12 +179,31 @@ const nextSlug = splitId(next.id).slug;
 
   .cover {
     overflow: hidden;
-    border: 1px solid var(--rule);
-    border-radius: var(--radius-frame);
   }
 
   .cover :global(img) {
     width: 100%;
+  }
+
+  @media (min-width: 64rem) {
+    .band {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      padding: var(--space-7) var(--space-7) var(--space-7);
+      row-gap: var(--space-7);
+    }
+
+    .summary {
+      grid-column: 1 / 9;
+    }
+
+    .cover {
+      grid-column: 1 / -1;
+    }
+
+    .facts {
+      grid-column: 1 / -1;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
   }
 
   /* The screenshot drifts closer inside its frame as it scrolls away. */
@@ -174,34 +228,53 @@ const nextSlug = splitId(next.id).slug;
     }
   }
 
+  /* The papers inside the folder: one white sheet for the whole write-up. */
   .body {
-    margin-top: var(--space-7);
+    margin-top: 12px;
+    padding: var(--space-7) var(--space-5);
+  }
+
+  @media (min-width: 64rem) {
+    .body {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      padding: var(--space-8) var(--space-7);
+    }
+
+    .body .prose {
+      grid-column: 1 / -1;
+      justify-self: center;
+      width: 100%;
+    }
   }
 
   .body :global(a) {
-    color: var(--accent);
+    color: var(--accent-text);
+    font-weight: var(--weight-strong);
   }
 
+  /* The next folder's tab, waiting at the foot of the page. */
   .next {
     margin-top: var(--space-8);
-    padding-top: var(--space-5);
-    border-top: 1px solid var(--rule);
+    color: var(--sheet-ink);
   }
 
   .next p {
-    color: var(--muted);
-    font-size: var(--step--1);
+    margin-bottom: var(--space-2);
+    color: var(--ink);
   }
 
   .next a {
-    display: inline-block;
-    margin-top: var(--space-2);
-    font-size: var(--step-3);
+    display: block;
+    padding: var(--space-6) var(--space-7) var(--space-7);
+    background: var(--accent);
+    clip-path: polygon(0 100%, 18px 0, calc(100% - 18px) 0, 100% 100%);
+    font-size: var(--step-2);
     text-decoration: none;
-    color: var(--accent);
   }
 
   .next a:hover {
     text-decoration: underline;
+    text-decoration-thickness: 3px;
   }
 </style>

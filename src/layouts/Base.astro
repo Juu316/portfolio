@@ -4,7 +4,6 @@ import { getImage } from "astro:assets";
 import "../styles/global.css";
 import Header from "../components/Header.astro";
 import CursorBuddy from "../components/CursorBuddy.astro";
-import SpaceBackground from "../components/SpaceBackground.astro";
 import Footer from "../components/Footer.astro";
 import { LOCALES, OG_LOCALE, localeUrl, t, type Locale } from "../i18n/ui";
 import { person } from "../data/site";
@@ -13,11 +12,10 @@ import ogMn from "../assets/og/home-mn.webp";
 import ogEn from "../assets/og/home-en.webp";
 
 // Only the three subsets Mongolian and English text actually use. Ө and Ү
-// live in cyrillic-ext, so it is preloaded alongside cyrillic. The "shrp"
-// files carry the weight and sharpness (SHRP) axes.
-import geoLatin from "@fontsource-variable/geologica/files/geologica-latin-shrp-normal.woff2?url";
-import geoCyr from "@fontsource-variable/geologica/files/geologica-cyrillic-shrp-normal.woff2?url";
-import geoCyrExt from "@fontsource-variable/geologica/files/geologica-cyrillic-ext-shrp-normal.woff2?url";
+// live in cyrillic-ext, so it is preloaded alongside cyrillic.
+import onestLatin from "@fontsource-variable/onest/files/onest-latin-wght-normal.woff2?url";
+import onestCyr from "@fontsource-variable/onest/files/onest-cyrillic-wght-normal.woff2?url";
+import onestCyrExt from "@fontsource-variable/onest/files/onest-cyrillic-ext-wght-normal.woff2?url";
 
 interface Props {
   locale: Locale;
@@ -59,9 +57,9 @@ const RANGE = {
   cyrillicExt: "U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F",
 };
 const faces = [
-  ["Geologica", geoLatin, RANGE.latin],
-  ["Geologica", geoCyr, RANGE.cyrillic],
-  ["Geologica", geoCyrExt, RANGE.cyrillicExt],
+  ["Onest", onestLatin, RANGE.latin],
+  ["Onest", onestCyr, RANGE.cyrillic],
+  ["Onest", onestCyrExt, RANGE.cyrillicExt],
 ];
 const fontCss = faces
   .map(
@@ -69,9 +67,9 @@ const fontCss = faces
       `@font-face{font-family:"${family}";font-style:normal;font-display:swap;font-weight:100 900;src:url(${src}) format("woff2");unicode-range:${range}}`,
   )
   .join("");
-// Geologica is the only family. Preload the subsets for this page's script;
+// Onest is the only family. Preload the subsets for this page's script;
 // the rest load on demand.
-const preload = locale === "mn" ? [geoCyr, geoCyrExt] : [geoLatin];
+const preload = locale === "mn" ? [onestCyr, onestCyrExt] : [onestLatin];
 ---
 
 <!doctype html>
@@ -100,13 +98,13 @@ const preload = locale === "mn" ? [geoCyr, geoCyrExt] : [geoLatin];
     <meta name="twitter:card" content="summary_large_image" />
 
     <link rel="icon" href={`${import.meta.env.BASE_URL}rudeus.png`} type="image/png" />
-    <meta name="theme-color" content="#0c1226" />
+    <meta name="theme-color" content="#0f1f10" />
     {/* Applies the saved theme before first paint, so light mode never flashes dark. */}
     <script is:inline>
       try {
         if (localStorage.getItem("theme") === "light") {
           document.documentElement.dataset.theme = "light";
-          document.querySelector('meta[name="theme-color"]').content = "#f2f4f9";
+          document.querySelector('meta[name="theme-color"]').content = "#dde6d7";
         }
       } catch {}
     </script>
@@ -116,7 +114,6 @@ const preload = locale === "mn" ? [geoCyr, geoCyrExt] : [geoLatin];
     <style is:inline set:html={fontCss} />
   </head>
   <body>
-    <SpaceBackground />
     <a class="skip-link" href="#main">
       {t(locale, "skipToContent")}
     </a>

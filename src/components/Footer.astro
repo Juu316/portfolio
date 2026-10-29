@@ -1,67 +1,145 @@
 ---
+import { Picture } from "astro:assets";
 import { t, type Locale } from "../i18n/ui";
 import { person } from "../data/site";
-import Socials from "./Socials.astro";
+import { scallops } from "../lib/edges";
+// src: Wikimedia Commons, "2024-10-18 Ulaanbaatar 1" by Alexkom000, CC BY 4.0.
+import stamp from "../assets/world/ulaanbaatar.jpg";
 
 interface Props {
   locale: Locale;
 }
 
+/* The back of the card: a sign-off on the left, the address on the right, a stamp. */
 const { locale } = Astro.props;
+const tel = `+976${person.phone}`;
+const bare = (url: string) => url.replace(/^https:\/\/(www\.)?/, "").replace(/\/$/, "");
+const credit = {
+  page: "https://commons.wikimedia.org/wiki/File:2024-10-18_Ulaanbaatar_1.jpg",
+  licence: "https://creativecommons.org/licenses/by/4.0/",
+};
 ---
 
 <footer class="site-footer wrap">
-  <p>{t(locale, "footerNote")}</p>
-  <div class="links">
-    <ul>
-      <li>
-        <a href={`mailto:${person.email}`}>{person.email}</a>
-      </li>
-      <li>
-        <a href={person.github} rel="me">
-          GitHub
-        </a>
-      </li>
-    </ul>
-    <Socials />
+  <div class="card sheet" style={`clip-path: ${scallops("top", 12, 14)}`}>
+    <div class="message">
+      <p class="sign display">{person.name[locale]}</p>
+      <p>
+        {person.role[locale]}, {person.location[locale]}.
+      </p>
+    </div>
+
+    <div class="address">
+      <figure class="stamp">
+        <Picture
+          src={stamp}
+          alt={t(locale, "stampAlt")}
+          widths={[88, 176, 264]}
+          sizes="88px"
+          formats={["avif", "webp"]}
+          fallbackFormat="jpg"
+          loading="lazy"
+        />
+      </figure>
+      <ul>
+        <li>
+          <a href={`mailto:${person.email}`}>{person.email}</a>
+        </li>
+        <li>
+          <a href={`tel:${tel}`}>{person.phoneDisplay}</a>
+        </li>
+        <li>
+          <a href={person.github} rel="me">
+            {bare(person.github)}
+          </a>
+        </li>
+        <li>
+          <a href={person.instagram} rel="me noopener">
+            {bare(person.instagram)}
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <p class="imprint">
+      © {new Date().getFullYear()} {person.name[locale]} · {t(locale, "footerNote")} ·{" "}
+      {t(locale, "stampCredit")} <a href={credit.page}>Alexkom000</a>,{" "}
+      <a href={credit.licence}>CC BY 4.0</a>
+    </p>
   </div>
 </footer>
 
 <style>
   .site-footer {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3) var(--space-6);
     margin-top: var(--space-8);
-    padding-block: var(--space-6);
-    border-top: 1px solid var(--rule);
-    color: var(--muted);
-    font-size: var(--step--1);
+    padding-bottom: var(--gutter);
   }
 
-  .links {
+  .card {
+    display: grid;
+    gap: var(--space-6);
+    padding: calc(var(--space-7) + 14px) var(--space-5) var(--space-5);
+  }
+
+  @media (min-width: 64rem) {
+    .card {
+      grid-template-columns: 1fr 1fr;
+      min-height: 26rem;
+      padding: calc(var(--space-7) + 14px) var(--space-7) var(--space-5);
+    }
+  }
+
+  .sign {
+    font-size: var(--step-2);
+    margin-bottom: var(--space-4);
+  }
+
+  .address {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-3) var(--space-5);
-    margin-left: auto;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-5);
+  }
+
+  /* A postage stamp: the photograph on a lime mount. */
+  .stamp {
+    flex: none;
+    width: 88px;
+    padding: 6px;
+    background: var(--lime);
+  }
+
+  .stamp :global(img) {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    object-position: 20% 50%;
   }
 
   ul {
-    display: flex;
-    gap: var(--space-5);
+    display: grid;
+    gap: var(--space-3);
     padding: 0;
     list-style: none;
+    font-size: var(--step-0);
   }
 
-  /* Too narrow for one row: stack, everything left-aligned. */
-  @media (max-width: 63.99rem) {
-    .site-footer {
-      flex-direction: column;
-    }
+  ul a {
+    overflow-wrap: anywhere;
+  }
 
-    .links {
-      margin-left: 0;
+  .imprint {
+    grid-column: 1 / -1;
+    align-self: end;
+    font-size: var(--step--1);
+    color: var(--sheet-muted);
+    text-align: center;
+  }
+
+  @media (max-width: 29.99rem) {
+    .stamp {
+      width: 64px;
     }
   }
 </style>

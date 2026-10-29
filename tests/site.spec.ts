@@ -251,14 +251,14 @@ test("hero names the live sites and links the clients to their case studies", as
     "href",
     "/portfolio/en/projects/shuren/",
   );
-  const terminal = page.locator(".terminal");
+  const shipped = page.locator(".shipped");
   for (const domain of [
     "global-travel.mn",
     "shuren.mn",
     "orchuulga.mn",
     "degfim.nova-shop.workers.dev",
   ]) {
-    const link = terminal.getByRole("link", { name: domain });
+    const link = shipped.getByRole("link", { name: domain });
     await expect(link).toHaveCount(1);
     await expect(link).toHaveAttribute(
       "href",
@@ -266,9 +266,7 @@ test("hero names the live sites and links the clients to their case studies", as
     );
   }
   // Study projects are not shipped client work.
-  await expect(terminal.getByRole("link", { name: "movie-web-app-vert.vercel.app" })).toHaveCount(
-    0,
-  );
+  await expect(shipped.getByRole("link", { name: "movie-web-app-vert.vercel.app" })).toHaveCount(0);
 });
 
 test("timeline lists work and study newest first; certificates stay hidden while empty", async ({
@@ -283,7 +281,7 @@ test("timeline lists work and study newest first; certificates stay hidden while
 
 test("expertise shows decorative logos, and text only where none exists", async ({ page }) => {
   await page.goto("en/");
-  const skills = page.locator("#expertise dd");
+  const skills = page.locator("#expertise li");
   await expect(
     skills.filter({ hasText: "TypeScript" }).locator('svg[aria-hidden="true"]'),
   ).toHaveCount(1);
@@ -475,7 +473,7 @@ test("every project row shows its screenshot and opens the live site in a new ta
   await expect(rows).toHaveCount(PROJECTS.length + PERSONAL.length);
   for (const row of await rows.all()) {
     await expect(row.locator(".thumb img")).toHaveCount(1);
-    const live = row.locator('a.btn-pill[target="_blank"]');
+    const live = row.locator('a[target="_blank"]');
     await expect(live).toHaveCount(1);
     await expect(live).toHaveAttribute("href", /^https:\/\//);
     await expect(row.getByRole("link", { name: "Read the case study" })).toHaveCount(1);
