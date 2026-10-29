@@ -31,25 +31,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: "24"
-          cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Check types and formatting
         run: |
-          pnpm run check
-          pnpm run lint
+          bun run check
+          bun run lint
 
       - name: Build site
-        run: pnpm run build
+        run: bun run build
         env:
           # Read-only use: the GitHub section's GraphQL query (src/data/github.ts).
           # GH_STATS_TOKEN is the owner's personal token (scope read:user), so the
@@ -57,10 +56,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_STATS_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Install Playwright browser
-        run: pnpm exec playwright install --with-deps chromium
+        run: bunx playwright install --with-deps chromium
 
       - name: Test the production build
-        run: pnpm test
+        run: bun run test
 
       - name: Upload Playwright report
         if: failure()

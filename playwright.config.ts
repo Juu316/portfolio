@@ -20,7 +20,7 @@ export default defineConfig({
   ],
   // Tests run against the production build, not the dev server.
   webServer: {
-    command: `pnpm exec astro preview --port ${PORT} --ignore-lock`,
+    command: `bunx astro preview --port ${PORT} --ignore-lock`,
     url: `http://localhost:${PORT}/portfolio/`,
     reuseExistingServer: !process.env.CI,
   },

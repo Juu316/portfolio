@@ -1,5 +1,6 @@
 ---
 import { localeUrl, t, type Locale } from "../i18n/ui";
+import { siFacebook, siGithub, siInstagram, siTelegram } from "simple-icons";
 import { availability, contactForm, person, replyTime } from "../data/site";
 import { notches } from "../lib/edges";
 
@@ -11,9 +12,10 @@ const { locale } = Astro.props;
 const thanks = new URL(localeUrl(locale, "thanks/"), Astro.site);
 const bare = (url: string) => url.replace(/^https:\/\/(www\.)?/, "").replace(/\/$/, "");
 const links = [
-  { href: person.github, label: bare(person.github), rel: "me" },
-  { href: person.instagram, label: bare(person.instagram), rel: "me noopener" },
-  { href: person.facebook, label: bare(person.facebook), rel: "me noopener" },
+  { href: person.github, label: bare(person.github), rel: "me", icon: siGithub },
+  { href: person.instagram, label: bare(person.instagram), rel: "me noopener", icon: siInstagram },
+  { href: person.facebook, label: bare(person.facebook), rel: "me noopener", icon: siFacebook },
+  { href: person.telegram, label: bare(person.telegram), rel: "me noopener", icon: siTelegram },
 ];
 const tel = `+976${person.phone}`;
 /* The coupon's two notches: top and bottom on wide screens, the sides on a phone. */
@@ -99,6 +101,9 @@ const clip = `--clip-wide: ${notches("vertical", 46, 14)}; --clip-narrow: ${notc
         {links.map((link) => (
           <li>
             <a href={link.href} rel={link.rel}>
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d={link.icon.path}></path>
+              </svg>
               {link.label}
             </a>
           </li>
@@ -293,8 +298,16 @@ const clip = `--clip-wide: ${notches("vertical", 46, 14)}; --clip-narrow: ${notc
   }
 
   .also a {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
     padding-block: var(--space-1);
+  }
+
+  .also svg {
+    width: 1.1em;
+    height: 1.1em;
+    fill: currentColor;
   }
 
   form {

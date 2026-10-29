@@ -4,7 +4,7 @@
   "private": true,
   "description": "Developer portfolio of Usukh-Erdene Choijamts — Astro, static, bilingual (MN/EN)",
   "type": "module",
-  "packageManager": "pnpm@12.10.1",
+  "packageManager": "bun@1.4.3",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
@@ -20,17 +20,17 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@astrojs/mdx": "^8.0.3",
+    "@astrojs/mdx": "^8.1.0",
     "@astrojs/sitemap": "^3.7.4",
     "@fontsource-variable/onest": "^5.3.1",
-    "astro": "^7.3.8",
+    "astro": "^7.4.0",
     "country-flag-icons": "^1.6.20"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
-    "@axe-core/playwright": "^4.13.0",
-    "@playwright/test": "^1.64.0",
-    "prettier": "^3.9.9",
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.64.1",
+    "prettier": "^3.9.10",
     "prettier-plugin-astro": "^1.1.1",
     "sharp": "^0.35.5",
     "simple-icons": "16.35.0",

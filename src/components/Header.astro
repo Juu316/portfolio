@@ -50,13 +50,13 @@ const contact = `${home}#contact`;
               {l.toUpperCase()}
             </a>
           ) : (
-            <a
-              href={localeUrl(l, path)}
-              hreflang={l}
-              lang={l}
-              aria-label={t(locale, "switchLanguageLabel")}
-            >
+            <a href={localeUrl(l, path)} hreflang={l} lang={l}>
               {l.toUpperCase()}
+              {/* Hidden text, not aria-label: the name must contain the visible code. */}
+              <span class="visually-hidden" lang={locale}>
+                {" "}
+                {t(locale, "switchLanguageLabel")}
+              </span>
             </a>
           ),
         )}
