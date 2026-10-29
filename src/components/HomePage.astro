@@ -137,33 +137,35 @@ const expertiseWord = t(locale, "expertise");
     <div class="room enter" style="--i: 2">
       {slides.map((slide, i) => (
         <figure class="slide" data-accent={slide.accent} style={`--k: ${i}`}>
-          <Picture
-            class="desk"
-            src={slide.cover}
-            alt={slide.coverAlt}
-            widths={[640, 960, 1280, 1920]}
-            sizes="(min-width: 64rem) 42vw, 84vw"
-            formats={["avif", "webp"]}
-            fallbackFormat="webp"
-            loading={i === 0 ? "eager" : "lazy"}
-            fetchpriority={i === 0 ? "high" : "auto"}
-          />
-          {slide.mobile && (
+          <div class="group">
             <Picture
-              class="phone"
-              src={slide.mobile}
-              alt={slide.mobileAlt}
-              widths={[240, 360, 480, 720]}
-              sizes="(min-width: 64rem) 15vw, 30vw"
+              class="desk"
+              src={slide.cover}
+              alt={slide.coverAlt}
+              widths={[640, 960, 1280, 1920]}
+              sizes="(min-width: 64rem) 42vw, 84vw"
               formats={["avif", "webp"]}
               fallbackFormat="webp"
               loading={i === 0 ? "eager" : "lazy"}
+              fetchpriority={i === 0 ? "high" : "auto"}
             />
-          )}
-          <figcaption>
-            <span class="title">{slide.title}</span>
-            {slide.domain}
-          </figcaption>
+            {slide.mobile && (
+              <Picture
+                class="phone"
+                src={slide.mobile}
+                alt={slide.mobileAlt}
+                widths={[240, 360, 480, 720]}
+                sizes="(min-width: 64rem) 15vw, 30vw"
+                formats={["avif", "webp"]}
+                fallbackFormat="webp"
+                loading={i === 0 ? "eager" : "lazy"}
+              />
+            )}
+            <figcaption>
+              <span class="title">{slide.title}</span>
+              {slide.domain}
+            </figcaption>
+          </div>
         </figure>
       ))}
     </div>
@@ -375,8 +377,9 @@ const expertiseWord = t(locale, "expertise");
 
   /*
    * The client sites, one after another, each shown whole on a field of its
-   * own colour: the desktop page at the top, the phone page overlapping it.
-   * Sized in container units so neither is ever cropped.
+   * own colour: the desktop page and the phone page overlapping as one group,
+   * centred in the panel. The group is a square sized by the panel's shorter
+   * side (container units), so nothing is cropped or pushed to an edge.
    */
   .room {
     position: relative;
@@ -397,6 +400,8 @@ const expertiseWord = t(locale, "expertise");
   .slide {
     position: absolute;
     inset: 0;
+    display: grid;
+    place-items: center;
     background: var(--accent);
     color: var(--sheet-ink);
   }
@@ -407,28 +412,40 @@ const expertiseWord = t(locale, "expertise");
     visibility: hidden;
   }
 
-  /* The desktop page runs to the room's right edge, like a sheet slid in. */
-  .slide :global(.desk) {
+  .group {
+    position: relative;
+    width: min(84cqw, 84cqh);
+    aspect-ratio: 1;
+  }
+
+  /* Desktop page across the top, phone page over its lower-right corner. */
+  .group :global(.desk) {
     position: absolute;
-    top: 6cqh;
+    top: 0;
+    left: 0;
+    width: 92%;
+    height: auto;
+  }
+
+  .group:not(:has(.phone)) :global(.desk) {
+    top: 50%;
+    translate: 0 -50%;
+  }
+
+  .group :global(.phone) {
+    position: absolute;
     right: 0;
-    width: min(84cqw, 96cqh);
+    bottom: 0;
+    width: 30%;
     height: auto;
   }
 
-  .slide :global(.phone) {
-    position: absolute;
-    right: 6cqw;
-    bottom: 6cqh;
-    width: min(30cqw, 28cqh);
-    height: auto;
-  }
-
+  /* The name sits in the group's empty corner, under the desktop page. */
   figcaption {
     position: absolute;
-    left: 6cqw;
-    bottom: 6cqh;
-    max-width: 52cqw;
+    left: 0;
+    bottom: 0;
+    max-width: 62%;
     font-size: var(--step--1);
     font-weight: var(--weight-strong);
   }
@@ -474,11 +491,11 @@ const expertiseWord = t(locale, "expertise");
       animation-delay: calc(var(--k) * 6s - 1.6s);
     }
 
-    .slide :global(.phone) {
+    .group :global(.phone) {
       transition: translate var(--dur-slow) var(--ease-out-expo);
     }
 
-    .room:hover .slide :global(.phone) {
+    .room:hover .group :global(.phone) {
       translate: 0 -12px;
     }
   }
@@ -489,10 +506,19 @@ const expertiseWord = t(locale, "expertise");
       order: -1;
     }
 
-    /* Clear of the card, which overlaps the picture's foot by 24px. */
-    figcaption,
-    .slide :global(.phone) {
-      bottom: calc(6cqh + 24px);
+    /*
+     * A panel a little taller than wide, so the group can use nearly the full
+     * width; its foot stays clear of the card, which overlaps it by 24px.
+     */
+    .room {
+      height: auto;
+      aspect-ratio: 1 / 1.1;
+      max-height: 64svh;
+    }
+
+    .group {
+      width: min(94cqw, calc(100cqh - 48px));
+      margin-bottom: 24px;
     }
 
     .card {
