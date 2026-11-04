@@ -1,6 +1,6 @@
 # Usukh-Erdene Choijamts · Өсөх-Эрдэнэ Чойжамц
 
-**Full-stack Developer** · Ulaanbaatar, Mongolia
+**Full-Stack Software Engineer** · Ulaanbaatar, Mongolia
 Looking for a full-time role.
 
 I build fast, useful things for the web.

@@ -17,8 +17,8 @@ export const person = {
   name: { mn: "Өсөх-Эрдэнэ", en: "Usukh-Erdene Choijamts" } as Localized,
   /** The header's brand mark. */
   shortName: { mn: "Өсөх-Эрдэнэ", en: "Usukh-Erdene" } as Localized,
-  // src: owner CV 2026-08-24 ("Fullstack хөгжүүлэгч").
-  role: { mn: "Full-stack хөгжүүлэгч", en: "Full-stack developer" } as Localized,
+  // src: owner, 2026-11-04 (title "Full-Stack Software Engineer").
+  role: { mn: "Full-Stack Software Engineer", en: "Full-Stack Software Engineer" } as Localized,
   location: { mn: "Улаанбаатар", en: "Ulaanbaatar" } as Localized,
   email: "iikii427@proton.me",
   github: "https://github.com/Juu316",
@@ -72,12 +72,12 @@ export const replyTime: Localized | null = null;
 export const about: Localized<string[]> = {
   mn: [
     "Pinecone Academy-г Full Stack Software Engineer мэргэжлээр төгссөн. 6 сарын сургалт, 2 сарын дадлагын хугацаанд React, Next.js, MongoDB, PostgreSQL дээр багийн болон хувийн олон төсөл хийсэн.",
-    "2025 оны 12-р сараас Мон Тай Сино Группт (GTC Mongolia) Full-stack хөгжүүлэгчээр ажиллаж байна. Тэнд 2 хүнтэй багийг ахалж компанийн аялал захиалга, цахим гэрээ, төлбөрийн системийг бүтээж, orchuulga.mn сайтыг ганцаараа шилжүүлсэн. Ажлаас гадуур үнэт эдлэлийн дэлгүүр, шүдний эмнэлгийн вэбсайтыг гэрээгээр хийсэн.",
+    "2025 оны 12-р сараас Мон Тай Сино Группт (GTC Mongolia) Full-Stack Software Engineer-ээр ажиллаж байна. Тэнд 2 хүнтэй багийг ахалж компанийн аялал захиалга, цахим гэрээ, төлбөрийн системийг бүтээж, orchuulga.mn сайтыг ганцаараа шилжүүлсэн. Ажлаас гадуур үнэт эдлэлийн дэлгүүр, шүдний эмнэлгийн вэбсайтыг гэрээгээр хийсэн.",
     "Байгууллагын дотоод систем, нүүр хуудсыг өндөр чанартай хийхийг зорьдог. Linux (Debian) ашигладаг.",
   ],
   en: [
     "I graduated from Pinecone Academy as a Full Stack Software Engineer. Over six months of training and a two-month internship I built team and solo projects in React, Next.js, MongoDB and PostgreSQL.",
-    "Since December 2025 I've been a full-stack developer at Mon Thai Sino Group (GTC Mongolia). There, I led a two-person team that built the company's booking, e-contract and payment system, and I moved orchuulga.mn to a new stack on my own. Outside that job I built websites for a jewelry shop and a dental clinic as freelance work.",
+    "Since December 2025 I've been a Full-Stack Software Engineer at Mon Thai Sino Group (GTC Mongolia). There, I led a two-person team that built the company's booking, e-contract and payment system, and I moved orchuulga.mn to a new stack on my own. Outside that job I built websites for a jewelry shop and a dental clinic as freelance work.",
     "I care about building internal systems and websites properly. I work on Linux (Debian).",
   ],
 };
@@ -165,7 +165,7 @@ export const experience: Entry[] = [
     // src: owner, 2026-11-04 (lead duties).
     period: { mn: "2025.12 – одоо", en: "2025.12 – present" },
     org: { mn: "Мон Тай Сино Групп ХХК (GTC Mongolia)", en: "Mon Thai Sino Group (GTC Mongolia)" },
-    role: { mn: "Full-stack хөгжүүлэгч", en: "Full-stack developer" },
+    role: { mn: "Full-Stack Software Engineer", en: "Full-Stack Software Engineer" },
     points: {
       mn: [
         "global-travel.mn, orchuulga.mn",
