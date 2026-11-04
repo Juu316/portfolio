@@ -22,6 +22,8 @@ const projects = defineCollection({
       year: z.number().int(),
       order: z.number().int(),
       url: z.url(),
+      /** The project's App Store listing, if it ships as an app. */
+      appStore: z.url().optional(),
       stack: z.array(z.string()).min(1),
       /** Key into the accent tokens in src/styles/tokens.css. */
       accent: z.enum(["gtc", "shuren", "orchuulga", "degfim", "movie"]),

@@ -93,6 +93,11 @@ const meta = p.kind === "personal" ? `${t(locale, "studyProject")}, ${p.client}`
       <a class="visit" href={p.url} target="_blank" rel="noopener">
         {t(locale, "visitSite", { domain })}
       </a>
+      {p.appStore && (
+        <a class="visit" href={p.appStore} target="_blank" rel="noopener">
+          {t(locale, "appStore")}
+        </a>
+      )}
     </p>
   </div>
 </li>

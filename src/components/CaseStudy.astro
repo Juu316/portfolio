@@ -72,6 +72,14 @@ const nextSlug = splitId(next.id).slug;
               <a href={p.url}>{domain}</a>
             </dd>
           </div>
+          {p.appStore && (
+            <div>
+              <dt>{t(locale, "app")}</dt>
+              <dd>
+                <a href={p.appStore}>App Store</a>
+              </dd>
+            </div>
+          )}
           <div class="stack">
             <dt>{t(locale, "stack")}</dt>
             <dd>{p.stack.join(", ")}</dd>

@@ -1,12 +1,13 @@
 ---
 title: "Global Travel"
-summary: "GTC Mongolia-ийн гадаад аяллын захиалга, цахим гэрээ, төлбөрийн систем."
+summary: "GTC Mongolia-ийн гадаад аяллын захиалга, цахим гэрээ, төлбөрийн систем — вэб болон iOS апп."
 client: "Global Travel Corporation (GTC Mongolia)"
 role: "Full-stack хөгжүүлэгч, хоёр хөгжүүлэгчийн нэг"
 period: "2025.12 – одоо ажиллаж байгаа (Мон Тай Сино Групп)"
 year: 2025
 order: 1
 url: https://global-travel.mn
+appStore: https://apps.apple.com/mn/app/global-travel-corporation/id6762688975
 stack:
   [
     React 19,
@@ -35,6 +36,8 @@ import Shots from "../../../components/Shots.astro";
 import tour from "../../../assets/projects/b2c/tour.webp";
 import insurance from "../../../assets/projects/b2c/insurance.webp";
 import mobile from "../../../assets/projects/b2c/home-mobile.webp";
+import appTour from "../../../assets/projects/b2c/app-tour.webp";
+import appSchedule from "../../../assets/projects/b2c/app-schedule.webp";
 
 {/* src: period — owner, 2026-10-10: Мон Тай Сино Группт одоо ажиллаж байгаа. */}
 
@@ -58,8 +61,15 @@ GTC Mongolia нь Улаанбаатараас Хятад, Тайланд, Вь�
 - **Гэрээ гарын үсэг зурах** урсгал — загвараас гарын үсэгтэй PDF хүртэл.
 - **Аяллын даатгал:** daatguul.mn-ээр үнийн санал авч, худалдан авах.
 - **HiPay нэхэмжлэх** болон QPay-ээр урьдчилж төлөх захиалгын race condition-ийг засах.
-- **Үйлчлүүлэгчийн AI туслах**, ажилтан ба үйлчлүүлэгчийн бодит цагийн чат, push мэдэгдэлтэй
-  Expo гар утасны апп.
+- **Үйлчлүүлэгчийн AI туслах**, ажилтан ба үйлчлүүлэгчийн бодит цагийн чат.
+- **iOS апп** — миний хөгжүүлэгчийн бүртгэлээр App Store-д гарсан. Вэбсайтыг ороосон Expo апп
+  тул гол ажил нь хоёрын уулзвар дээр:
+  {/* src: App Store listing id6762688975, seller "Usukh-Erdene Choijamts" */}
+  native код нэвтрэлтийн cookie-г харж чаддаггүй тул төхөөрөмжийн push token-ийг хуудас дотроос
+  бүртгэдэг; сайтын PDF, Excel татах үйлдлийг утасны share sheet руу дамжуулдаг гүүр; манай
+  хуудас болон төлбөрийн шлюзүүдийг апп дотор үлдээж, бусад холбоосыг системд шилжүүлдэг
+  зөвшөөрлийн жагсаалт; global-travel.mn холбоосыг апп дотор нээдэг universal link.
+  {/* src: b2c/mobile — src/utils/deviceRegistrationScript.ts, src/utils/appBridgeScript.ts, src/screens/WebViewScreen.tsx (handleShouldStartLoad), app.json (associatedDomains) */}
 
 Хамт ажилласан хөгжүүлэгч ganaabna Голомт банкны картын төлбөрийн холболт болон цахим худалдаа,
 промо код, шимтгэлийн анхны хувилбаруудыг хариуцсан.
@@ -129,7 +139,24 @@ GTC Mongolia нь Улаанбаатараас Хятад, Тайланд, Вь�
   caption="Нүүр хуудас утсан дээр."
 />
 
+<Shots layout="phones">
+  <Shot
+    src={appTour}
+    device="mobile"
+    alt="iOS апп дээрх Туркийн Истанбул руу явах аялал: толгой зураг, хөтөлбөр, буудлын табууд, явах огноо сонгогч, зорчигчийн тоо."
+    caption="iOS апп: Туркийн аялал захиалах."
+  />
+  <Shot
+    src={appSchedule}
+    device="mobile"
+    alt="iOS апп дээр Сингапур–Индонезийн аяллын карт, доор нь удахгүй гарах аяллуудын огноо, үнэ төгрөгөөр."
+    caption="iOS апп: удахгүй гарах аяллууд."
+  />
+</Shots>
+
 ## Үр дүн
 
 Энэ систем компанийн global-travel.mn вэбсайт болон дотоод удирдлагын хэсгийг ажиллуулдаг.
-Backend, frontend хоёрт нийт 659 Vitest тест бий.
+Backend, frontend хоёрт нийт 659 Vitest тест бий. iOS апп 2026 оны 5-р сарын 7-ноос App Store-д
+байгаа.
+{/* src: itunes.apple.com/lookup?id=6762688975 releaseDate 2026-05-07 */}

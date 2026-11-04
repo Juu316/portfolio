@@ -1,12 +1,13 @@
 ---
 title: "Global Travel"
-summary: "The booking, e-contract and payment system behind GTC Mongolia's outbound tours."
+summary: "The booking, e-contract and payment system behind GTC Mongolia's outbound tours, on the web and in an iOS app."
 client: "Global Travel Corporation (GTC Mongolia)"
 role: "Full-stack developer, one of two"
 period: "Dec 2025 – present (still at Mon Thai Sino Group)"
 year: 2025
 order: 1
 url: https://global-travel.mn
+appStore: https://apps.apple.com/mn/app/global-travel-corporation/id6762688975
 stack:
   [
     React 19,
@@ -35,6 +36,8 @@ import Shots from "../../../components/Shots.astro";
 import tour from "../../../assets/projects/b2c/tour.webp";
 import insurance from "../../../assets/projects/b2c/insurance.webp";
 import mobile from "../../../assets/projects/b2c/home-mobile.webp";
+import appTour from "../../../assets/projects/b2c/app-tour.webp";
+import appSchedule from "../../../assets/projects/b2c/app-schedule.webp";
 
 {/* src: period — owner, 2026-10-10: still employed at Mon Thai Sino Group. */}
 
@@ -59,8 +62,16 @@ Two of us built the system. By git authorship I wrote about 980 of its roughly 1
 - **Contract signing**, from template to signed PDF.
 - **Travel insurance:** quotes and purchase through daatguul.mn.
 - **HiPay invoicing** and the fix for race conditions in pay-first QPay orders.
-- **The customer AI chat assistant**, the real-time chat between staff and customers, and the
-  Expo mobile app with push notifications.
+- **The customer AI chat assistant** and the real-time chat between staff and customers.
+- **The iOS app**, on the App Store under my own developer account. It is an Expo shell around
+  the website, so the work is in the seams between the two:
+  {/* src: App Store listing id6762688975, seller "Usukh-Erdene Choijamts" */}
+  push notifications whose device token is registered from inside the page, because native code
+  can't see the login cookie; a bridge that hands the site's PDF and Excel downloads to the phone's
+  share sheet; a navigation allowlist that keeps our pages and the payment gateways in the app
+  and sends every other link to the system; and universal links, so a global-travel.mn link
+  opens in the app.
+  {/* src: b2c/mobile — src/utils/deviceRegistrationScript.ts, src/utils/appBridgeScript.ts, src/screens/WebViewScreen.tsx (handleShouldStartLoad), app.json (associatedDomains) */}
 
 My colleague ganaabna led the Golomt card-payment integration and the first versions of the
 e-commerce, promo-code and commission features.
@@ -129,8 +140,25 @@ e-commerce, promo-code and commission features.
   caption="The same homepage on a phone."
 />
 
+<Shots layout="phones">
+  <Shot
+    src={appTour}
+    device="mobile"
+    alt="The iOS app on a tour to Istanbul, Turkey: a header photo, tabs for itinerary and hotels, a departure-date picker and a traveller counter."
+    caption="The iOS app: booking a Turkey tour."
+  />
+  <Shot
+    src={appSchedule}
+    device="mobile"
+    alt="The iOS app showing a Singapore–Indonesia tour card above a list of upcoming departures with dates and prices in tugrik."
+    caption="The iOS app: upcoming departures."
+  />
+</Shots>
+
 ## Outcome
 
 The system runs the company's public site at global-travel.mn and its internal console. The
-backend and frontend have 659 Vitest tests between them.
+backend and frontend have 659 Vitest tests between them. The iOS app has been on the App Store
+since 7 May 2026.
 {/* src: `vitest run` in b2c/backend (449) and b2c/frontend (210), 10 Oct 2026 */}
+{/* src: itunes.apple.com/lookup?id=6762688975 releaseDate 2026-05-07 */}

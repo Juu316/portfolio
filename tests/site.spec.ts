@@ -473,11 +473,17 @@ test("every project row shows its screenshot and opens the live site in a new ta
   await expect(rows).toHaveCount(PROJECTS.length + PERSONAL.length);
   for (const row of await rows.all()) {
     await expect(row.locator(".thumb img")).toHaveCount(1);
-    const live = row.locator('a[target="_blank"]');
+    const live = row.getByRole("link", { name: /^Visit / });
     await expect(live).toHaveCount(1);
+    await expect(live).toHaveAttribute("target", "_blank");
     await expect(live).toHaveAttribute("href", /^https:\/\//);
     await expect(row.getByRole("link", { name: "Read the case study" })).toHaveCount(1);
   }
+  const app = page
+    .locator('.row[data-accent="gtc"]')
+    .getByRole("link", { name: "iOS app on the App Store" });
+  await expect(app).toHaveAttribute("href", /^https:\/\/apps\.apple\.com\//);
+  await expect(app).toHaveAttribute("target", "_blank");
 });
 
 test("contact: mailto link and a form that posts to Web3Forms", async ({ page }) => {
