@@ -1,7 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
-const PROJECTS = ["b2c", "shuren", "orchuulga", "degfim"];
+const PROJECTS = ["b2c", "shuren", "orchuulga", "degfim", "chinggis"];
 /** Own work, listed apart from client work. */
 const PERSONAL = ["movie"];
 
@@ -150,6 +150,7 @@ test.describe("dark mode", () => {
     "en/projects/orchuulga/",
     "en/projects/degfim/",
     "en/projects/movie/",
+    "en/projects/chinggis/",
   ]) {
     test(`/${path} has no contrast or other axe violations`, async ({ page }) => {
       await page.emulateMedia({ reducedMotion: "reduce" });
@@ -173,6 +174,7 @@ test.describe("light mode", () => {
     "en/projects/orchuulga/",
     "en/projects/degfim/",
     "en/projects/movie/",
+    "en/projects/chinggis/",
   ]) {
     test(`/${path} has no contrast or other axe violations`, async ({ page }) => {
       await page.emulateMedia({ reducedMotion: "reduce" });
@@ -257,6 +259,7 @@ test("hero names the live sites and links the clients to their case studies", as
     "shuren.mn",
     "orchuulga.mn",
     "degfim.nova-shop.workers.dev",
+    "chinggis-mindset.com",
   ]) {
     const link = shipped.getByRole("link", { name: domain });
     await expect(link).toHaveCount(1);

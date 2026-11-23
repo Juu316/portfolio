@@ -1,0 +1,79 @@
+---
+title: "Chinggis Mindset"
+summary: "A video lessons site with course publishing, account sign-in and access-controlled playback."
+client: "Chinggis Mindset"
+role: "Full-stack developer"
+period: "2026"
+year: 2026
+order: 0
+url: https://chinggis-mindset.com
+stack: [SvelteKit, Svelte 5, TypeScript, Cloudflare Workers, D1, R2, Drizzle ORM, Better Auth]
+accent: chinggis
+size: full
+cover: ../../../assets/projects/chinggis/home.webp
+coverAlt: "Chinggis Mindset homepage with a gold title, an introductory video and a black background."
+---
+
+import Decision from "../../../components/Decision.astro";
+import Shot from "../../../components/Shot.astro";
+import mobile from "../../../assets/projects/chinggis/home-mobile.webp";
+
+## Context
+
+Chinggis Mindset publishes video lessons, both individually and in courses. Visitors can browse the
+catalogue and see prices; signed-in accounts with access can watch the lessons. The site currently
+directs purchase enquiries to Facebook, while an admin grants viewing access in the app. There is
+no integrated checkout yet.
+{/* src: chinggis README.md; src/routes/+page.svelte; src/routes/admin/access/+page.server.ts */}
+
+## What I built
+
+I built the SvelteKit site, its admin tools for courses and lessons, account sign-in, and protected
+video delivery on Cloudflare Workers, D1 and R2.
+{/* src: chinggis git shortlog -sn --all; src/routes/admin/**; src/lib/server/auth.ts; README.md */}
+
+<Decision
+  locale="en"
+  title="Check access on every video request"
+  problem="A lesson page can be hidden, but a copied video URL could still be opened directly."
+  tradeoff="Each playback request needs a database access check before R2 can serve the video. This is access control, not DRM."
+>
+  The video route checks the signed-in user and their lesson or course access before reading from
+  R2. It returns byte ranges so viewers can seek within a lesson.
+  {/* src: chinggis src/routes/lessons/[id]/video/+server.ts; src/lib/server/videos.ts; src/lib/server/courses.ts */}
+</Decision>
+
+<Decision
+  locale="en"
+  title="Upload large videos in parts"
+  problem="A full lesson video may exceed a Worker's request body limit."
+  tradeoff="The browser has to coordinate several upload requests and finish or abort the multipart upload."
+>
+  The admin's browser divides the file into 20 MiB parts and sends them through the Worker to R2. It
+  also extracts a thumbnail and the duration before saving the lesson.
+  {/* src: chinggis src/lib/videoUpload.ts; src/routes/admin/upload/+server.ts; README.md */}
+</Decision>
+
+<Decision
+  locale="en"
+  title="Confirm email before creating a session"
+  problem="New accounts need a verified email address before sign-in."
+  tradeoff="Email verification adds a step to sign-up, and a new login signs out the previous device."
+>
+  Sign-up requires a six-digit email code. Password hashing uses WebCrypto PBKDF2 within the
+  Worker's CPU limits, and each account keeps one active session.
+  {/* src: chinggis src/lib/server/auth.ts; src/lib/server/crypto.ts; src/routes/signin/+page.server.ts */}
+</Decision>
+
+<Shot
+  src={mobile}
+  device="mobile"
+  alt="Chinggis Mindset homepage on a phone, showing the introduction video and a course card."
+  caption="The public mobile catalogue, with the introduction video and first course."
+/>
+
+## Outcome
+
+The site is live at chinggis-mindset.com. Admins can publish lessons and courses and grant access to
+accounts. Checkout is still manual; payment integration remains future work.
+{/* src: live site, 2026-11-23; chinggis README.md; src/routes/admin/access/+page.server.ts */}

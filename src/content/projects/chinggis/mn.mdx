@@ -1,0 +1,79 @@
+---
+title: "Chinggis Mindset"
+summary: "Курс, видео хичээл нийтлэх, бүртгэлээр нэвтрэх, зөвшөөрөлтэй хэрэглэгчид видео үзүүлэх сайт."
+client: "Chinggis Mindset"
+role: "Full-stack хөгжүүлэгч"
+period: "2026"
+year: 2026
+order: 0
+url: https://chinggis-mindset.com
+stack: [SvelteKit, Svelte 5, TypeScript, Cloudflare Workers, D1, R2, Drizzle ORM, Better Auth]
+accent: chinggis
+size: full
+cover: ../../../assets/projects/chinggis/home.webp
+coverAlt: "Chinggis Mindset-ийн нүүр хуудас — хар дэвсгэр дээрх алтан гарчиг, танилцуулга видео."
+---
+
+import Decision from "../../../components/Decision.astro";
+import Shot from "../../../components/Shot.astro";
+import mobile from "../../../assets/projects/chinggis/home-mobile.webp";
+
+## Танилцуулга
+
+Chinggis Mindset видео хичээлийг дангаар нь болон курс болгон нийтэлдэг. Зочид хичээл, үнийг
+үзэж, үзэх эрхтэй бүртгэлээрээ нэвтэрсэн хэрэглэгчид видеог тоглуулна. Одоогоор худалдан авах
+хүсэлтийг Facebook рүү чиглүүлж, админ үзэх эрхийг сайтаас олгодог. Шууд төлбөрийн систем хараахан
+холбогдоогүй.
+{/* src: chinggis README.md; src/routes/+page.svelte; src/routes/admin/access/+page.server.ts */}
+
+## Миний хийсэн ажил
+
+SvelteKit сайт, курс болон хичээл удирдах админ хэрэгсэл, бүртгэлээр нэвтрэх систем, Cloudflare
+Workers, D1, R2 дээрх хамгаалалттай видео дамжуулалтыг хийсэн.
+{/* src: chinggis git shortlog -sn --all; src/routes/admin/**; src/lib/server/auth.ts; README.md */}
+
+<Decision
+  locale="mn"
+  title="Видео хүсэлт бүрт эрх шалгах"
+  problem="Хичээлийн хуудсыг нуусан ч хуулсан видео холбоосыг шууд нээж болох эрсдэлтэй."
+  tradeoff="Видео тоглуулах хүсэлт бүрт R2-оос уншихаас өмнө өгөгдлийн сангаар эрх шалгана. Энэ нь DRM биш."
+>
+  Видео дамжуулах зам нь хэрэглэгч нэвтэрсэн эсэх, тухайн хичээл эсвэл курсыг үзэх эрхтэй эсэхийг
+  шалгаад R2-оос уншина. Хэсэгчлэн дамжуулах тул үзэгч видеог урагш, хойш гүйлгэж чадна.
+  {/* src: chinggis src/routes/lessons/[id]/video/+server.ts; src/lib/server/videos.ts; src/lib/server/courses.ts */}
+</Decision>
+
+<Decision
+  locale="mn"
+  title="Том видеог хэсэгчлэн байршуулах"
+  problem="Бүтэн видео Cloudflare Worker-ийн нэг хүсэлтийн хэмжээний хязгаараас давж болно."
+  tradeoff="Хөтөч олон хүсэлтийг зохицуулж, байршуулах үйлдлийг дуусгах эсвэл цуцлах шаардлагатай."
+>
+  Админы хөтөч файлыг 20 MiB хэсгүүдэд хувааж Worker-ээр дамжуулан R2-т хадгалдаг. Мөн хичээлийг
+  хадгалахаас өмнө видеоны жижиг зураг, үргэлжлэх хугацааг гаргаж авдаг.
+  {/* src: chinggis src/lib/videoUpload.ts; src/routes/admin/upload/+server.ts; README.md */}
+</Decision>
+
+<Decision
+  locale="mn"
+  title="Нэвтрэхээс өмнө и-мэйл баталгаажуулах"
+  problem="Шинэ бүртгэлээр нэвтрэхээс өмнө и-мэйл хаягийг баталгаажуулах хэрэгтэй."
+  tradeoff="Бүртгүүлэхэд баталгаажуулах алхам нэмэгдэж, шинээр нэвтрэхэд өмнөх төхөөрөмжийн нэвтрэлт дуусна."
+>
+  Бүртгүүлэхэд зургаан оронтой кодоор и-мэйл баталгаажуулна. Нууц үгийг Worker-ийн CPU хязгаарт
+  багтах WebCrypto PBKDF2-оор хэшлэж, бүртгэл бүрт нэг идэвхтэй нэвтрэлт хадгалдаг.
+  {/* src: chinggis src/lib/server/auth.ts; src/lib/server/crypto.ts; src/routes/signin/+page.server.ts */}
+</Decision>
+
+<Shot
+  src={mobile}
+  device="mobile"
+  alt="Chinggis Mindset-ийн утасны нүүр хуудас — танилцуулга видео, курсын карт."
+  caption="Утсан дээрх нийтэд нээлттэй нүүр хуудас, танилцуулга видео ба эхний курс."
+/>
+
+## Үр дүн
+
+chinggis-mindset.com сайт ажиллаж байна. Админууд хичээл, курс нийтэлж, хэрэглэгчдэд үзэх эрх
+олгож чадна. Худалдан авалт одоогоор гараар явагддаг; төлбөрийн системийг дараа холбоно.
+{/* src: live site, 2026-11-23; chinggis README.md; src/routes/admin/access/+page.server.ts */}

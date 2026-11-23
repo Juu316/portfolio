@@ -43,6 +43,7 @@
   --accent-orchuulga: #3cd3a9;
   --accent-degfim: #5c9ce6;
   --accent-movie: #ffcc00;
+  --accent-chinggis: #e6c266;
   --accent: var(--sheet);
   --accent-text: var(--sheet-ink);
 
@@ -122,4 +123,8 @@
 [data-accent="movie"] {
   --accent: var(--accent-movie);
   --accent-text: #8a6100;
+}
+[data-accent="chinggis"] {
+  --accent: var(--accent-chinggis);
+  --accent-text: #73530a;
 }
